@@ -351,6 +351,20 @@
         </div>
         </div>
 
+        <!-- Modale de Confirmation Générique (Déconnexion, etc.) -->
+        <div id="modal-confirmation" class="modal">
+            <div class="modal-content glass-card" style="text-align: center; max-width: 380px;">
+                <div style="font-size: 50px; margin-bottom: 20px;">⚠️</div>
+                <h2 id="confirmation-titre" style="margin-bottom: 15px; font-size: 22px; color: var(--ccmg-gold);">Confirmation</h2>
+                <p id="confirmation-message" style="margin-bottom: 30px; font-size: 16px; line-height: 1.5; color: var(--text-main);">Voulez-vous vraiment effectuer cette action ?</p>
+                
+                <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="fermerModalConfirmation()" class="btn-annuler" style="flex:1;">Annuler</button>
+                    <button id="btn-valider-confirmation" class="btn-statistique" style="margin:0; flex:1; background: var(--ccmg-red) !important; color: white !important; border-color: var(--ccmg-red) !important;">Oui, continuer</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Modale de Saisie du Rôle et Mot de Passe (Cadenas Virtuel) -->
         <div id="modal-mot-de-passe" class="modal">
             <div class="modal-content glass-card" style="text-align: center; max-width: 350px;">

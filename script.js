@@ -184,20 +184,54 @@ function connexionGoogle() {
 
 /**
  * Déconnecte l'utilisateur et retourne à l'écran de connexion.
+ * Appelée par l'ancienne fonction (sécurité) ou par le bouton de déconnexion.
  */
 function deconnexion() {
-    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
-        familleActuelle = '';
-        tousLesContacts = [];
-        firebase.auth().signOut()
-            .then(function () {
-                console.log('[Auth] Déconnecté avec succès.');
-                // onAuthStateChanged gère automatiquement la navigation
-            })
-            .catch(function (erreur) {
-                console.error('[Auth] Erreur de déconnexion :', erreur);
-            });
+    ouvrirModalConfirmation(
+        'Voulez-vous vraiment vous déconnecter de l\'application UDAMG ?',
+        function() {
+            familleActuelle = '';
+            tousLesContacts = [];
+            firebase.auth().signOut()
+                .then(function () {
+                    console.log('[Auth] Déconnecté avec succès.');
+                    fermerModalConfirmation();
+                    // onAuthStateChanged gère automatiquement la navigation vers l'écran login
+                })
+                .catch(function (erreur) {
+                    console.error('[Auth] Erreur de déconnexion :', erreur);
+                    alert("Erreur lors de la déconnexion.");
+                    fermerModalConfirmation();
+                });
+        }
+    );
+}
+
+// Alias pour compatibilité avec d'anciennes versions or typos
+function logoutGoogle() { deconnexion(); }
+
+/**
+ * ==========================================
+ * GESTION DE LA MODALE DE CONFIRMATION
+ * ==========================================
+ */
+function ouvrirModalConfirmation(message, onValider) {
+    var modal = document.getElementById('modal-confirmation');
+    var msgEl = document.getElementById('confirmation-message');
+    var btnValider = document.getElementById('btn-valider-confirmation');
+    
+    if (modal && msgEl && btnValider) {
+        msgEl.textContent = message;
+        modal.style.display = 'flex';
+        
+        // On attache l'action de validation
+        btnValider.onclick = onValider;
     }
+}
+
+function fermerModalConfirmation() {
+    var modal = document.getElementById('modal-confirmation');
+    if (modal) modal.style.display = 'none';
 }
 
 
