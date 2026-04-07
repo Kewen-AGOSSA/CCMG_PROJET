@@ -7,23 +7,23 @@
 // Configuration des différentes églises
 const CONFIG_EGLISES = {
     "Angers": {
-        nom: "UDAMG Angers",
+        nom: "CCMG Angers",
         adresse: "3 rue Carl Linné, 49000 Angers\nArrêt de tram : Terminus Roseraie",
         lien_wa: "https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13"
     },
-    "Brest": { nom: "UDAMG Brest", adresse: "Adresse à définir...", lien_wa: "" },
-    "Châteaubriant": { nom: "UDAMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "" },
-    "La Roche sur Yon": { nom: "UDAMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "" },
-    "La Rochelle": { nom: "UDAMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "" },
-    "Le Mans": { nom: "UDAMG Le Mans", adresse: "Adresse à définir...", lien_wa: "" },
-    "Morlaix": { nom: "UDAMG Morlaix", adresse: "Adresse à définir...", lien_wa: "" },
-    "Nantes": { nom: "UDAMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
-    "Paris": { nom: "UDAMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
-    "Quimper": { nom: "UDAMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
-    "Saint-Nazaire": { nom: "UDAMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
-    "Saumur": { nom: "UDAMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
-    "Tours": { nom: "UDAMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
-    "Vannes - Redon": { nom: "UDAMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "" }
+    "Brest": { nom: "CCMG Brest", adresse: "Adresse à définir...", lien_wa: "" },
+    "Châteaubriant": { nom: "CCMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "" },
+    "La Roche sur Yon": { nom: "CCMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "" },
+    "La Rochelle": { nom: "CCMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "" },
+    "Le Mans": { nom: "CCMG Le Mans", adresse: "Adresse à définir...", lien_wa: "" },
+    "Morlaix": { nom: "CCMG Morlaix", adresse: "Adresse à définir...", lien_wa: "" },
+    "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
+    "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
+    "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
+    "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
+    "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
+    "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
+    "Vannes - Redon": { nom: "CCMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "" }
 };
 
 // Configuration des évènements / programmes
