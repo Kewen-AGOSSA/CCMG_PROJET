@@ -1,6 +1,6 @@
 /**
  * SCRIPT PRINCIPAL - CCMG Évangélisation
- * Version Cloud Firebase — Synchronisation en temps réel entre tous les évangélistes.
+ * Version Cloud Firebase (v1.1) — Synchronisation en temps réel entre tous les évangélistes.
  * Les contacts sont désormais partagés et accessibles depuis n'importe quel appareil.
  */
 
