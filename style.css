@@ -332,6 +332,30 @@ body {
     transform: scale(0.95);
 }
 
+/* STYLE FORCÉ POUR LE BOUTON DECONNEXION (UDAMG PREMIUM) */
+#page-accueil-menu .btn-statistique {
+    display: inline-block !important;
+    background-color: var(--ccmg-gold) !important;
+    color: var(--bg-primary) !important;
+    padding: 16px 45px !important;
+    border-radius: 50px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    border: none !important;
+    cursor: pointer !important;
+    margin-top: 40px !important;
+    box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease !important;
+}
+
+#page-accueil-menu .btn-statistique:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 15px 30px rgba(255, 215, 0, 0.5) !important;
+    background-color: #ffffff !important;
+}
+
 /* HEADER LISTE ET STATS */
 .glass-header {
     display: flex;
