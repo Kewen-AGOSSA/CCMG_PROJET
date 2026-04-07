@@ -305,6 +305,33 @@ body {
     color: var(--bg-primary);
 }
 
+/* BOUTON CHANGER DE SESSION (Logout) */
+.btn-statistique {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    padding: 14px 32px;
+    border-radius: 40px; /* Bords bien arrondis (pill-style) */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 30px;
+    letter-spacing: 0.5px;
+}
+
+.btn-statistique:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-main);
+    border-color: var(--ccmg-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-statistique:active {
+    transform: scale(0.95);
+}
+
 /* HEADER LISTE ET STATS */
 .glass-header {
     display: flex;
