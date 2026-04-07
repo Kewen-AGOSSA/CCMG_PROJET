@@ -7,23 +7,23 @@
 // Configuration des différentes églises
 const CONFIG_EGLISES = {
     "Angers": {
-        nom: "CCMG Angers",
+        nom: "UDAMG Angers",
         adresse: "3 rue Carl Linné, 49000 Angers\nArrêt de tram : Terminus Roseraie",
         lien_wa: "https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13"
     },
-    "Brest": { nom: "CCMG Brest", adresse: "Adresse à définir...", lien_wa: "" },
-    "Châteaubriant": { nom: "CCMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "" },
-    "La Roche sur Yon": { nom: "CCMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "" },
-    "La Rochelle": { nom: "CCMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "" },
-    "Le Mans": { nom: "CCMG Le Mans", adresse: "Adresse à définir...", lien_wa: "" },
-    "Morlaix": { nom: "CCMG Morlaix", adresse: "Adresse à définir...", lien_wa: "" },
-    "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
-    "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
-    "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
-    "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
-    "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
-    "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
-    "Vannes - Redon": { nom: "CCMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "" }
+    "Brest": { nom: "UDAMG Brest", adresse: "Adresse à définir...", lien_wa: "" },
+    "Châteaubriant": { nom: "UDAMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "" },
+    "La Roche sur Yon": { nom: "UDAMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "" },
+    "La Rochelle": { nom: "UDAMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "" },
+    "Le Mans": { nom: "UDAMG Le Mans", adresse: "Adresse à définir...", lien_wa: "" },
+    "Morlaix": { nom: "UDAMG Morlaix", adresse: "Adresse à définir...", lien_wa: "" },
+    "Nantes": { nom: "UDAMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
+    "Paris": { nom: "UDAMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
+    "Quimper": { nom: "UDAMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
+    "Saint-Nazaire": { nom: "UDAMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
+    "Saumur": { nom: "UDAMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
+    "Tours": { nom: "UDAMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
+    "Vannes - Redon": { nom: "UDAMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "" }
 };
 
 // Configuration des évènements / programmes
@@ -159,7 +159,7 @@ function accepterUtilisateur(utilisateur) {
  * Fonction appelée si l'utilisateur n'est pas dans la liste VIP
  */
 function rejeterUtilisateur() {
-    alert("⛔ Accès Refusé\nVotre adresse e-mail n'est pas autorisée par l'administration CCMG.\nVeuillez contacter le responsable.");
+    alert("⛔ Accès Refusé\nVotre adresse e-mail n'est pas autorisée par l'administration UDAMG.\nVeuillez contacter le responsable.");
     firebase.auth().signOut();
 }
 
@@ -598,7 +598,7 @@ function envoyerRelance(methode) {
 
     var configContexte = villeActuelle 
         ? (CONFIG_EGLISES[villeActuelle] || CONFIG_EGLISES["Angers"]) 
-        : (CONFIG_PROGRAMMES[programmeActuel] || {nom: "CCMG", adresse: "", lien_wa: ""});
+        : (CONFIG_PROGRAMMES[programmeActuel] || {nom: "UDAMG", adresse: "", lien_wa: ""});
 
     // Récupère le template de message selon le niveau CHOISI
     var messageTemplate = t('msg_level' + niveauSelectionne);
@@ -827,7 +827,7 @@ function exporterExcel() {
         var heureStr = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
         var donneesSummary = [
-            ['RAPPORT CCMG ÉVANGÉLISATION'],
+            ['RAPPORT UDAMG ÉVANGÉLISATION'],
             ['Généré le : ' + dateStr + ' à ' + heureStr],
             [''],
             ['STATISTIQUES GÉNÉRALES'],
@@ -1140,7 +1140,7 @@ function validerChoixContexte(type, id) {
     if (type === 'ville') {
         villeActuelle = id;
         programmeActuel = "";
-        if (titre) titre.textContent = 'CCMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('CCMG ', '');
+        if (titre) titre.textContent = 'UDAMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('UDAMG ', '');
     } else {
         programmeActuel = id;
         villeActuelle = "";
