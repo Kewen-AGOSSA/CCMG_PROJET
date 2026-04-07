@@ -1088,6 +1088,13 @@ function choisirRole(role) {
     document.getElementById('etape-saisie-mdp').style.display = 'block';
     document.getElementById('btn-fermer-modal-mdp').style.display = 'none';
     
+    // Reset de la visibilité pour la sécurité
+    var input = document.getElementById('input-mdp');
+    if (input) {
+        input.type = 'password';
+        document.getElementById('toggle-mdp').textContent = '👁️';
+    }
+    
     var label = "";
     if (role === 'pasteur') label = '👑 Pasteur';
     if (role === 'ouvrier') label = '📝 Ouvrier';
@@ -1103,6 +1110,28 @@ function retourChoixRole() {
     document.getElementById('btn-fermer-modal-mdp').style.display = 'flex';
     document.getElementById('mdp-erreur').style.display = 'none';
     document.getElementById('input-mdp').value = '';
+    
+    // Reset visibilité
+    document.getElementById('input-mdp').type = 'password';
+    document.getElementById('toggle-mdp').textContent = '👁️';
+}
+
+/**
+ * Alterne l'affichage du mot de passe entre clair et masqué
+ */
+function basculerVisibiliteMdp() {
+    var input = document.getElementById('input-mdp');
+    var icone = document.getElementById('toggle-mdp');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icone.textContent = '🙈'; // Œil masqué
+        icone.style.opacity = '1';
+    } else {
+        input.type = 'password';
+        icone.textContent = '👁️'; // Œil ouvert
+        icone.style.opacity = '0.7';
+    }
 }
 
 function fermerModalMdp() {
