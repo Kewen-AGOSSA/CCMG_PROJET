@@ -674,19 +674,32 @@ function envoyerRelance(methode) {
 
 /**
  * Applique les restrictions d'affichage selon le rôle de l'utilisateur actif
+ * Gère l'accès aux boutons de statistiques, d'ajout et d'export Excel.
  */
 function appliquerDroitsInterface() {
-    var statButtons = document.querySelectorAll('.btn-stats');
-    var addButtons = document.querySelectorAll('.btn-ajouter'); // Bouton "+" flottant
+    if (!roleActuel) return;
 
-    statButtons.forEach(btn => {
-        btn.style.display = (roleActuel === 'pasteur') ? 'inline-block' : 'none';
+    var estPasteur = (roleActuel === 'pasteur');
+    var estOuvrier = (roleActuel === 'ouvrier');
+    var estEvangeliste = (roleActuel === 'evangeliste');
+
+    // 1. Bouton Statistiques : Réservé au Pasteur uniquement (ou à définir selon besoin)
+    var btnStats = document.querySelectorAll('.btn-stats');
+    btnStats.forEach(btn => {
+        btn.style.display = estPasteur ? 'inline-block' : 'none';
     });
 
+    // 2. Bouton d'ajout "+" : L'évangéliste (BIAZO) n'ajoute pas de fiches, seul l'ouvrier ou le pasteur
+    var addButtons = document.querySelectorAll('.btn-ajouter');
     addButtons.forEach(btn => {
-        // L'évangéliste n'ajoute pas de fiches, seul l'ouvrier ou le pasteur
-        btn.style.display = (roleActuel === 'evangeliste') ? 'none' : 'flex';
+        btn.style.display = estEvangeliste ? 'none' : 'flex';
     });
+
+    // 3. Bouton Export Excel : Réservé AU PASTEUR uniquement
+    var btnExport = document.querySelector('.btn-export');
+    if (btnExport) {
+        btnExport.style.display = estPasteur ? 'flex' : 'none';
+    }
 }
 
 /**
@@ -956,14 +969,15 @@ function filtrerVilles() {
 }
 
 /**
- * Enregistre la ville choisie (après vérification du mot de passe)
+ * Enregistre la ville choisie (après vérification du mot de passe si nécessaire)
  */
 function choisirVille(villeKey) {
-    if (sessionStorage.getItem('ccmg_acces_' + villeKey) === 'true' && roleActuel) {
-        // Déjà déverrouillé pendant cette session
+    console.log('[UDAMG] Ville choisie :', villeKey);
+    if (sessionStorage.getItem('ccmg_acces_' + villeKey) && roleActuel) {
+        console.log('[UDAMG] Ville déjà déverrouillée.');
         validerChoixContexte('ville', villeKey);
     } else {
-        // Demander le rôle et le mot de passe
+        console.log('[UDAMG] Ouverture du cadenas...');
         contextKeyTemporaire = villeKey;
         typeContextTemporaire = 'ville';
         ouvrirModalRole();
@@ -1049,56 +1063,64 @@ function genererBoutonsProgrammes() {
 }
 
 /**
- * Enregistre le programme choisi (après vérification du mot de passe)
- */
-function choisirProgramme(progKey) {
-    contextKeyTemporaire = progKey;
-    typeContextTemporaire = 'programme';
-    ouvrirModalRole();
-}
-
-function choisirVille(idVille) {
-    contextKeyTemporaire = idVille;
-    typeContextTemporaire = 'ville';
-    ouvrirModalRole();
-}
-
-/**
-/**
  * ==========================================
  * GESTION DU CADENAS VIRTUEL ET DES RÔLES
  * ==========================================
  */
+/**
+ * Ouvre la modale de sécurité (Cadenas Virtuel) de manière sécurisée.
+ */
 function ouvrirModalRole() {
-    document.getElementById('etape-choix-role').style.display = 'block';
-    document.getElementById('etape-saisie-mdp').style.display = 'none';
-    document.getElementById('btn-fermer-modal-mdp').style.display = 'flex';
-    document.getElementById('mdp-erreur').style.display = 'none';
-    document.getElementById('input-mdp').value = '';
+    console.log('[UDAMG] Ouverture du cadenas virtuel...');
+    
     var modal = document.getElementById('modal-mot-de-passe');
-    if (modal) modal.style.display = 'flex';
+    if (!modal) return console.error('[UDAMG] Modale introuvable.');
+
+    // Configuration des affichages par défaut
+    var config = {
+        'etape-choix-role': 'block',
+        'etape-saisie-mdp': 'none',
+        'btn-fermer-modal-mdp': 'flex',
+        'mdp-erreur': 'none'
+    };
+
+    Object.keys(config).forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = config[id];
+    });
+
+    var input = document.getElementById('input-mdp');
+    if (input) input.value = '';
+
+    modal.classList.add('active');
 }
 
 function choisirRole(role) {
     roleSelectionneTemporaire = role;
-    document.getElementById('etape-choix-role').style.display = 'none';
-    document.getElementById('etape-saisie-mdp').style.display = 'block';
-    document.getElementById('btn-fermer-modal-mdp').style.display = 'none';
     
-    // Reset de la visibilité pour la sécurité
+    var step1 = document.getElementById('etape-choix-role');
+    var step2 = document.getElementById('etape-saisie-mdp');
+    var btnFermer = document.getElementById('btn-fermer-modal-mdp');
+    
+    if (step1) step1.style.display = 'none';
+    if (step2) step2.style.display = 'block';
+    if (btnFermer) btnFermer.style.display = 'none';
+    
     var input = document.getElementById('input-mdp');
     if (input) {
+        input.value = '';
         input.type = 'password';
-        document.getElementById('toggle-mdp').textContent = '👁️';
+        var toggle = document.getElementById('toggle-mdp');
+        if (toggle) toggle.textContent = '👁️';
     }
     
-    var label = "";
-    if (role === 'pasteur') label = '👑 Pasteur';
-    if (role === 'ouvrier') label = '📝 Ouvrier';
-    if (role === 'evangeliste') label = '🕊️ BIAZO';
-    document.getElementById('label-role').textContent = label;
+    var labelEl = document.getElementById('label-role');
+    if (labelEl) {
+        var labels = { 'pasteur': '👑 Pasteur', 'ouvrier': '📝 Ouvrier', 'evangeliste': '🕊️ BIAZO' };
+        labelEl.textContent = labels[role] || role;
+    }
     
-    setTimeout(function() { document.getElementById('input-mdp').focus(); }, 100);
+    if (input) setTimeout(function() { input.focus(); }, 100);
 }
 
 function retourChoixRole() {
@@ -1133,7 +1155,7 @@ function basculerVisibiliteMdp() {
 
 function fermerModalMdp() {
     var modal = document.getElementById('modal-mot-de-passe');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.classList.remove('active');
     contextKeyTemporaire = "";
     typeContextTemporaire = "";
     roleSelectionneTemporaire = "";
@@ -1200,7 +1222,7 @@ function validerChoixContexte(type, id) {
     if (type === 'ville') {
         villeActuelle = id;
         programmeActuel = "";
-        if (titre) titre.textContent = 'UDAMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('UDAMG ', '');
+        if (titre) titre.textContent = 'UDAMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('CCMG ', '');
     } else {
         programmeActuel = id;
         villeActuelle = "";
@@ -1214,28 +1236,6 @@ function validerChoixContexte(type, id) {
     appliquerDroitsInterface();
 }
 
-/**
- * Applique les restrictions d'interface selon le rôle de l'utilisateur.
- * Masque les éléments sensibles pour les ouvriers.
- */
-function appliquerDroitsInterface() {
-    if (!roleActuel) return;
-    
-    var estOuvrier = (roleActuel === 'ouvrier');
-    var estPasteur = (roleActuel === 'pasteur');
-
-    // 1. Bouton Export Excel : Réservé AU PASTEUR uniquement
-    var btnExport = document.querySelector('.btn-export');
-    if (btnExport) {
-        btnExport.style.display = estPasteur ? 'flex' : 'none';
-    }
-
-    // 2. Bouton Statistiques : Masqué pour les ouvriers
-    var btnStats = document.querySelector('.btn-stats');
-    if (btnStats) {
-        btnStats.style.display = estOuvrier ? 'none' : 'block';
-    }
-}
 
 
 // Ajout de l'animation Shake pour erreur

@@ -7,10 +7,11 @@
     <title>UDAMG v2</title>
     <!-- Google Fonts pour un look premium -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2028">
+    <link rel="stylesheet" href="style_udamg_v1.css?v=20260409">
     
     <!-- Meta tags pour PWA Mobile -->
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0c2d3a">
 </head>
@@ -349,7 +350,7 @@
                 </div>
             </div>
         </div>
-        </div>
+        <!-- Fin #modal-relance -->
 
         <!-- Modale de Confirmation Générique (Déconnexion, etc.) -->
         <div id="modal-confirmation" class="modal">
@@ -385,10 +386,14 @@
                         <!-- Bouton Cache-Oeil (Version 1.1) -->
                         <span id="toggle-mdp" onclick="basculerVisibiliteMdp()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 20px; opacity: 0.7; transition: 0.2s; z-index: 99;">👁️</span>
                     </div>
+                    <!-- Message d'erreur (masqué par défaut) -->
+                    <p id="mdp-erreur" style="color: #ff4d4d; font-size: 14px; margin-top: 15px; font-weight: bold; display: none;">❌ Mot de passe incorrect</p>
                     <div class="modal-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
                         <button onclick="retourChoixRole()" class="btn-annuler">Retour</button>
                         <button onclick="validerMotDePasse()" class="btn-statistique" style="margin:0;">Déverrouiller 🔓</button>
                     </div>
+                </div> <!-- Fin etape-saisie-mdp -->
+
                 <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:center;" id="btn-fermer-modal-mdp">
                     <button onclick="fermerModalMdp()" class="btn-annuler">Fermer</button>
                 </div>
@@ -403,10 +408,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <!-- Configuration Firebase CCMG -->
-    <script src="firebase-config.js"></script>
+    <script src="firebase-config.js?v=20260409"></script>
     <!-- SheetJS : librairie de génération de fichiers Excel (xlsx) - via CDN stable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="lang.js?v=2028"></script>
-    <script src="script.js?v=2028"></script>
+    <script src="lang_udamg_v1.js?v=20260409"></script>
+    <script src="app_udamg_v1.js?v=20260409"></script>
 </body>
 </html>
