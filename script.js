@@ -830,7 +830,7 @@ function exporterExcel() {
 
     setTimeout(function () {
 
-        var entetes = ['Nom', 'Prénom', 'Téléphone', 'Famille', 'Évangéliste Référent', 'Niveau', 'Statut', 'Notes', 'Date d\'ajout'];
+        var entetes = ['Nom', 'Prénom', 'Téléphone', 'Famille', 'BIAZO Référent', 'Niveau', 'Statut', 'Notes', 'Date d\'ajout'];
 
         function niveauEnTexte(niveau) {
             if (niveau === 1) return 'Relancé (Niv. 1)';
@@ -1101,7 +1101,7 @@ function choisirRole(role) {
     var label = "";
     if (role === 'pasteur') label = '👑 Pasteur';
     if (role === 'ouvrier') label = '📝 Ouvrier';
-    if (role === 'evangeliste') label = '🕊️ Évangéliste';
+    if (role === 'evangeliste') label = '🕊️ BIAZO';
     document.getElementById('label-role').textContent = label;
     
     setTimeout(function() { document.getElementById('input-mdp').focus(); }, 100);
