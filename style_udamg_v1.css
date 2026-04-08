@@ -832,6 +832,50 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
     50%       { box-shadow: 0 6px 30px rgba(39, 174, 96, 0.7); }
 }
 
+/* === BOUTON EXPORT PDF === */
+.btn-export-pdf {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 18px;
+    margin-top: 16px;
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
+    transition: var(--transition);
+}
+
+.btn-export-pdf:hover {
+    background: linear-gradient(135deg, #e74c3c, #ff6b6b);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(231, 76, 60, 0.5);
+}
+
+.btn-export-pdf:active {
+    transform: scale(0.97) translateY(0);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.btn-export-pdf.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    animation: pulse-red 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35); }
+    50%       { box-shadow: 0 6px 30px rgba(231, 76, 60, 0.7); }
+}
+
 /* === ÉCRAN DE CONNEXION === */
 
 /* Card centrée sur l'écran de login */

@@ -695,11 +695,11 @@ function appliquerDroitsInterface() {
         btn.style.display = estEvangeliste ? 'none' : 'flex';
     });
 
-    // 3. Bouton Export Excel : Réservé AU PASTEUR uniquement
+    // 3. Boutons Export Excel/PDF : Réservés AU PASTEUR uniquement
     var btnExport = document.querySelector('.btn-export');
-    if (btnExport) {
-        btnExport.style.display = estPasteur ? 'flex' : 'none';
-    }
+    var btnExportPdf = document.querySelector('.btn-export-pdf');
+    if (btnExport) btnExport.style.display = estPasteur ? 'flex' : 'none';
+    if (btnExportPdf) btnExportPdf.style.display = estPasteur ? 'flex' : 'none';
 }
 
 /**
@@ -923,6 +923,127 @@ function exporterExcel() {
         if (btnExport) { btnExport.classList.remove('loading'); btnExport.disabled = false; }
 
     }, 50);
+}
+
+/* ===================================================
+   EXPORT PDF (jsPDF + AutoTable)
+   =================================================== */
+
+/**
+ * Génère et télécharge un rapport PDF complet des statistiques et des contacts
+ */
+function exporterPDF() {
+    if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+        alert('La librairie PDF est en cours de chargement, veuillez réessayer dans quelques secondes.');
+        return;
+    }
+    if (tousLesContacts.length === 0) {
+        alert('Aucun contact à exporter pour le moment.');
+        return;
+    }
+
+    var btnExport = document.querySelector('.btn-export-pdf');
+    if (btnExport) { btnExport.classList.add('loading'); btnExport.disabled = true; }
+
+    setTimeout(function() {
+        var jsPDF = window.jspdf.jsPDF;
+        var doc = new jsPDF('portrait', 'pt', 'a4');
+        
+        var maintenant = new Date();
+        var dateStr  = maintenant.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        var heureStr = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        
+        var nomContexte = villeActuelle 
+            ? (CONFIG_EGLISES[villeActuelle] ? CONFIG_EGLISES[villeActuelle].nom : villeActuelle) 
+            : (programmeActuel ? CONFIG_PROGRAMMES[programmeActuel].nom : "Général");
+
+        // Titre
+        doc.setFontSize(22);
+        doc.setTextColor(44, 62, 80);
+        doc.text("Bilan d'Evangelisation UDAMG", 40, 50);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(192, 57, 43);
+        doc.text("Lieu / Eglise : " + nomContexte, 40, 75);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text("Genere le " + dateStr + " a " + heureStr, 40, 95);
+
+        // Statistiques Globales (Mini encadré)
+        var total = tousLesContacts.length;
+        var nGedeon = tousLesContacts.filter(function(c){ return c.famille === 'GÉDÉON'; }).length;
+        var nJac = tousLesContacts.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+        var nMidl = tousLesContacts.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+
+        doc.setDrawColor(200, 200, 200);
+        doc.setFillColor(245, 245, 245);
+        doc.rect(40, 110, 515, 60, 'FD'); // Boîte grise
+
+        doc.setFontSize(11);
+        doc.setTextColor(44, 62, 80);
+        doc.text("Total des ames : " + total, 50, 130);
+        doc.text("GEDEON : " + nGedeon, 180, 130);
+        doc.text("Mission JAC : " + nJac, 300, 130);
+        doc.text("CCMG : " + nMidl, 440, 130);
+        
+        // Niveau Global
+        var n1 = tousLesContacts.filter(function(c){ return c.niveau === 1; }).length;
+        var n2 = tousLesContacts.filter(function(c){ return c.niveau === 2; }).length;
+        var n3 = tousLesContacts.filter(function(c){ return c.niveau === 3; }).length;
+        doc.text("Relances (N1): " + n1 + "   |   Presentes (N2): " + n2 + "   |   Invites (N3): " + n3, 50, 155);
+
+        // Tableau des contacts
+        function niveauEnTexte(niveau) {
+            if (niveau === 1) return 'Niv 1';
+            if (niveau === 2) return 'Niv 2';
+            if (niveau === 3) return 'Niv 3';
+            return '?';
+        }
+
+        var tableData = tousLesContacts
+            .slice()
+            .sort(function (a, b) { 
+                var nA = a.nom ? a.nom.toLowerCase() : "";
+                var nB = b.nom ? b.nom.toLowerCase() : "";
+                return nA.localeCompare(nB); 
+            })
+            .map(function(c) {
+                return [
+                    (c.nom || '').toUpperCase() + ' ' + (c.prenom || ''),
+                    c.tel || '',
+                    c.famille || '',
+                    niveauEnTexte(c.niveau),
+                    c.referent || '',
+                    c.notes || ''
+                ];
+            });
+
+        doc.autoTable({
+            startY: 190,
+            head: [['Nom & Prenom', 'Telephone', 'Famille', 'Niveau', 'BIAZO', 'Notes']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [44, 62, 80], textColor: 255, fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: {
+                0: { cellWidth: 100 },
+                1: { cellWidth: 70 },
+                2: { cellWidth: 60 },
+                3: { cellWidth: 45 },
+                4: { cellWidth: 70 },
+                5: { cellWidth: 'auto' } // Notes prend l'espace restant
+            },
+            styles: { overflow: 'linebreak' },
+            margin: { top: 40, right: 40, bottom: 40, left: 40 }
+        });
+
+        // Enregistrer le PDF
+        var nomFichierSafe = nomContexte.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        doc.save('Rapport_UDAMG_' + nomFichierSafe + '_' + dateStr.replace(/\//g, '') + '.pdf');
+
+        if (btnExport) { btnExport.classList.remove('loading'); btnExport.disabled = false; }
+    }, 500);
 }
 
 /* ===================================================
