@@ -43,6 +43,7 @@ let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en
 let villeActuelle = "";
 let programmeActuel = "";
 let roleActuel = ""; // "pasteur", "ouvrier", "evangeliste"
+const ADMIN_MASTER = "kewenagossa@gmail.com"; // Seul cet utilisateur peut réinitialiser les codes
 
 // Cadenas Virtuel - Variables temporaires
 let contextKeyTemporaire = "";
@@ -1256,23 +1257,18 @@ function initierResetMdp() {
     var utilisateur = firebase.auth().currentUser;
     if (!utilisateur) return;
 
-    // On vérifie une dernière fois dans la liste blanche (sécurité)
-    db.collection('configuration').doc('emails_autorises').get()
-        .then(function(doc) {
-            var liste = (doc.exists && doc.data().liste) ? doc.data().liste : [];
-            
-            if (liste.includes(utilisateur.email)) {
-                // ✅ Autorisé à réinitialiser
-                document.getElementById('etape-saisie-mdp').style.display = 'none';
-                document.getElementById('etape-reset-mdp').style.display = 'block';
-                document.getElementById('label-role-reset').textContent = document.getElementById('label-role').textContent;
-                document.getElementById('input-nouveau-mdp').value = '';
-                document.getElementById('input-nouveau-mdp').focus();
-            } else {
-                // ❌ Non autorisé
-                alert("Désolé, seul un membre autorisé peut réinitialiser les codes. Votre email (" + utilisateur.email + ") n'est pas reconnu comme administrateur.");
-            }
-        });
+    // SÉCURITÉ MAXIMALE : Seul l'administrateur principal peut réinitialiser
+    if (utilisateur.email === ADMIN_MASTER) {
+        // ✅ Autorisé à réinitialiser
+        document.getElementById('etape-saisie-mdp').style.display = 'none';
+        document.getElementById('etape-reset-mdp').style.display = 'block';
+        document.getElementById('label-role-reset').textContent = document.getElementById('label-role').textContent;
+        document.getElementById('input-nouveau-mdp').value = '';
+        document.getElementById('input-nouveau-mdp').focus();
+    } else {
+        // ❌ Refusé pour les autres membres (pour éviter que l'un ne change le code de l'autre)
+        alert("🔒 Sécurité Activée : Seul l'administrateur (" + ADMIN_MASTER + ") est autorisé à réinitialiser les codes pour le moment afin d'éviter les erreurs. Veuillez le contacter pour obtenir de l'aide.");
+    }
 }
 
 /**
