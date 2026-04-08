@@ -683,10 +683,10 @@ function appliquerDroitsInterface() {
     var estOuvrier = (roleActuel === 'ouvrier');
     var estEvangeliste = (roleActuel === 'evangeliste');
 
-    // 1. Bouton Statistiques : Réservé au Pasteur uniquement (ou à définir selon besoin)
+    // 1. Bouton Statistiques : Accessible à tous
     var btnStats = document.querySelectorAll('.btn-stats');
     btnStats.forEach(btn => {
-        btn.style.display = estPasteur ? 'inline-block' : 'none';
+        btn.style.display = 'inline-block';
     });
 
     // 2. Bouton d'ajout "+" : L'évangéliste (BIAZO) n'ajoute pas de fiches, seul l'ouvrier ou le pasteur
@@ -695,11 +695,11 @@ function appliquerDroitsInterface() {
         btn.style.display = estEvangeliste ? 'none' : 'flex';
     });
 
-    // 3. Boutons Export Excel/PDF : Réservés AU PASTEUR uniquement
+    // 3. Boutons Export Excel/PDF : Accessible à tous
     var btnExport = document.querySelector('.btn-export');
     var btnExportPdf = document.querySelector('.btn-export-pdf');
-    if (btnExport) btnExport.style.display = estPasteur ? 'flex' : 'none';
-    if (btnExportPdf) btnExportPdf.style.display = estPasteur ? 'flex' : 'none';
+    if (btnExport) btnExport.style.display = 'flex';
+    if (btnExportPdf) btnExportPdf.style.display = 'flex';
 }
 
 /**
