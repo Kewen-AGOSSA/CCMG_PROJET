@@ -1165,30 +1165,12 @@ function validerMotDePasse() {
     var mdpSaisi = document.getElementById('input-mdp').value.trim();
     if (!mdpSaisi || !contextKeyTemporaire || !roleSelectionneTemporaire) return;
     
-    db.collection('securite_acces').doc(contextKeyTemporaire).get()
-        .then(function(doc) {
-            if (!doc.exists) {
-                // Initialisation automatique de la sécurité
-                console.log("[Sécurité] Création des mots de passe initiaux pour", contextKeyTemporaire);
-                db.collection('securite_acces').doc(contextKeyTemporaire).set({
-                    mdp_pasteur: "PAST2026",
-                    mdp_ouvrier: "ouvrier2026",
-                    mdp_evangeliste: "ccmg2026"
-                }).then(function() {
-                    verifierMdpLocal("PAST2026", "ouvrier2026", "ccmg2026", mdpSaisi);
-                });
-            } else {
-                var data = doc.data();
-                var mdpPast = data.mdp_pasteur || "PAST2026";
-                var mdpOuv = data.mdp_ouvrier || "ouvrier2026";
-                var mdpEvan = data.mdp_evangeliste || "ccmg2026";
-                verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi);
-            }
-        })
-        .catch(function(erreur) {
-            console.error("[Sécurité] Erreur :", erreur);
-            alert("Erreur réseau. Vérifiez votre connexion.");
-        });
+    // Mots de passe fixes et uniques (plus de lecture Firebase pour éviter les anciens mots de passe modifiés)
+    var mdpPast = "PAST2026";
+    var mdpOuv = "ouvrier2026";
+    var mdpEvan = "ccmg2026";
+    
+    verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi);
 }
 
 function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
