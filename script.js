@@ -43,7 +43,7 @@ let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en
 let villeActuelle = "";
 let programmeActuel = "";
 let roleActuel = ""; // "pasteur", "ouvrier", "evangeliste"
-const ADMIN_MASTERS = ["fatoumarie.ndiaye@gmail.com", "kewenagossa@gmail.com"]; // Seuls ces utilisateurs peuvent réinitialiser les codes
+const ADMIN_MASTERS = ["fatoumarie.ndiaye@gmail.com"]; // Seule cette utilisatrice peut réinitialiser les codes
 
 // Cadenas Virtuel - Variables temporaires
 let contextKeyTemporaire = "";
