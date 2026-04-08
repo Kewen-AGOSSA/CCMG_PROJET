@@ -51,29 +51,34 @@ Que la grâce, la paix et l’amour de notre Seigneur Jésus-Christ reposent abo
 Soyez richement béni(e) ✨
 
 Équipe d’évangélisation - Église {nom_eglise}`,
-        msg_level2: `Bonsoir {prenom}, c'est l'équipe d'évangélisation de l'église {nom_eglise} !
-J’espère que vous allez bien par la grâce de Dieu.
+        msg_level2: `Bonjour {prenom} 🙏
 
-Lamentations 3:22-23 
-« Les bontés de l'Éternel ne sont pas épuisées, Ses compassions ne sont pas à leur terme ; Elles se renouvellent chaque matin. Oh! que ta fidélité est grande! »
+C’est avec joie que nous revenons vers vous — l’équipe d’évangélisation de l’église {nom_eglise}. Nous espérons que vous allez bien, par la grâce de Dieu.
 
-Nous prions que le Seigneur vous fortifie, qu’il vous accompagne et que sa main repose sur votre vie. On tenait à vous rappeler notre grand culte de célébration ce dimanche à partir de 10H à l’église. Nous nous préparons pour ce rendez-vous divin et nous espérons de tout cœur que vous serez présent ! 
+Nous souhaitons vous encourager à garder en mémoire que le Seigneur vous aime profondément et qu’Il a pour votre vie des desseins de paix, d’espérance et de gloire. 
 
-Adresse de l’église : 
-{adresse_eglise}
-
-Si vous avez des questions, n’hésitez pas. Que Dieu vous bénisse !
-L’équipe d’évangélisation - Église {nom_eglise}`,
-        msg_level3: `Bonsoir {prenom},
-J’espère que vous allez bien par la grâce de Dieu et que votre semaine s’est bien passée !
-
-Nous vous invitons chaleureusement à notre culte de célébration ce dimanche à partir de 10H à l’église. C’est un rendez-vous divin où la gloire de Dieu va se manifester puissamment. Un temps de louange, de prière, et de transformation. Ne ratons pas ce moment exceptionnel dans la présence de Dieu. Ne venez pas seul, vous pouvez inviter quelqu’un !  
+Nous tenions à vous rappeler nos programmes de la semaine.
+Nous nous préparons à vous recevoir et espérons de tout cœur que vous serez présent à l'un de nos programmes ! 
 
 Adresse de l’église : 
 {adresse_eglise}
 
-À dimanche ! Que Dieu vous bénisse grandement.
-L’équipe d’évangélisation - Église {nom_eglise}`,
+Si vous avez des questions, n’hésitez pas à me contacter ou à contacter le secrétariat de l'église au 06 35 38 07 58.
+
+Que Dieu vous bénisse ! 
+Équipe d’évangélisation - Église {nom_eglise}`,
+        msg_level3: `Bonjour {prenom} 🙏
+
+👉 Que diriez-vous, cette fois-ci, de venir nous rencontrer à l’église {nom_eglise} ce dimanche ?
+
+Nous aimerions vous inviter chaleureusement à venir célébrer Dieu avec nous ce dimanche à partir de 10h 🙌
+
+« Je suis dans la joie quand on me dit : Allons à la maison de l’Éternel ! » (Psaume 122:1) ✨
+
+Ce sera un moment de paix, de joie et de bénédiction dans la présence de Dieu. Votre présence sera une grande joie pour nous !
+
+Au plaisir de vous y voir 😊
+Que Dieu vous bénisse 🙏`,
         wa_vs_sms: "Cliquez sur OK pour envoyer par WHATSAPP \nCliquez sur ANNULER pour envoyer par SMS DIRECT",
         empty_search: "Aucun contact trouvé.",
         export_btn: "📥 Télécharger le Rapport Excel",
