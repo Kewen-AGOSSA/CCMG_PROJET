@@ -1054,19 +1054,15 @@ function genererBoutonsProgrammes() {
  * Enregistre le programme choisi (après vérification du mot de passe)
  */
 function choisirProgramme(progKey) {
-    if (sessionStorage.getItem('ccmg_acces_' + progKey) === 'true') {
-        // Déjà déverrouillé pendant cette session
-        validerChoixContexte('programme', progKey);
-    } else {
-        // Demander le mot de passe
-        contextKeyTemporaire = progKey;
-        typeContextTemporaire = 'programme';
-        document.getElementById('mdp-erreur').style.display = 'none';
-        document.getElementById('input-mdp').value = '';
-        var modal = document.getElementById('modal-mot-de-passe');
-        if (modal) modal.style.display = 'flex';
-        setTimeout(function() { document.getElementById('input-mdp').focus(); }, 100);
-    }
+    contextKeyTemporaire = progKey;
+    typeContextTemporaire = 'programme';
+    ouvrirModalRole();
+}
+
+function choisirVille(idVille) {
+    contextKeyTemporaire = idVille;
+    typeContextTemporaire = 'ville';
+    ouvrirModalRole();
 }
 
 /**
