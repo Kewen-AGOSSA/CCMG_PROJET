@@ -43,7 +43,6 @@ let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en
 let villeActuelle = "";
 let programmeActuel = "";
 let roleActuel = ""; // "pasteur", "ouvrier", "evangeliste"
-const ADMIN_MASTERS = ["fatoumarie.ndiaye@gmail.com"]; // Seule cette utilisatrice peut réinitialiser les codes
 
 // Cadenas Virtuel - Variables temporaires
 let contextKeyTemporaire = "";
@@ -1157,16 +1156,16 @@ function validerMotDePasse() {
                 console.log("[Sécurité] Création des mots de passe initiaux pour", contextKeyTemporaire);
                 db.collection('securite_acces').doc(contextKeyTemporaire).set({
                     mdp_pasteur: "PAST2026",
-                    mdp_ouvrier: "EQUIPE2026",
-                    mdp_evangeliste: "EQUIPE2026"
+                    mdp_ouvrier: "ouvrier2026",
+                    mdp_evangeliste: "ccmg2026"
                 }).then(function() {
-                    verifierMdpLocal("PAST2026", "EQUIPE2026", "EQUIPE2026", mdpSaisi);
+                    verifierMdpLocal("PAST2026", "ouvrier2026", "ccmg2026", mdpSaisi);
                 });
             } else {
                 var data = doc.data();
                 var mdpPast = data.mdp_pasteur || "PAST2026";
-                var mdpOuv = data.mdp_ouvrier || "EQUIPE2026";
-                var mdpEvan = data.mdp_evangeliste || "EQUIPE2026";
+                var mdpOuv = data.mdp_ouvrier || "ouvrier2026";
+                var mdpEvan = data.mdp_evangeliste || "ccmg2026";
                 verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi);
             }
         })
@@ -1244,85 +1243,6 @@ function appliquerDroitsInterface() {
     }
 }
 
-/**
- * ==========================================
- * SYSTÈME DE RÉINITIALISATION PAR EMAIL
- * ==========================================
- */
-
-/**
- * Déclenche le processus de réinitialisation si l'utilisateur est autorisé.
- */
-function initierResetMdp() {
-    var utilisateur = firebase.auth().currentUser;
-    if (!utilisateur) return;
-
-    // SÉCURITÉ MAXIMALE : Seuls les administrateurs principaux peuvent réinitialiser
-    if (ADMIN_MASTERS.includes(utilisateur.email)) {
-        // ✅ Autorisé à réinitialiser
-        document.getElementById('etape-saisie-mdp').style.display = 'none';
-        document.getElementById('etape-reset-mdp').style.display = 'block';
-        document.getElementById('label-role-reset').textContent = document.getElementById('label-role').textContent;
-        document.getElementById('input-nouveau-mdp').value = '';
-        document.getElementById('input-nouveau-mdp').focus();
-    } else {
-        // ❌ Refusé : On affiche la belle fenêtre d'information au lieu d'une alerte grise
-        document.getElementById('etape-saisie-mdp').style.display = 'none';
-        document.getElementById('etape-info-securite').style.display = 'block';
-        document.getElementById('btn-fermer-modal-mdp').style.display = 'none'; // On cache le bouton fermer pour focus sur le message
-    }
-}
-
-/**
- * Retourne au choix du rôle depuis l'écran d'info sécurité
- */
-function retourChoixRoleDepuisInfo() {
-    document.getElementById('etape-info-securite').style.display = 'none';
-    document.getElementById('etape-choix-role').style.display = 'block';
-    document.getElementById('btn-fermer-modal-mdp').style.display = 'flex';
-}
-
-/**
- * Enregistre le nouveau code dans Firestore pour le rôle et la ville actuels.
- */
-function enregistrerNouveauCodeRole() {
-    var nouveauMdp = document.getElementById('input-nouveau-mdp').value.trim();
-    if (!nouveauMdp) {
-        alert("Veuillez saisir un nouveau code.");
-        return;
-    }
-
-    if (!contextKeyTemporaire || !roleSelectionneTemporaire) {
-        alert("Erreur de contexte. Veuillez recommencer.");
-        return;
-    }
-
-    // Détermine le champ à mettre à jour
-    var champ = "";
-    if (roleSelectionneTemporaire === 'pasteur') champ = "mdp_pasteur";
-    if (roleSelectionneTemporaire === 'ouvrier') champ = "mdp_ouvrier";
-    if (roleSelectionneTemporaire === 'evangeliste') champ = "mdp_evangeliste";
-
-    if (!champ) return;
-
-    var updates = {};
-    updates[champ] = nouveauMdp;
-
-    db.collection('securite_acces').doc(contextKeyTemporaire).update(updates)
-        .then(function() {
-            alert("✅ Succès ! Le code " + roleSelectionneTemporaire + " a été mis à jour.");
-            retourSaisieMdp();
-        })
-        .catch(function(err) {
-            console.error("[Reset] Erreur :", err);
-            alert("Erreur lors de l'enregistrement. Vérifiez votre connexion.");
-        });
-}
-
-function retourSaisieMdp() {
-    document.getElementById('etape-reset-mdp').style.display = 'none';
-    document.getElementById('etape-saisie-mdp').style.display = 'block';
-}
 
 // Ajout de l'animation Shake pour erreur
 var styleShake = document.createElement('style');
