@@ -43,7 +43,7 @@ let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en
 let villeActuelle = "";
 let programmeActuel = "";
 let roleActuel = ""; // "pasteur", "ouvrier", "evangeliste"
-const ADMIN_MASTER = "fatoumarie.ndiaye@gmail.com"; // Seul cet utilisateur peut réinitialiser les codes
+const ADMIN_MASTERS = ["fatoumarie.ndiaye@gmail.com", "kewenagossa@gmail.com"]; // Seuls ces utilisateurs peuvent réinitialiser les codes
 
 // Cadenas Virtuel - Variables temporaires
 let contextKeyTemporaire = "";
@@ -1257,8 +1257,8 @@ function initierResetMdp() {
     var utilisateur = firebase.auth().currentUser;
     if (!utilisateur) return;
 
-    // SÉCURITÉ MAXIMALE : Seul l'administrateur principal peut réinitialiser
-    if (utilisateur.email === ADMIN_MASTER) {
+    // SÉCURITÉ MAXIMALE : Seuls les administrateurs principaux peuvent réinitialiser
+    if (ADMIN_MASTERS.includes(utilisateur.email)) {
         // ✅ Autorisé à réinitialiser
         document.getElementById('etape-saisie-mdp').style.display = 'none';
         document.getElementById('etape-reset-mdp').style.display = 'block';
@@ -1266,9 +1266,20 @@ function initierResetMdp() {
         document.getElementById('input-nouveau-mdp').value = '';
         document.getElementById('input-nouveau-mdp').focus();
     } else {
-        // ❌ Refusé pour les autres membres (pour éviter que l'un ne change le code de l'autre)
-        alert("🔒 Sécurité Activée : Seul l'administrateur (" + ADMIN_MASTER + ") est autorisé à réinitialiser les codes pour le moment afin d'éviter les erreurs. Veuillez le contacter pour obtenir de l'aide.");
+        // ❌ Refusé : On affiche la belle fenêtre d'information au lieu d'une alerte grise
+        document.getElementById('etape-saisie-mdp').style.display = 'none';
+        document.getElementById('etape-info-securite').style.display = 'block';
+        document.getElementById('btn-fermer-modal-mdp').style.display = 'none'; // On cache le bouton fermer pour focus sur le message
     }
+}
+
+/**
+ * Retourne au choix du rôle depuis l'écran d'info sécurité
+ */
+function retourChoixRoleDepuisInfo() {
+    document.getElementById('etape-info-securite').style.display = 'none';
+    document.getElementById('etape-choix-role').style.display = 'block';
+    document.getElementById('btn-fermer-modal-mdp').style.display = 'flex';
 }
 
 /**
