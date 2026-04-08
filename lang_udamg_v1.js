@@ -36,22 +36,21 @@ const translations = {
         level: "Niv",
         phone_abbr: "Tél",
         relaunch: "RELANCER",
-        msg_level1: `Bonsoir {prenom},
-C'est l'équipe d'évangélisation de l'église {nom_eglise}. Nous étions très heureux de vous rencontrer récemment ! Nous prions que le Seigneur vous garde, vous et toute votre famille.
+        msg_level1: `Bonjour {prenom} 🙏
 
-Nous vous invitons à notre culte de célébration ce dimanche à partir de 10H à l’église. Nous serions vraiment heureux de vous accueillir parmi nous, de célébrer le Seigneur ensemble et de partager cette communion avec vous.
+Vous avez été approché(e) par notre équipe d’évangélisation, et nous rendons grâce à Dieu pour cette rencontre, convaincus qu’elle n’est point le fruit du hasard, mais l’expression de Son amour pour vous.
 
-Adresse de l’église :
-{adresse_eglise}
+Pour nous connaître un peu plus et afin d’être régulièrement édifié(e), nous vous invitons à nous rejoindre sur nos différents canaux :
 
-Retrouvez-nous aussi ici :
-- WhatsApp (Groupe) : {lien_wa}
-- Instagram : https://www.instagram.com/ccmg.angers
-- Tél : 06 35 38 07 58
-- Email : ccmgangers@gmail.com
+👉 WhatsApp : https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13
+👉 Facebook : https://www.facebook.com/ccmgangersfrance
+👉 Instagram : https://www.instagram.com/ccmg.angers
+👉 TikTok : https://www.tiktok.com/@ccmg_angers
 
-Si vous avez des questions, n’hésitez pas à nous contacter. Que Dieu vous bénisse !
-L’équipe d’évangélisation - Église {nom_eglise}`,
+Que la grâce, la paix et l’amour de notre Seigneur Jésus-Christ reposent abondamment sur vous.
+Soyez richement béni(e) ✨
+
+Équipe d’évangélisation - Église {nom_eglise}`,
         msg_level2: `Bonsoir {prenom}, c'est l'équipe d'évangélisation de l'église {nom_eglise} !
 J’espère que vous allez bien par la grâce de Dieu.
 
