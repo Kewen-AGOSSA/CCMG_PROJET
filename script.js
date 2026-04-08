@@ -1243,6 +1243,80 @@ function appliquerDroitsInterface() {
     }
 }
 
+/**
+ * ==========================================
+ * SYSTÈME DE RÉINITIALISATION PAR EMAIL
+ * ==========================================
+ */
+
+/**
+ * Déclenche le processus de réinitialisation si l'utilisateur est autorisé.
+ */
+function initierResetMdp() {
+    var utilisateur = firebase.auth().currentUser;
+    if (!utilisateur) return;
+
+    // On vérifie une dernière fois dans la liste blanche (sécurité)
+    db.collection('configuration').doc('emails_autorises').get()
+        .then(function(doc) {
+            var liste = (doc.exists && doc.data().liste) ? doc.data().liste : [];
+            
+            if (liste.includes(utilisateur.email)) {
+                // ✅ Autorisé à réinitialiser
+                document.getElementById('etape-saisie-mdp').style.display = 'none';
+                document.getElementById('etape-reset-mdp').style.display = 'block';
+                document.getElementById('label-role-reset').textContent = document.getElementById('label-role').textContent;
+                document.getElementById('input-nouveau-mdp').value = '';
+                document.getElementById('input-nouveau-mdp').focus();
+            } else {
+                // ❌ Non autorisé
+                alert("Désolé, seul un membre autorisé peut réinitialiser les codes. Votre email (" + utilisateur.email + ") n'est pas reconnu comme administrateur.");
+            }
+        });
+}
+
+/**
+ * Enregistre le nouveau code dans Firestore pour le rôle et la ville actuels.
+ */
+function enregistrerNouveauCodeRole() {
+    var nouveauMdp = document.getElementById('input-nouveau-mdp').value.trim();
+    if (!nouveauMdp) {
+        alert("Veuillez saisir un nouveau code.");
+        return;
+    }
+
+    if (!contextKeyTemporaire || !roleSelectionneTemporaire) {
+        alert("Erreur de contexte. Veuillez recommencer.");
+        return;
+    }
+
+    // Détermine le champ à mettre à jour
+    var champ = "";
+    if (roleSelectionneTemporaire === 'pasteur') champ = "mdp_pasteur";
+    if (roleSelectionneTemporaire === 'ouvrier') champ = "mdp_ouvrier";
+    if (roleSelectionneTemporaire === 'evangeliste') champ = "mdp_evangeliste";
+
+    if (!champ) return;
+
+    var updates = {};
+    updates[champ] = nouveauMdp;
+
+    db.collection('securite_acces').doc(contextKeyTemporaire).update(updates)
+        .then(function() {
+            alert("✅ Succès ! Le code " + roleSelectionneTemporaire + " a été mis à jour.");
+            retourSaisieMdp();
+        })
+        .catch(function(err) {
+            console.error("[Reset] Erreur :", err);
+            alert("Erreur lors de l'enregistrement. Vérifiez votre connexion.");
+        });
+}
+
+function retourSaisieMdp() {
+    document.getElementById('etape-reset-mdp').style.display = 'none';
+    document.getElementById('etape-saisie-mdp').style.display = 'block';
+}
+
 // Ajout de l'animation Shake pour erreur
 var styleShake = document.createElement('style');
 styleShake.innerHTML = `

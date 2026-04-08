@@ -390,6 +390,23 @@
                         <button onclick="validerMotDePasse()" class="btn-statistique" style="margin:0;">Déverrouiller 🔓</button>
                     </div>
                     <p id="mdp-erreur" style="color: #ff6b6b; font-weight:bold; margin-top:15px; display:none;">Mot de passe incorrect.</p>
+                    
+                    <div style="margin-top: 15px;">
+                        <span onclick="initierResetMdp()" style="color:var(--ccmg-gold); cursor:pointer; font-size:14px; text-decoration:underline; opacity:0.8;">Mot de passe oublié ?</span>
+                    </div>
+                </div>
+
+                <!-- Étape : RÉINITIALISATION (Nouveau code) -->
+                <div id="etape-reset-mdp" style="display:none;">
+                    <p style="color:var(--ccmg-gold); margin-bottom:10px; font-weight:bold;">Réinitialisation <span id="label-role-reset"></span></p>
+                    <p style="font-size: 13px; color: white; opacity: 0.8; margin-bottom: 20px;">Créez un nouveau code pour ce rôle :</p>
+                    <div style="position: relative; width: 100%;">
+                        <input type="text" id="input-nouveau-mdp" placeholder="Nouveau code" class="form-input" style="text-align:center; padding: 15px; font-size: 18px;">
+                    </div>
+                    <div class="modal-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+                        <button onclick="retourSaisieMdp()" class="btn-annuler">Annuler</button>
+                        <button onclick="enregistrerNouveauCodeRole()" class="btn-statistique" style="margin:0;">Enregistrer ✅</button>
+                    </div>
                 </div>
                 
                 <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:center;" id="btn-fermer-modal-mdp">
