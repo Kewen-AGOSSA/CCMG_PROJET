@@ -973,15 +973,10 @@ function filtrerVilles() {
  */
 function choisirVille(villeKey) {
     console.log('[UDAMG] Ville choisie :', villeKey);
-    if (sessionStorage.getItem('ccmg_acces_' + villeKey) && roleActuel) {
-        console.log('[UDAMG] Ville déjà déverrouillée.');
-        validerChoixContexte('ville', villeKey);
-    } else {
-        console.log('[UDAMG] Ouverture du cadenas...');
-        contextKeyTemporaire = villeKey;
-        typeContextTemporaire = 'ville';
-        ouvrirModalRole();
-    }
+    console.log('[UDAMG] Ouverture du cadenas...');
+    contextKeyTemporaire = villeKey;
+    typeContextTemporaire = 'ville';
+    ouvrirModalRole();
 }
 
 /**
@@ -991,6 +986,9 @@ function choisirVille(villeKey) {
 function retourAuMenu() {
     villeActuelle = "";
     programmeActuel = "";
+    roleActuel = "";
+    sessionStorage.clear();
+    
     if (unsubscribeFirebase) {
         unsubscribeFirebase(); // Arrête d'écouter les données de la ville/programme précédente
     }
@@ -1180,9 +1178,8 @@ function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
     if (roleSelectionneTemporaire === 'evangeliste') mdpReel = mdpEvan;
 
     if (mdpSaisi === mdpReel) {
-        // Succès ! On garde en mémoire pour la session
+        // Succès !
         roleActuel = roleSelectionneTemporaire;
-        sessionStorage.setItem('ccmg_acces_' + contextKeyTemporaire, roleActuel);
         validerChoixContexte(typeContextTemporaire, contextKeyTemporaire);
         fermerModalMdp();
     } else {
