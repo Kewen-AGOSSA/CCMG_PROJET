@@ -959,18 +959,14 @@ function filtrerVilles() {
  * Enregistre la ville choisie (après vérification du mot de passe)
  */
 function choisirVille(villeKey) {
-    if (sessionStorage.getItem('ccmg_acces_' + villeKey) === 'true') {
+    if (sessionStorage.getItem('ccmg_acces_' + villeKey) === 'true' && roleActuel) {
         // Déjà déverrouillé pendant cette session
         validerChoixContexte('ville', villeKey);
     } else {
-        // Demander le mot de passe
+        // Demander le rôle et le mot de passe
         contextKeyTemporaire = villeKey;
         typeContextTemporaire = 'ville';
-        document.getElementById('mdp-erreur').style.display = 'none';
-        document.getElementById('input-mdp').value = '';
-        var modal = document.getElementById('modal-mot-de-passe');
-        if (modal) modal.style.display = 'flex';
-        setTimeout(function() { document.getElementById('input-mdp').focus(); }, 100);
+        ouvrirModalRole();
     }
 }
 
@@ -1044,7 +1040,9 @@ function genererBoutonsProgrammes() {
         btn.style.height = 'auto';
         btn.innerHTML = '<span class="nom-famille" style="margin:0;">' + CONFIG_PROGRAMMES[progKey].nom + '</span>';
         btn.onclick = function() {
-            choisirProgramme(progKey);
+            contextKeyTemporaire = progKey;
+            typeContextTemporaire = 'programme';
+            ouvrirModalRole();
         };
         container.appendChild(btn);
     });
