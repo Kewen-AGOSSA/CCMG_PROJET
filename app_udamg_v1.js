@@ -712,6 +712,22 @@ function appliquerDroitsInterface() {
  */
 function ouvrirStats() {
     naviguerVers('page-stats');
+    
+    var h2Stats = document.querySelector('#page-stats h2');
+    if (h2Stats) {
+        if (villeActuelle === 'GLOBAL') {
+            h2Stats.removeAttribute('data-i18n');
+            h2Stats.textContent = 'Bilan Général de la France';
+        } else {
+            h2Stats.setAttribute('data-i18n', 'global_stats');
+            if (typeof t === 'function') {
+                h2Stats.textContent = t('global_stats');
+            } else {
+                h2Stats.textContent = 'Bilan (Cette Église/Programme)';
+            }
+        }
+    }
+    
     actualiserTableauDeBord();
 }
 
