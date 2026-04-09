@@ -1465,9 +1465,9 @@ function validerChoixContexte(type, id) {
     
     initialiserEcouteFirebase();
     
-    // Si c'est le Bilan Global, on va directement sur la page des Stats, sinon Familles
+    // Si c'est le Bilan Global, on va directement sur la page des Stats en appelant ouvrirStats
     if (id === 'GLOBAL') {
-        naviguerVers('page-stats');
+        ouvrirStats();
     } else {
         naviguerVers('page-familles');
     }
