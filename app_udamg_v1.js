@@ -545,12 +545,19 @@ function escapeHTML(str) {
  * @param {string} id - Identifiant Firebase unique du contact
  */
 function supprimerContact(id) {
-    if (confirm(t('remove_confirm'))) {
-        db.collection('contacts').doc(id).delete()
-            .catch(function (err) {
-                console.error('[Firebase] Erreur lors de la suppression :', err);
-            });
-    }
+    ouvrirModalConfirmation(
+        t('remove_confirm'),
+        function() {
+            db.collection('contacts').doc(id).delete()
+                .then(function() {
+                    fermerModalConfirmation();
+                })
+                .catch(function (err) {
+                    console.error('[Firebase] Erreur lors de la suppression :', err);
+                    fermerModalConfirmation();
+                });
+        }
+    );
 }
 
 /**
