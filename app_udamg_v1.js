@@ -689,10 +689,10 @@ function appliquerDroitsInterface() {
         btn.style.display = 'inline-block';
     });
 
-    // 2. Bouton d'ajout "+" : L'évangéliste (BIAZO) n'ajoute pas de fiches, seul l'ouvrier ou le pasteur
+    // 2. Bouton d'ajout "+" : Accessible à tous (Ouvrier et BIAZO)
     var addButtons = document.querySelectorAll('.btn-ajouter');
     addButtons.forEach(btn => {
-        btn.style.display = estEvangeliste ? 'none' : 'flex';
+        btn.style.display = 'flex';
     });
 
     // 3. Boutons Export Excel/PDF : Accessible à tous

@@ -17,7 +17,7 @@ const translations = {
         family: "Famille",
         search_placeholder: "Rechercher un nom...",
         back_stats: "←",
-        global_stats: "Statistiques Globales",
+        global_stats: "Bilan (Cette Église/Programme)",
         total_souls: "ÂMES TOUCHÉES AU TOTAL",
         family_ranking: "CLASSEMENT DES FAMILLES",
         followup_quality: "QUALITÉ DU SUIVI PAR FAMILLE",
@@ -36,7 +36,7 @@ const translations = {
         level: "Niv",
         phone_abbr: "Tél",
         relaunch: "RELANCER",
-        msg_level1: `Bonjour {prenom} 🙏
+        msg_level1: `Bonjour {prenom}, c'est {referent} 🙏
 
 Vous avez été approché(e) par notre équipe d’évangélisation, et nous rendons grâce à Dieu pour cette rencontre, convaincus qu’elle n’est point le fruit du hasard, mais l’expression de Son amour pour vous.
 
@@ -50,23 +50,26 @@ Pour nous connaître un peu plus et afin d’être régulièrement édifié(e), 
 Que la grâce, la paix et l’amour de notre Seigneur Jésus-Christ reposent abondamment sur vous.
 Soyez richement béni(e) ✨
 
-Équipe d’évangélisation - Église {nom_eglise}`,
-        msg_level2: `Bonjour {prenom} 🙏
+Équipe d’évangélisation du CCMG ANGERS`,
+        msg_level2: `Bonsoir {prenom} 🙏
 
-C’est avec joie que nous revenons vers vous — l’équipe d’évangélisation de l’église {nom_eglise}. Nous espérons que vous allez bien, par la grâce de Dieu.
+C’est avec joie que nous revenons vers vous — l’équipe d’évangélisation de l’église CCMG Angers. Nous espérons que vous allez bien, par la grâce de Dieu.
 
 Nous souhaitons vous encourager à garder en mémoire que le Seigneur vous aime profondément et qu’Il a pour votre vie des desseins de paix, d’espérance et de gloire. 
 
 Nous tenions à vous rappeler nos programmes de la semaine.
+🔵 Tous les mercredis de 19h à 21h : enseignement biblique suivi de questions/réponses
+🔵 Tous les dimanches de 10h à 12h30 : culte de célébration 
+
 Nous nous préparons à vous recevoir et espérons de tout cœur que vous serez présent à l'un de nos programmes ! 
 
-Adresse de l’église : 
-{adresse_eglise}
+Adresse de l’église : 3 rue Carl Linné, 49000 Angers 
+Arrêt de bus : Cevert ou Arrêt de tram : Terminus Roseraie
 
 Si vous avez des questions, n’hésitez pas à me contacter ou à contacter le secrétariat de l'église au 06 35 38 07 58.
 
 Que Dieu vous bénisse ! 
-Équipe d’évangélisation - Église {nom_eglise}`,
+Equipe d’évangélisation du CCMG Angers`,
         msg_level3: `Bonjour {prenom} 🙏
 
 👉 Que diriez-vous, cette fois-ci, de venir nous rencontrer à l’église {nom_eglise} ce dimanche ?
