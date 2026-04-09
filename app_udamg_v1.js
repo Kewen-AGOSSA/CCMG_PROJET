@@ -719,7 +719,17 @@ function ouvrirStats() {
  * Retourne à l'écran de sélection des familles depuis les statistiques.
  */
 function retourDepuisStats() {
-    naviguerVers('page-familles');
+    if (villeActuelle === 'GLOBAL') {
+        villeActuelle = '';
+        roleActuel = '';
+        if (typeof unsubscribeFirebase === 'function') {
+            unsubscribeFirebase();
+        }
+        document.getElementById('titre-app').textContent = 'UDAMG Évangélisation';
+        naviguerVers('page-accueil-menu');
+    } else {
+        naviguerVers('page-familles');
+    }
 }
 
 /**
