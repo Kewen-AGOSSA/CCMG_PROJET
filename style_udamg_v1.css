@@ -725,7 +725,18 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
 }
 
 .input-group {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    margin-left: 12px;
+    opacity: 0.9;
 }
 
 .input-group input,
