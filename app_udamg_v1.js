@@ -726,7 +726,7 @@ function retourDepuisStats() {
             unsubscribeFirebase();
         }
         document.getElementById('titre-app').textContent = 'UDAMG Évangélisation';
-        naviguerVers('page-accueil-menu');
+        naviguerVers('page-villes');
     } else {
         naviguerVers('page-familles');
     }
