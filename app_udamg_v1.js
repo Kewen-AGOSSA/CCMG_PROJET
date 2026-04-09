@@ -1319,8 +1319,16 @@ function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
 
     // Blocage strict si Bilan Global demandé mais que le rôle n'est pas BIAZO
     if (contextKeyTemporaire === 'GLOBAL' && roleSelectionneTemporaire !== 'evangeliste') {
-        alert("Accès refusé ⛔\nSeul le rôle BIAZO (Évangéliste) est autorisé à consulter le Bilan Global France.");
-        document.getElementById('mdp-erreur').style.display = 'block';
+        var errEl = document.getElementById('mdp-erreur');
+        errEl.innerHTML = "⛔ Accès refusé<br><span style='font-size:12px; font-weight:normal;'>Seul le rôle BIAZO (Évangéliste) peut consulter le Bilan Global.</span>";
+        errEl.style.display = 'block';
+        
+        // Tremblement
+        var modalContent = document.querySelector('#modal-mot-de-passe .modal-content');
+        modalContent.style.animation = 'none';
+        setTimeout(function() {
+            modalContent.style.animation = 'shake 0.4s';
+        }, 10);
         return; // Échec
     }
 
@@ -1331,13 +1339,15 @@ function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
         fermerModalMdp();
     } else {
         // Échec
-        document.getElementById('mdp-erreur').style.display = 'block';
+        var errEl2 = document.getElementById('mdp-erreur');
+        errEl2.innerHTML = "❌ Mot de passe incorrect";
+        errEl2.style.display = 'block';
         
         // Tremblement
-        var modalContent = document.querySelector('#modal-mot-de-passe .modal-content');
-        modalContent.style.animation = 'none';
+        var modalContent2 = document.querySelector('#modal-mot-de-passe .modal-content');
+        modalContent2.style.animation = 'none';
         setTimeout(function() {
-            modalContent.style.animation = 'shake 0.4s';
+            modalContent2.style.animation = 'shake 0.4s';
         }, 10);
     }
 }
