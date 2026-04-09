@@ -28,7 +28,7 @@ const translations = {
         input_last_name: "Nom",
         input_first_name: "Prénom",
         input_phone: "Numéro (ex: 06...)",
-        input_evangelist: "Ton nom (BIAZO)",
+        input_evangelist: "Evangélisé par",
         cancel: "Annuler",
         save: "Enregistrer",
         alert_fill_fields: "Oups ! Remplis bien le nom, le prénom et le numéro.",
