@@ -342,6 +342,11 @@ function fermerFormulaire() {
  * - Sinon → MODIFICATION du document existant (identifié par son ID)
  */
 function enregistrerContact() {
+    if (villeActuelle === 'GLOBAL') {
+        alert("Action impossible ⛔\nVous ne pouvez pas ajouter ou modifier un contact depuis le Bilan Global.\nVeuillez vous connecter à une église spécifique pour gérer ses contacts.");
+        return;
+    }
+    
     var nom        = document.getElementById('input-nom').value.trim();
     var prenom     = document.getElementById('input-prenom').value.trim();
     var telBrut    = document.getElementById('input-tel').value.trim();
@@ -1068,6 +1073,18 @@ function genererBoutonsVilles() {
         };
         container.appendChild(btn);
     });
+    
+    // Bouton Spécial Bilan Global (Toutes les églises)
+    var btnGlobal = document.createElement('button');
+    btnGlobal.className = 'bouton-famille';
+    btnGlobal.style.height = 'auto';
+    btnGlobal.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05))';
+    btnGlobal.style.borderColor = 'var(--ccmg-gold)';
+    btnGlobal.innerHTML = '<span class="nom-famille" style="margin:0; color:var(--ccmg-gold);">🌍 Bilan Général (Réservé BIAZO)</span>';
+    btnGlobal.onclick = function() {
+        choisirVille('GLOBAL');
+    };
+    container.appendChild(btnGlobal);
 }
 
 /**
@@ -1130,7 +1147,9 @@ function initialiserEcouteFirebase() {
     }
     
     var requete = db.collection('contacts');
-    if (villeActuelle) {
+    
+    // Si nous ne sommes pas sur le Bilan Global, on filtre les résultats
+    if (villeActuelle && villeActuelle !== 'GLOBAL') {
         requete = requete.where('ville', '==', villeActuelle);
     } else if (programmeActuel) {
         requete = requete.where('programme', '==', programmeActuel);
@@ -1298,6 +1317,13 @@ function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
     if (roleSelectionneTemporaire === 'ouvrier') mdpReel = mdpOuv;
     if (roleSelectionneTemporaire === 'evangeliste') mdpReel = mdpEvan;
 
+    // Blocage strict si Bilan Global demandé mais que le rôle n'est pas BIAZO
+    if (contextKeyTemporaire === 'GLOBAL' && roleSelectionneTemporaire !== 'evangeliste') {
+        alert("Accès refusé ⛔\nSeul le rôle BIAZO (Évangéliste) est autorisé à consulter le Bilan Global France.");
+        document.getElementById('mdp-erreur').style.display = 'block';
+        return; // Échec
+    }
+
     if (mdpSaisi === mdpReel) {
         // Succès !
         roleActuel = roleSelectionneTemporaire;
@@ -1322,7 +1348,13 @@ function validerChoixContexte(type, id) {
     if (type === 'ville') {
         villeActuelle = id;
         programmeActuel = "";
-        if (titre) titre.textContent = 'UDAMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('CCMG ', '');
+        if (titre) {
+            if (id === 'GLOBAL') {
+                titre.textContent = 'UDAMG - BILAN FRANCE ENTIÈRE';
+            } else {
+                titre.textContent = 'UDAMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('CCMG ', '');
+            }
+        }
     } else {
         programmeActuel = id;
         villeActuelle = "";
@@ -1330,7 +1362,13 @@ function validerChoixContexte(type, id) {
     }
     
     initialiserEcouteFirebase();
-    naviguerVers('page-familles');
+    
+    // Si c'est le Bilan Global, on va directement sur la page des Stats, sinon Familles
+    if (id === 'GLOBAL') {
+        naviguerVers('page-stats');
+    } else {
+        naviguerVers('page-familles');
+    }
     
     // On applique les droits tout de suite après le déverrouillage
     appliquerDroitsInterface();
