@@ -38,7 +38,7 @@ const translations = {
         relaunch: "RELANCER",
         msg_level1: `Bonjour {prenom} 🙏
 
-Vous avez été approché(e) par {referent}, qui fait partie de notre équipe d’évangélisation, et nous rendons grâce à Dieu pour cette rencontre, convaincus qu’elle n’est point le fruit du hasard, mais l’expression de Son amour pour vous.
+Vous avez été approché(e) par {referent} qui fait partie de notre équipe d’évangélisation, et nous rendons grâce à Dieu pour cette rencontre, convaincus qu’elle n’est point le fruit du hasard, mais l’expression de Son amour pour vous.
 
 Pour nous connaître un peu plus et afin d’être régulièrement édifié(e), nous vous invitons à nous rejoindre sur nos différents canaux :
 
