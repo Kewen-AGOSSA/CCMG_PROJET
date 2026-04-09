@@ -717,7 +717,7 @@ function ouvrirStats() {
     if (h2Stats) {
         if (villeActuelle === 'GLOBAL') {
             h2Stats.removeAttribute('data-i18n');
-            h2Stats.textContent = 'Bilan Général de la France';
+            h2Stats.textContent = 'Bilan Général';
         } else {
             h2Stats.setAttribute('data-i18n', 'global_stats');
             if (typeof t === 'function') {
