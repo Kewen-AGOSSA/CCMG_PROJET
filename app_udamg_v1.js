@@ -647,7 +647,7 @@ function envoyerRelance(methode) {
         .replace(/{lien_wa}/g, configContexte.lien_wa);
 
     if (methode === 'whatsapp') {
-        var urlWA = 'https://wa.me/' + c.tel + '?text=' + encodeURIComponent(message);
+        var urlWA = 'https://api.whatsapp.com/send?phone=' + c.tel + '&text=' + encodeURIComponent(message);
         window.open(urlWA, '_blank');
     } else {
         var urlSMS = 'sms:' + c.tel + '?body=' + encodeURIComponent(message);
