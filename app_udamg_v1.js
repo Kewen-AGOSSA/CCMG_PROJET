@@ -1219,7 +1219,8 @@ function ouvrirModalRole() {
         'etape-choix-role': 'block',
         'etape-saisie-mdp': 'none',
         'btn-fermer-modal-mdp': 'flex',
-        'mdp-erreur': 'none'
+        'mdp-erreur': 'none',
+        'role-erreur': 'none'
     };
 
     Object.keys(config).forEach(function(id) {
@@ -1234,6 +1235,26 @@ function ouvrirModalRole() {
 }
 
 function choisirRole(role) {
+    // Blocage strict dès la sélection de rôle si Bilan Global demandé
+    if (contextKeyTemporaire === 'GLOBAL' && role !== 'evangeliste') {
+        var errRole = document.getElementById('role-erreur');
+        if (errRole) errRole.style.display = 'block';
+        
+        // Tremblement
+        var modalContent = document.querySelector('#modal-mot-de-passe .modal-content');
+        if (modalContent) {
+            modalContent.style.animation = 'none';
+            setTimeout(function() {
+                modalContent.style.animation = 'shake 0.4s';
+            }, 10);
+        }
+        return; // Interdire de passer à l'étape suivante
+    }
+    
+    // On efface l'erreur si tout va bien
+    var errRoleReset = document.getElementById('role-erreur');
+    if (errRoleReset) errRoleReset.style.display = 'none';
+
     roleSelectionneTemporaire = role;
     
     var step1 = document.getElementById('etape-choix-role');
@@ -1316,21 +1337,6 @@ function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
     if (roleSelectionneTemporaire === 'pasteur') mdpReel = mdpPast;
     if (roleSelectionneTemporaire === 'ouvrier') mdpReel = mdpOuv;
     if (roleSelectionneTemporaire === 'evangeliste') mdpReel = mdpEvan;
-
-    // Blocage strict si Bilan Global demandé mais que le rôle n'est pas BIAZO
-    if (contextKeyTemporaire === 'GLOBAL' && roleSelectionneTemporaire !== 'evangeliste') {
-        var errEl = document.getElementById('mdp-erreur');
-        errEl.innerHTML = "⛔ Accès refusé<br><span style='font-size:12px; font-weight:normal;'>Seul le rôle BIAZO (Évangéliste) peut consulter le Bilan Global.</span>";
-        errEl.style.display = 'block';
-        
-        // Tremblement
-        var modalContent = document.querySelector('#modal-mot-de-passe .modal-content');
-        modalContent.style.animation = 'none';
-        setTimeout(function() {
-            modalContent.style.animation = 'shake 0.4s';
-        }, 10);
-        return; // Échec
-    }
 
     if (mdpSaisi === mdpReel) {
         // Succès !
