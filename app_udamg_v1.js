@@ -755,8 +755,6 @@ function actualiserTableauDeBord() {
     var total = tousLesContacts.length;
     document.getElementById('total-general').innerText = total;
 
-    if (total === 0) return;
-
     var nGedeon = tousLesContacts.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
     var nJac    = tousLesContacts.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
     var nMidl   = tousLesContacts.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
@@ -766,9 +764,13 @@ function actualiserTableauDeBord() {
     animerChiffre('count-midl', nMidl);
 
     setTimeout(function () {
-        document.getElementById('bar-gedeon').style.height = ((nGedeon / total) * 100 + 15) + '%';
-        document.getElementById('bar-jac').style.height    = ((nJac / total) * 100 + 15) + '%';
-        document.getElementById('bar-midl').style.height   = ((nMidl / total) * 100 + 15) + '%';
+        var pGedeon = total === 0 ? 0 : (nGedeon / total) * 100;
+        var pJac    = total === 0 ? 0 : (nJac / total) * 100;
+        var pMidl   = total === 0 ? 0 : (nMidl / total) * 100;
+        
+        document.getElementById('bar-gedeon').style.height = (pGedeon + 15) + '%';
+        document.getElementById('bar-jac').style.height    = (pJac + 15) + '%';
+        document.getElementById('bar-midl').style.height   = (pMidl + 15) + '%';
     }, 100);
 
     remplirBarreFamille('GÉDÉON', 'prog-gedeon');
