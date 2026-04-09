@@ -895,9 +895,34 @@ function exporterExcel() {
             ['Niveau 1 - Relancés',  tousLesContacts.filter(function(c){ return c.niveau === 1; }).length],
             ['Niveau 2 - Présentés', tousLesContacts.filter(function(c){ return c.niveau === 2; }).length],
             ['Niveau 3 - Invités',   tousLesContacts.filter(function(c){ return c.niveau === 3; }).length],
-            [''], [''],
-            entetes
+            [''], ['']
         ];
+
+        // Injection du détail par église si on est sur le Bilan Global
+        if (villeActuelle === 'GLOBAL') {
+            donneesSummary.push(['DÉTAIL PAR ÉGLISE']);
+            donneesSummary.push(['Église', 'Total Âmes', 'Gédéon', 'Mission JAC', 'CCMG', 'Niv 1', 'Niv 2', 'Niv 3']);
+            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
+                var cVille = tousLesContacts.filter(function(c) { return c.ville === villeKey; });
+                if (cVille.length > 0) {
+                    var tg = cVille.filter(function(c){ return c.famille === 'GÉDÉON'; }).length;
+                    var tj = cVille.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+                    var tm = cVille.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+                    var n1 = cVille.filter(function(c){ return c.niveau === 1; }).length;
+                    var n2 = cVille.filter(function(c){ return c.niveau === 2; }).length;
+                    var n3 = cVille.filter(function(c){ return c.niveau === 3; }).length;
+                    
+                    donneesSummary.push([
+                        CONFIG_EGLISES[villeKey].nom.replace("CCMG ", ""),
+                        cVille.length, tg, tj, tm, n1, n2, n3
+                    ]);
+                }
+            });
+            donneesSummary.push(['']);
+            donneesSummary.push(['LISTE DÉTAILLÉE DES CONTACTS DE FRANCE']);
+        }
+
+        donneesSummary.push(entetes);
         tousLesContacts
             .slice()
             .sort(function (a, b) { return a.nom.localeCompare(b.nom); })
@@ -1024,8 +1049,43 @@ function exporterPDF() {
                 ];
             });
 
+        var startYContacts = 190;
+
+        // Sous-tableau de résumé par église si GLOBAL
+        if (villeActuelle === 'GLOBAL') {
+            var statsEgliseData = [];
+            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
+                var cVille = tousLesContacts.filter(function(c) { return c.ville === villeKey; });
+                if (cVille.length > 0) {
+                    var tg = cVille.filter(function(c){ return c.famille === 'GÉDÉON'; }).length;
+                    var tj = cVille.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+                    var tm = cVille.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+                    var n1 = cVille.filter(function(c){ return c.niveau === 1; }).length;
+                    var n2 = cVille.filter(function(c){ return c.niveau === 2; }).length;
+                    var n3 = cVille.filter(function(c){ return c.niveau === 3; }).length;
+                    
+                    statsEgliseData.push([
+                        CONFIG_EGLISES[villeKey].nom.replace("CCMG ", ""),
+                        cVille.length, tg, tj, tm, n1, n2, n3
+                    ]);
+                }
+            });
+            
+            doc.autoTable({
+                startY: 190,
+                head: [['Église', 'Total', 'Gédéon', 'JAC', 'CCMG', 'Niv 1', 'Niv 2', 'Niv 3']],
+                body: statsEgliseData,
+                theme: 'grid',
+                headStyles: { fillColor: [44, 62, 80], textColor: 255, fontSize: 10 },
+                bodyStyles: { fontSize: 9, halign: 'center' },
+                columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } }
+            });
+            
+            startYContacts = doc.lastAutoTable.finalY + 30; // Position dynamique pour la liste qui suit
+        }
+
         doc.autoTable({
-            startY: 190,
+            startY: startYContacts,
             head: [['Nom & Prenom', 'Telephone', 'Famille', 'Niveau', 'BIAZO', 'Notes']],
             body: tableData,
             theme: 'grid',
