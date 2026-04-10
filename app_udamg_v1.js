@@ -1327,6 +1327,18 @@ function ouvrirModalRole() {
     var input = document.getElementById('input-mdp');
     if (input) input.value = '';
 
+    // LOGIQUE SPÉCIFIQUE : Si Bilan Général (GLOBAL), montrer UNIQUEMENT Pasteur
+    var btnOuvrier = document.getElementById('btn-role-ouvrier');
+    var btnResp = document.getElementById('btn-role-resp');
+    
+    if (contextKeyTemporaire === 'GLOBAL') {
+        if (btnOuvrier) btnOuvrier.style.display = 'none';
+        if (btnResp) btnResp.style.display = 'none';
+    } else {
+        if (btnOuvrier) btnOuvrier.style.display = 'block';
+        if (btnResp) btnResp.style.display = 'block';
+    }
+
     modal.classList.add('active');
 }
 
