@@ -301,7 +301,7 @@
                 </div>
                 <div class="input-group">
                     <label class="form-label">🕊️ Evangélisé par</label>
-                    <input type="text" id="input-evangeliste" data-i18n="input_evangelist" placeholder="Ton nom (BIAZO)">
+                    <input type="text" id="input-evangeliste" data-i18n="input_evangelist" placeholder="Votre nom (Évangéliste)">
                 </div>
                 <!-- Champ Notes libre pour info personnelles sur le contact -->
                 <div class="input-group">
@@ -386,7 +386,8 @@
                     <p style="color:var(--ccmg-gold); margin-bottom:15px; font-weight:bold;">Sélectionnez votre rôle</p>
                     <div style="display:flex; flex-direction:column; gap:10px;">
                         <button class="bouton-famille" style="height:auto; min-height:50px; font-size:16px;" onclick="choisirRole('ouvrier')">📝 Ouvrier</button>
-                        <button class="bouton-famille" style="height:auto; min-height:50px; font-size:16px;" onclick="choisirRole('evangeliste')">🕊️ BIAZO</button>
+                        <button class="bouton-famille" style="height:auto; min-height:50px; font-size:16px;" onclick="choisirRole('evangeliste')">🕊️ Resp. Évangélisation</button>
+                        <button class="bouton-famille" style="height:auto; min-height:50px; font-size:16px;" onclick="choisirRole('pasteur')">👑 Pasteur</button>
                     </div>
                     <!-- Message d'erreur spécifique à la sélection de rôle -->
                     <p id="role-erreur" style="color: #ff4d4d; font-size: 14px; margin-top: 15px; font-weight: bold; display: none;">⛔ Accès refusé</p>
@@ -429,6 +430,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
     <script src="lang_udamg_v1.js?v=20260409_msg6"></script>
-    <script src="app_udamg_v1.js?v=20260409_global12"></script>
+    <script src="app_udamg_v1.js?v=20260410_roles1"></script>
 </body>
 </html>

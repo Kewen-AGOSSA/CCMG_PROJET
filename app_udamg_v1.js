@@ -462,17 +462,18 @@ function afficherContacts(listeFiltree) {
             // IMPORTANT : on utilise c.id (ID Firebase) au lieu d'un index tableau
             // Cela garantit que les opérations (edit, delete, relance) ciblent toujours
             // le bon contact, même si l'ordre du tableau change.
+            // L'ouvrier ne peut QUE voir la liste et ajouter (pas de modification, suppression ou relance)
             var relanceHtml = '';
+            var modifierHtml = '';
+            var supprimerHtml = '';
+
             if (roleActuel !== 'ouvrier') {
                 relanceHtml = '<button class="action-btn btn-relance" onclick="gererRelance(\'' + c.id + '\')">' + t('relaunch') + '</button>';
-            }
+                
+                modifierHtml = '<button class="action-btn" onclick="modifierContact(\'' + c.id + '\')">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
+                '</button>';
 
-            var modifierHtml = '<button class="action-btn" onclick="modifierContact(\'' + c.id + '\')">' +
-                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
-            '</button>';
-
-            var supprimerHtml = '';
-            if (roleActuel !== 'ouvrier') {
                 supprimerHtml = '<button class="action-btn" onclick="supprimerContact(\'' + c.id + '\')">' +
                     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
                 '</button>';
@@ -693,25 +694,25 @@ function appliquerDroitsInterface() {
 
     var estPasteur = (roleActuel === 'pasteur');
     var estOuvrier = (roleActuel === 'ouvrier');
-    var estEvangeliste = (roleActuel === 'evangeliste');
+    var estResp = (roleActuel === 'evangeliste'); // "Responsable Évangélisation"
 
-    // 1. Bouton Statistiques : Accessible à tous
+    // 1. Bouton Statistiques (Dashboard local) : Masqué pour l'Ouvrier
     var btnStats = document.querySelectorAll('.btn-stats');
     btnStats.forEach(btn => {
-        btn.style.display = 'inline-block';
+        btn.style.display = estOuvrier ? 'none' : 'inline-block';
     });
 
-    // 2. Bouton d'ajout "+" : Accessible à tous (Ouvrier et BIAZO)
+    // 2. Bouton d'ajout "+" : Accessible à tous
     var addButtons = document.querySelectorAll('.btn-ajouter');
     addButtons.forEach(btn => {
         btn.style.display = 'flex';
     });
 
-    // 3. Boutons Export Excel/PDF : Accessible à tous
+    // 3. Boutons Export Excel/PDF : Masqué pour l'Ouvrier
     var btnExport = document.querySelector('.btn-export');
     var btnExportPdf = document.querySelector('.btn-export-pdf');
-    if (btnExport) btnExport.style.display = 'flex';
-    if (btnExportPdf) btnExportPdf.style.display = 'flex';
+    if (btnExport) btnExport.style.display = estOuvrier ? 'none' : 'flex';
+    if (btnExportPdf) btnExportPdf.style.display = estOuvrier ? 'none' : 'flex';
 }
 
 /**
@@ -883,7 +884,7 @@ function exporterExcel() {
 
     setTimeout(function () {
 
-        var entetes = ['Nom', 'Prénom', 'Téléphone', 'Famille', 'BIAZO Référent', 'Niveau', 'Statut', 'Notes', 'Date d\'ajout'];
+        var entetes = ['Nom', 'Prénom', 'Téléphone', 'Famille', 'Évangéliste', 'Niveau', 'Statut', 'Notes', 'Date d\'ajout'];
 
         function niveauEnTexte(niveau) {
             if (niveau === 1) return 'Relancé (Niv. 1)';
@@ -1121,7 +1122,7 @@ function exporterPDF() {
 
         doc.autoTable({
             startY: startYContacts,
-            head: [['Nom & Prenom', 'Telephone', 'Famille', 'Niveau', 'BIAZO', 'Notes']],
+            head: [['Nom & Prenom', 'Telephone', 'Famille', 'Niveau', 'Évangéliste', 'Notes']],
             body: tableData,
             theme: 'grid',
             headStyles: { fillColor: [44, 62, 80], textColor: 255, fontSize: 10 },
@@ -1175,7 +1176,7 @@ function genererBoutonsVilles() {
     btnGlobal.style.height = 'auto';
     btnGlobal.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05))';
     btnGlobal.style.borderColor = 'var(--ccmg-gold)';
-    btnGlobal.innerHTML = '<span class="nom-famille" style="margin:0; color:var(--ccmg-gold);">🌍 Bilan Général (Réservé BIAZO)</span>';
+    btnGlobal.innerHTML = '<span class="nom-famille" style="margin:0; color:var(--ccmg-gold);">🌍 Bilan Général (Réservé Pasteur)</span>';
     btnGlobal.onclick = function() {
         choisirVille('GLOBAL');
     };
@@ -1330,10 +1331,13 @@ function ouvrirModalRole() {
 }
 
 function choisirRole(role) {
-    // Blocage strict dès la sélection de rôle si Bilan Global demandé
-    if (contextKeyTemporaire === 'GLOBAL' && role !== 'evangeliste') {
+    // Blocage strict dès la sélection de rôle si Bilan Global demandé : SEUL le Pasteur peut entrer
+    if (contextKeyTemporaire === 'GLOBAL' && role !== 'pasteur') {
         var errRole = document.getElementById('role-erreur');
-        if (errRole) errRole.style.display = 'block';
+        if (errRole) {
+            errRole.textContent = "⛔ Seul le Pasteur accède au Bilan Global";
+            errRole.style.display = 'block';
+        }
         
         // Tremblement
         var modalContent = document.querySelector('#modal-mot-de-passe .modal-content');
@@ -1370,7 +1374,11 @@ function choisirRole(role) {
     
     var labelEl = document.getElementById('label-role');
     if (labelEl) {
-        var labels = { 'pasteur': '👑 Pasteur', 'ouvrier': '📝 Ouvrier', 'evangeliste': '🕊️ BIAZO' };
+        var labels = { 
+            'pasteur': '👑 Pasteur', 
+            'ouvrier': '📝 Ouvrier', 
+            'evangeliste': '🕊️ Resp. Évangélisation' 
+        };
         labelEl.textContent = labels[role] || role;
     }
     
@@ -1474,15 +1482,21 @@ function validerChoixContexte(type, id) {
     
     initialiserEcouteFirebase();
     
+    // On applique les droits tout de suite après le déverrouillage
+    appliquerDroitsInterface();
+
+    // Protection supplémentaire : Si GLOBAL, on force le rôle Pasteur
+    if (id === 'GLOBAL' && roleActuel !== 'pasteur') {
+        naviguerVers('page-villes');
+        return;
+    }
+    
     // Si c'est le Bilan Global, on va directement sur la page des Stats en appelant ouvrirStats
     if (id === 'GLOBAL') {
         ouvrirStats();
     } else {
         naviguerVers('page-familles');
     }
-    
-    // On applique les droits tout de suite après le déverrouillage
-    appliquerDroitsInterface();
 }
 
 
