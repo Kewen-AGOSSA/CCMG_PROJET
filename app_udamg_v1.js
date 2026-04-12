@@ -1442,22 +1442,29 @@ function validerMotDePasse() {
     // =====================================================================
     // MOTS DE PASSE PAR RÔLE ET PAR ÉGLISE
     // - Pasteur       : identique pour toutes les églises → "past2026"
-    // - Resp. Évang.  : spécifique par église → "ccmg2026{cleEglise en minuscules}"
-    //                   ex. Angers → "ccmg2026angers", Brest → "ccmg2026brest"
-    // - Ouvrier       : spécifique par église → "ouvrier2026{cleEglise en minuscules}"
-    //                   ex. Angers → "ouvrier2026angers", Brest → "ouvrier2026brest"
-    // Pour les PROGRAMMES  : même logique, la clé programme est utilisée
-    //                   ex. EBED → "ccmg2026ebed" / "ouvrier2026ebed"
+    // - Angers        : mots de passe personnalisés (exceptions)
+    //                   Ouvrier → "ouv.angers26" | Resp. Évang. → "resp.a2026"
+    // - Autres églises : pattern générique
+    //                   Resp. Évang. → "ccmg2026{ville}" | Ouvrier → "ouvrier2026{ville}"
     // =====================================================================
 
-    // Clé de contexte normalisée (minuscules, sans espaces ni tirets)
-    var cleNormalisee = contextKeyTemporaire
-        .toLowerCase()
-        .replace(/[\s\-]/g, '');            // "La Roche sur Yon" → "larochesuyon"
+    var mdpPast, mdpEvan, mdpOuv;
 
-    var mdpPast  = "past2026";                           // Identique partout
-    var mdpEvan  = "ccmg2026" + cleNormalisee;           // ex. "ccmg2026angers"
-    var mdpOuv   = "ouvrier2026" + cleNormalisee;        // ex. "ouvrier2026angers"
+    if (contextKeyTemporaire === 'Angers') {
+        // Mots de passe spécifiques pour l'église d'Angers
+        mdpPast = "past2026";
+        mdpOuv  = "ouv.angers26";
+        mdpEvan = "resp.a2026";
+    } else {
+        // Clé de contexte normalisée (minuscules, sans espaces ni tirets)
+        var cleNormalisee = contextKeyTemporaire
+            .toLowerCase()
+            .replace(/[\s\-]/g, '');        // "La Roche sur Yon" → "larochesuyon"
+
+        mdpPast = "past2026";                            // Identique partout
+        mdpEvan = "ccmg2026" + cleNormalisee;            // ex. "ccmg2026brest"
+        mdpOuv  = "ouvrier2026" + cleNormalisee;         // ex. "ouvrier2026brest"
+    }
 
     verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi);
 }
