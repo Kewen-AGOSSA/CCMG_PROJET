@@ -462,22 +462,24 @@ function afficherContacts(listeFiltree) {
             // IMPORTANT : on utilise c.id (ID Firebase) au lieu d'un index tableau
             // Cela garantit que les opérations (edit, delete, relance) ciblent toujours
             // le bon contact, même si l'ordre du tableau change.
-            // L'ouvrier ne peut QUE voir la liste et ajouter (pas de modification, suppression ou relance)
+            // L'ouvrier peut ajouter et MODIFIER un contact (correction), mais pas supprimer ni relancer
             var relanceHtml = '';
-            var modifierHtml = '';
             var supprimerHtml = '';
 
+            // Bouton Modifier : accessible à TOUS les rôles (y compris Ouvrier)
+            var modifierHtml = '<button class="action-btn" onclick="modifierContact(\'' + c.id + '\')">' +
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
+            '</button>';
+
+            // Relance et Suppression : réservés aux rôles Pasteur et Resp. Évangélisation
             if (roleActuel !== 'ouvrier') {
                 relanceHtml = '<button class="action-btn btn-relance" onclick="gererRelance(\'' + c.id + '\')">' + t('relaunch') + '</button>';
-                
-                modifierHtml = '<button class="action-btn" onclick="modifierContact(\'' + c.id + '\')">' +
-                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
-                '</button>';
 
                 supprimerHtml = '<button class="action-btn" onclick="supprimerContact(\'' + c.id + '\')">' +
                     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
                 '</button>';
             }
+
 
             var template =
                 '<div class="contact-card">' +
