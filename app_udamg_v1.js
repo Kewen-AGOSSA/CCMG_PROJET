@@ -1438,19 +1438,34 @@ function fermerModalMdp() {
 function validerMotDePasse() {
     var mdpSaisi = document.getElementById('input-mdp').value.trim();
     if (!mdpSaisi || !contextKeyTemporaire || !roleSelectionneTemporaire) return;
-    
-    // Mots de passe fixes et uniques (plus de lecture Firebase pour éviter les anciens mots de passe modifiés)
-    var mdpPast = "PAST2026";
-    var mdpOuv = "ouvrier2026";
-    var mdpEvan = "ccmg2026";
-    
+
+    // =====================================================================
+    // MOTS DE PASSE PAR RÔLE ET PAR ÉGLISE
+    // - Pasteur       : identique pour toutes les églises → "past2026"
+    // - Resp. Évang.  : spécifique par église → "ccmg2026{cleEglise en minuscules}"
+    //                   ex. Angers → "ccmg2026angers", Brest → "ccmg2026brest"
+    // - Ouvrier       : spécifique par église → "ouvrier2026{cleEglise en minuscules}"
+    //                   ex. Angers → "ouvrier2026angers", Brest → "ouvrier2026brest"
+    // Pour les PROGRAMMES  : même logique, la clé programme est utilisée
+    //                   ex. EBED → "ccmg2026ebed" / "ouvrier2026ebed"
+    // =====================================================================
+
+    // Clé de contexte normalisée (minuscules, sans espaces ni tirets)
+    var cleNormalisee = contextKeyTemporaire
+        .toLowerCase()
+        .replace(/[\s\-]/g, '');            // "La Roche sur Yon" → "larochesuyon"
+
+    var mdpPast  = "past2026";                           // Identique partout
+    var mdpEvan  = "ccmg2026" + cleNormalisee;           // ex. "ccmg2026angers"
+    var mdpOuv   = "ouvrier2026" + cleNormalisee;        // ex. "ouvrier2026angers"
+
     verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi);
 }
 
 function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
     var mdpReel = "";
-    if (roleSelectionneTemporaire === 'pasteur') mdpReel = mdpPast;
-    if (roleSelectionneTemporaire === 'ouvrier') mdpReel = mdpOuv;
+    if (roleSelectionneTemporaire === 'pasteur')     mdpReel = mdpPast;
+    if (roleSelectionneTemporaire === 'ouvrier')     mdpReel = mdpOuv;
     if (roleSelectionneTemporaire === 'evangeliste') mdpReel = mdpEvan;
 
     if (mdpSaisi === mdpReel) {
@@ -1463,7 +1478,7 @@ function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
         var errEl2 = document.getElementById('mdp-erreur');
         errEl2.innerHTML = "❌ Mot de passe incorrect";
         errEl2.style.display = 'block';
-        
+
         // Tremblement
         var modalContent2 = document.querySelector('#modal-mot-de-passe .modal-content');
         modalContent2.style.animation = 'none';
