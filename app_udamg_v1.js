@@ -1237,6 +1237,70 @@ function retourAuMenu() {
 }
 
 /**
+ * ==========================================
+ * VERROU PROGRAMMES SPÉCIAUX
+ * ==========================================
+ */
+
+/**
+ * Ouvre la modale de code d'accès aux Programmes Spéciaux
+ */
+function demanderCodeProgrammes() {
+    var modal = document.getElementById('modal-code-programmes');
+    var input = document.getElementById('input-code-programmes');
+    var erreur = document.getElementById('prog-code-erreur');
+    if (modal) {
+        if (input) { input.value = ''; input.type = 'password'; }
+        if (erreur) erreur.style.display = 'none';
+        modal.classList.add('active');
+        setTimeout(function() { if (input) input.focus(); }, 100);
+    }
+}
+
+/**
+ * Valide le code d'accès aux Programmes Spéciaux
+ * Code : prog2026
+ */
+function validerCodeProgrammes() {
+    var input = document.getElementById('input-code-programmes');
+    var erreur = document.getElementById('prog-code-erreur');
+    var saisi = input ? input.value.trim() : '';
+
+    if (saisi === 'prog2026') {
+        // ✅ Code correct → accès accordé
+        fermerModalCodeProgrammes();
+        naviguerVers('page-programmes');
+    } else {
+        // ❌ Code incorrect
+        if (erreur) erreur.style.display = 'block';
+        var modalContent = document.querySelector('#modal-code-programmes .modal-content');
+        if (modalContent) {
+            modalContent.style.animation = 'none';
+            setTimeout(function() { modalContent.style.animation = 'shake 0.4s'; }, 10);
+        }
+    }
+}
+
+/**
+ * Ferme la modale code programmes
+ */
+function fermerModalCodeProgrammes() {
+    var modal = document.getElementById('modal-code-programmes');
+    if (modal) modal.classList.remove('active');
+}
+
+/**
+ * Bascule la visibilité du code programmes
+ */
+function basculerVisibiliteCodeProg() {
+    var input = document.getElementById('input-code-programmes');
+    if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+}
+
+
+/**
  * Active l'écoute Firebase uniquement pour la ville de l'utilisateur ou le programme
  */
 function initialiserEcouteFirebase() {
