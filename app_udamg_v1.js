@@ -382,10 +382,10 @@ function enregistrerContact() {
             dateAjout: contactId
                 ? (contactExistant ? contactExistant.dateAjout || '' : '')
                 : new Date().toLocaleDateString(currentLang === 'en' ? 'en-GB' : 'fr-FR'),
-            // Le niveau est conservé lors d'une modification, sinon commence à 1
+            // Le niveau est conservé lors d'une modification, sinon commence à 0 (jamais relancé)
             niveau: contactId
-                ? (contactExistant ? contactExistant.niveau : 1)
-                : 1
+                ? (contactExistant ? contactExistant.niveau : 0)
+                : 0
         };
 
         if (contactId === '') {
@@ -445,7 +445,9 @@ function afficherContacts(listeFiltree) {
             compteur++;
 
             // Couleur de la pastille selon le niveau de suivi
-            var couleurPastille = 'var(--ccmg-red)';
+            // Niveau 0 (jamais relancé) → noir | 1 → rouge | 2 → jaune | 3 → vert
+            var couleurPastille = '#333333'; // Niveau 0 : noir (contact non encore relancé)
+            if (c.niveau === 1) couleurPastille = 'var(--ccmg-red)';
             if (c.niveau === 2) couleurPastille = 'var(--ccmg-gold)';
             if (c.niveau === 3) couleurPastille = 'var(--ccmg-green)';
 
@@ -670,7 +672,7 @@ function envoyerRelance(methode) {
     }
 
     // Fait progresser le niveau dans Firebase uniquement si on avance dans le processus
-    var nouveauNiveau = Math.max(c.niveau || 1, niveauSelectionne);
+    var nouveauNiveau = Math.max(c.niveau || 0, niveauSelectionne);
     
     if (nouveauNiveau > c.niveau) {
         db.collection('contacts').doc(id).update({ niveau: nouveauNiveau })
