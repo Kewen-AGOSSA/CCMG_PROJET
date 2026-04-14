@@ -90,28 +90,60 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /**
  * Vérifie si l'e-mail de l'utilisateur est présent dans la liste blanche de Firebase.
- * Si la liste est vide (première connexion), ajoute le premier compte en tant qu'admin.
+ * Supporte deux structures :
+ *   - Ancienne : { liste: ["email1", "email2", ...] }
+ *   - Nouvelle  : { angers: ["email1"], brest: ["email2"], ... } (classé par église)
+ * Si la liste est vide (première connexion), ajoute le premier compte sous "angers".
  */
 function verifierAccesVIP(utilisateur) {
     db.collection('configuration').doc('emails_autorises').get()
         .then(function(doc) {
             if (!doc.exists) {
-                // Initialisation : Aucune liste n'existe, on ajoute le tout premier a se connecter
-                console.log("[Sécurité] Initialisation de la base : ajout du premier VIP", utilisateur.email);
+                // Initialisation : première connexion, on crée la liste pour Angers
+                console.log("[Sécurité] Initialisation : ajout du premier VIP sous 'angers'", utilisateur.email);
                 db.collection('configuration').doc('emails_autorises').set({
-                    liste: [utilisateur.email]
+                    angers: [utilisateur.email]
                 }).then(function() {
                     accepterUtilisateur(utilisateur);
                 });
             } else {
                 var data = doc.data();
-                var liste = data.liste || [];
-                
-                if (liste.includes(utilisateur.email)) {
-                    // C'est un VIP !
+                var emailTrouve = false;
+
+                // ── Ancienne structure : champ "liste" (rétrocompatibilité) ──
+                if (data.liste && Array.isArray(data.liste)) {
+                    if (data.liste.includes(utilisateur.email)) {
+                        emailTrouve = true;
+                    }
+
+                    // Migration automatique : on déplace les emails de "liste" → "angers"
+                    console.log("[Migration] Déplacement des emails de 'liste' vers 'angers'...");
+                    var emailsExistants = data.angers || [];
+                    var fusionnes = emailsExistants.concat(
+                        data.liste.filter(function(e) { return !emailsExistants.includes(e); })
+                    );
+                    db.collection('configuration').doc('emails_autorises').update({
+                        angers: fusionnes,
+                        liste: firebase.firestore.FieldValue.delete()
+                    }).then(function() {
+                        console.log("[Migration] ✅ Emails migrés vers 'angers' avec succès.");
+                    }).catch(function(err) {
+                        console.error("[Migration] Erreur :", err);
+                    });
+                }
+
+                // ── Nouvelle structure : champs par église (angers, brest, nantes...) ──
+                if (!emailTrouve) {
+                    Object.keys(data).forEach(function(cleEglise) {
+                        if (Array.isArray(data[cleEglise]) && data[cleEglise].includes(utilisateur.email)) {
+                            emailTrouve = true;
+                        }
+                    });
+                }
+
+                if (emailTrouve) {
                     accepterUtilisateur(utilisateur);
                 } else {
-                    // Intrus détecté
                     rejeterUtilisateur();
                 }
             }
@@ -121,6 +153,7 @@ function verifierAccesVIP(utilisateur) {
             alert("Erreur Firebase : " + erreur.message);
         });
 }
+
 
 /**
  * Fonction appelée si l'utilisateur est autorisé
