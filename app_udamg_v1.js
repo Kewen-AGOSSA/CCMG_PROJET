@@ -186,6 +186,45 @@ function accepterUtilisateur(utilisateur) {
 
     // Migration unique depuis l'ancien localStorage (si données existantes)
     migrerDepuisLocalStorage();
+
+    // Initialise les champs vides pour toutes les églises dans Firebase
+    initialiserChampsEglises();
+}
+
+/**
+ * Crée les champs vides (tableaux []) pour toutes les églises configurées
+ * dans le document emails_autorises de Firestore, si ces champs n'existent pas encore.
+ * Permet à l'admin de voir directement dans Firebase tous les champs disponibles.
+ */
+function initialiserChampsEglises() {
+    db.collection('configuration').doc('emails_autorises').get()
+        .then(function(doc) {
+            if (!doc.exists) return;
+            var data = doc.data();
+            var miseAJour = {};
+
+            // Pour chaque église configurée dans l'app
+            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
+                // Normaliser la clé : minuscules, sans espaces ni tirets
+                var cleNorm = villeKey.toLowerCase().replace(/[\s\-]/g, '');
+                // N'ajouter le champ que s'il n'existe pas encore
+                if (!data.hasOwnProperty(cleNorm)) {
+                    miseAJour[cleNorm] = [];
+                }
+            });
+
+            if (Object.keys(miseAJour).length > 0) {
+                db.collection('configuration').doc('emails_autorises').update(miseAJour)
+                    .then(function() {
+                        console.log('[Init] ✅ Champs églises initialisés dans emails_autorises :', Object.keys(miseAJour));
+                    })
+                    .catch(function(err) {
+                        console.error('[Init] Erreur initialisation champs :', err);
+                    });
+            } else {
+                console.log('[Init] Tous les champs églises sont déjà présents.');
+            }
+        });
 }
 
 /**
