@@ -52,6 +52,10 @@ let roleSelectionneTemporaire = "";
 // Variable pour stocker la connexion Firebase active afin de pouvoir l'arrêter
 let unsubscribeFirebase = null;
 
+// Permissions de l'utilisateur (rempli au login)
+// Format : { "Angers": ["pasteur", "ouvrier"], "Brest": ["ouvrier"] }
+let mesPermissions = {};
+
 
 /* ===================================================
    INITIALISATION
@@ -109,39 +113,34 @@ function verifierAccesVIP(utilisateur) {
             } else {
                 var data = doc.data();
                 var emailTrouve = false;
+                mesPermissions = {}; // Reset
 
-                // ── Ancienne structure : champ "liste" (rétrocompatibilité) ──
-                if (data.liste && Array.isArray(data.liste)) {
-                    if (data.liste.includes(utilisateur.email)) {
-                        emailTrouve = true;
-                    }
+                Object.keys(data).forEach(function(cleEglise) {
+                    var permissionPourCetteEglise = data[cleEglise];
 
-                    // Migration automatique : on déplace les emails de "liste" → "angers"
-                    console.log("[Migration] Déplacement des emails de 'liste' vers 'angers'...");
-                    var emailsExistants = data.angers || [];
-                    var fusionnes = emailsExistants.concat(
-                        data.liste.filter(function(e) { return !emailsExistants.includes(e); })
-                    );
-                    db.collection('configuration').doc('emails_autorises').update({
-                        angers: fusionnes,
-                        liste: firebase.firestore.FieldValue.delete()
-                    }).then(function() {
-                        console.log("[Migration] ✅ Emails migrés vers 'angers' avec succès.");
-                    }).catch(function(err) {
-                        console.error("[Migration] Erreur :", err);
-                    });
-                }
-
-                // ── Nouvelle structure : champs par église (angers, brest, nantes...) ──
-                if (!emailTrouve) {
-                    Object.keys(data).forEach(function(cleEglise) {
-                        if (Array.isArray(data[cleEglise]) && data[cleEglise].includes(utilisateur.email)) {
+                    // ── Support de l'ancienne structure (Array simple) ──
+                    if (Array.isArray(permissionPourCetteEglise)) {
+                        if (permissionPourCetteEglise.includes(utilisateur.email)) {
                             emailTrouve = true;
+                            if (!mesPermissions[cleEglise]) mesPermissions[cleEglise] = [];
+                            mesPermissions[cleEglise].push("ouvrier"); // Rôle par défaut pour les anciennes listes
                         }
-                    });
-                }
+                    } 
+                    // ── Nouvelle structure (Object par rôle) ──
+                    else if (typeof permissionPourCetteEglise === 'object' && permissionPourCetteEglise !== null) {
+                        Object.keys(permissionPourCetteEglise).forEach(function(role) {
+                            var listeEmails = permissionPourCetteEglise[role];
+                            if (Array.isArray(listeEmails) && listeEmails.includes(utilisateur.email)) {
+                                emailTrouve = true;
+                                if (!mesPermissions[cleEglise]) mesPermissions[cleEglise] = [];
+                                mesPermissions[cleEglise].push(role);
+                            }
+                        });
+                    }
+                });
 
                 if (emailTrouve) {
+                    console.log("[Sécurité] Accès autorisé. Permissions :", mesPermissions);
                     accepterUtilisateur(utilisateur);
                 } else {
                     rejeterUtilisateur();
@@ -1291,10 +1290,37 @@ function filtrerVilles() {
  */
 function choisirVille(villeKey) {
     console.log('[UDAMG] Ville choisie :', villeKey);
-    console.log('[UDAMG] Ouverture du cadenas...');
     contextKeyTemporaire = villeKey;
     typeContextTemporaire = 'ville';
-    ouvrirModalRole();
+
+    // Cas spécial Bilan Global
+    if (villeKey === 'GLOBAL') {
+        // Est-ce que l'utilisateur est pasteur dans AU MOINS une église ?
+        var estPasteur = Object.keys(mesPermissions).some(function(cle) {
+            return mesPermissions[cle].includes('pasteur');
+        });
+
+        if (estPasteur) {
+            roleActuel = 'pasteur';
+            validerChoixContexte('ville', 'GLOBAL');
+        } else {
+            alert("⛔ Seul le Pasteur accède au Bilan Global");
+        }
+        return;
+    }
+
+    var rolesPossibles = mesPermissions[villeKey] || [];
+
+    if (rolesPossibles.length === 0) {
+        alert("⛔ Accès non autorisé pour cette église.");
+    } else if (rolesPossibles.length === 1) {
+        // Un seul rôle -> Accès direct
+        roleActuel = rolesPossibles[0];
+        validerChoixContexte('ville', villeKey);
+    } else {
+        // Plusieurs rôles -> Demander mais SANS mot de passe
+        ouvrirModalRole();
+    }
 }
 
 /**
@@ -1317,60 +1343,6 @@ function retourAuMenu() {
 }
 
 /**
- * ==========================================
- * VERROU PROGRAMMES SPÉCIAUX
- * ==========================================
- */
-
-/**
- * Ouvre la modale de code d'accès aux Programmes Spéciaux
- */
-function demanderCodeProgrammes() {
-    var modal = document.getElementById('modal-code-programmes');
-    var input = document.getElementById('input-code-programmes');
-    var erreur = document.getElementById('prog-code-erreur');
-    if (modal) {
-        if (input) { input.value = ''; input.type = 'password'; }
-        if (erreur) erreur.style.display = 'none';
-        modal.classList.add('active');
-        setTimeout(function() { if (input) input.focus(); }, 100);
-    }
-}
-
-/**
- * Valide le code d'accès aux Programmes Spéciaux
- * Code : prog2026
- */
-function validerCodeProgrammes() {
-    var input = document.getElementById('input-code-programmes');
-    var erreur = document.getElementById('prog-code-erreur');
-    var saisi = input ? input.value.trim() : '';
-
-    if (saisi === 'prog2026') {
-        // ✅ Code correct → accès accordé
-        fermerModalCodeProgrammes();
-        naviguerVers('page-programmes');
-    } else {
-        // ❌ Code incorrect
-        if (erreur) erreur.style.display = 'block';
-        var modalContent = document.querySelector('#modal-code-programmes .modal-content');
-        if (modalContent) {
-            modalContent.style.animation = 'none';
-            setTimeout(function() { modalContent.style.animation = 'shake 0.4s'; }, 10);
-        }
-    }
-}
-
-/**
- * Ferme la modale code programmes
- */
-function fermerModalCodeProgrammes() {
-    var modal = document.getElementById('modal-code-programmes');
-    if (modal) modal.classList.remove('active');
-}
-
-/**
- * Bascule la visibilité du code programmes
  */
 function basculerVisibiliteCodeProg() {
     var input = document.getElementById('input-code-programmes');
@@ -1438,7 +1410,19 @@ function genererBoutonsProgrammes() {
         btn.onclick = function() {
             contextKeyTemporaire = progKey;
             typeContextTemporaire = 'programme';
-            ouvrirModalRole();
+            
+            var rolesPossibles = mesPermissions[progKey] || [];
+            if (rolesPossibles.length === 0) {
+                // Par défaut pour les programmes, si autorisé VIP mais pas de rôle spécifique, on donne ouvrier ?
+                // Ou on vérifie si l'utilisateur est autorisé n'importe où.
+                roleActuel = 'ouvrier';
+                validerChoixContexte('programme', progKey);
+            } else if (rolesPossibles.length === 1) {
+                roleActuel = rolesPossibles[0];
+                validerChoixContexte('programme', progKey);
+            } else {
+                ouvrirModalRole();
+            }
         };
         container.appendChild(btn);
     });
@@ -1453,96 +1437,33 @@ function genererBoutonsProgrammes() {
  * Ouvre la modale de sécurité (Cadenas Virtuel) de manière sécurisée.
  */
 function ouvrirModalRole() {
-    console.log('[UDAMG] Ouverture du cadenas virtuel...');
+    console.log('[UDAMG] Sélection du rôle (sans mot de passe)...');
     
     var modal = document.getElementById('modal-mot-de-passe');
-    if (!modal) return console.error('[UDAMG] Modale introuvable.');
+    if (!modal) return;
 
-    // Configuration des affichages par défaut
-    var config = {
-        'etape-choix-role': 'block',
-        'etape-saisie-mdp': 'none',
-        'btn-fermer-modal-mdp': 'flex',
-        'mdp-erreur': 'none',
-        'role-erreur': 'none'
-    };
+    // Reset affichages
+    document.getElementById('etape-choix-role').style.display = 'block';
+    document.getElementById('etape-saisie-mdp').style.display = 'none';
+    document.getElementById('role-erreur').style.display = 'none';
 
-    Object.keys(config).forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.style.display = config[id];
-    });
-
-    var input = document.getElementById('input-mdp');
-    if (input) input.value = '';
-
-    // LOGIQUE SPÉCIFIQUE : Si Bilan Général (GLOBAL), montrer UNIQUEMENT Pasteur
     var btnOuvrier = document.getElementById('btn-role-ouvrier');
     var btnResp = document.getElementById('btn-role-resp');
-    
-    if (contextKeyTemporaire === 'GLOBAL') {
-        if (btnOuvrier) btnOuvrier.style.display = 'none';
-        if (btnResp) btnResp.style.display = 'none';
-    } else {
-        if (btnOuvrier) btnOuvrier.style.display = 'block';
-        if (btnResp) btnResp.style.display = 'block';
-    }
+    var btnPast = document.getElementById('btn-role-past');
+
+    var rolesAutorises = mesPermissions[contextKeyTemporaire] || [];
+
+    if (btnOuvrier) btnOuvrier.style.display = rolesAutorises.includes('ouvrier') ? 'block' : 'none';
+    if (btnResp) btnResp.style.display = rolesAutorises.includes('evangeliste') ? 'block' : 'none';
+    if (btnPast) btnPast.style.display = rolesAutorises.includes('pasteur') ? 'block' : 'none';
 
     modal.classList.add('active');
 }
 
 function choisirRole(role) {
-    // Blocage strict dès la sélection de rôle si Bilan Global demandé : SEUL le Pasteur peut entrer
-    if (contextKeyTemporaire === 'GLOBAL' && role !== 'pasteur') {
-        var errRole = document.getElementById('role-erreur');
-        if (errRole) {
-            errRole.textContent = "⛔ Seul le Pasteur accède au Bilan Global";
-            errRole.style.display = 'block';
-        }
-        
-        // Tremblement
-        var modalContent = document.querySelector('#modal-mot-de-passe .modal-content');
-        if (modalContent) {
-            modalContent.style.animation = 'none';
-            setTimeout(function() {
-                modalContent.style.animation = 'shake 0.4s';
-            }, 10);
-        }
-        return; // Interdire de passer à l'étape suivante
-    }
-    
-    // On efface l'erreur si tout va bien
-    var errRoleReset = document.getElementById('role-erreur');
-    if (errRoleReset) errRoleReset.style.display = 'none';
-
-    roleSelectionneTemporaire = role;
-    
-    var step1 = document.getElementById('etape-choix-role');
-    var step2 = document.getElementById('etape-saisie-mdp');
-    var btnFermer = document.getElementById('btn-fermer-modal-mdp');
-    
-    if (step1) step1.style.display = 'none';
-    if (step2) step2.style.display = 'block';
-    if (btnFermer) btnFermer.style.display = 'none';
-    
-    var input = document.getElementById('input-mdp');
-    if (input) {
-        input.value = '';
-        input.type = 'password';
-        var toggle = document.getElementById('toggle-mdp');
-        if (toggle) toggle.textContent = '👁️';
-    }
-    
-    var labelEl = document.getElementById('label-role');
-    if (labelEl) {
-        var labels = { 
-            'pasteur': '👑 Pasteur', 
-            'ouvrier': '📝 Ouvrier', 
-            'evangeliste': '🕊️ Resp. Évangélisation' 
-        };
-        labelEl.textContent = labels[role] || role;
-    }
-    
-    if (input) setTimeout(function() { input.focus(); }, 100);
+    roleActuel = role;
+    validerChoixContexte(typeContextTemporaire, contextKeyTemporaire);
+    fermerModalMdp();
 }
 
 function retourChoixRole() {
@@ -1580,67 +1501,6 @@ function fermerModalMdp() {
     if (modal) modal.classList.remove('active');
     contextKeyTemporaire = "";
     typeContextTemporaire = "";
-    roleSelectionneTemporaire = "";
-}
-
-function validerMotDePasse() {
-    var mdpSaisi = document.getElementById('input-mdp').value.trim();
-    if (!mdpSaisi || !contextKeyTemporaire || !roleSelectionneTemporaire) return;
-
-    // =====================================================================
-    // MOTS DE PASSE PAR RÔLE ET PAR ÉGLISE
-    // - Pasteur       : identique pour toutes les églises → "past2026"
-    // - Angers        : mots de passe personnalisés (exceptions)
-    //                   Ouvrier → "ouv.angers26" | Resp. Évang. → "resp.a2026"
-    // - Autres églises : pattern générique
-    //                   Resp. Évang. → "ccmg2026{ville}" | Ouvrier → "ouvrier2026{ville}"
-    // =====================================================================
-
-    var mdpPast, mdpEvan, mdpOuv;
-
-    if (contextKeyTemporaire === 'Angers') {
-        // Mots de passe spécifiques pour l'église d'Angers
-        mdpPast = "past2026";
-        mdpOuv  = "ouv.angers26";
-        mdpEvan = "resp.a2026";
-    } else {
-        // Clé de contexte normalisée (minuscules, sans espaces ni tirets)
-        var cleNormalisee = contextKeyTemporaire
-            .toLowerCase()
-            .replace(/[\s\-]/g, '');        // "La Roche sur Yon" → "larochesuyon"
-
-        mdpPast = "past2026";                            // Identique partout
-        mdpEvan = "ccmg2026" + cleNormalisee;            // ex. "ccmg2026brest"
-        mdpOuv  = "ouvrier2026" + cleNormalisee;         // ex. "ouvrier2026brest"
-    }
-
-    verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi);
-}
-
-function verifierMdpLocal(mdpPast, mdpOuv, mdpEvan, mdpSaisi) {
-    var mdpReel = "";
-    if (roleSelectionneTemporaire === 'pasteur')     mdpReel = mdpPast;
-    if (roleSelectionneTemporaire === 'ouvrier')     mdpReel = mdpOuv;
-    if (roleSelectionneTemporaire === 'evangeliste') mdpReel = mdpEvan;
-
-    if (mdpSaisi === mdpReel) {
-        // Succès !
-        roleActuel = roleSelectionneTemporaire;
-        validerChoixContexte(typeContextTemporaire, contextKeyTemporaire);
-        fermerModalMdp();
-    } else {
-        // Échec
-        var errEl2 = document.getElementById('mdp-erreur');
-        errEl2.innerHTML = "❌ Mot de passe incorrect";
-        errEl2.style.display = 'block';
-
-        // Tremblement
-        var modalContent2 = document.querySelector('#modal-mot-de-passe .modal-content');
-        modalContent2.style.animation = 'none';
-        setTimeout(function() {
-            modalContent2.style.animation = 'shake 0.4s';
-        }, 10);
-    }
 }
 
 function validerChoixContexte(type, id) {

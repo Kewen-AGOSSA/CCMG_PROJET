@@ -393,23 +393,8 @@
                     <p id="role-erreur" style="color: #ff4d4d; font-size: 14px; margin-top: 15px; font-weight: bold; display: none;">⛔ Accès refusé</p>
                 </div>
 
-                <div id="etape-saisie-mdp" style="display:none;">
-                    <p style="color:var(--ccmg-gold); margin-bottom:20px; font-weight:bold;">Mot de passe <span id="label-role"></span></p>
-                    <div style="position: relative; width: 100%;">
-                        <input type="password" id="input-mdp" placeholder="***" class="form-input" style="text-align:center; letter-spacing: 5px; font-size: 24px; padding: 15px; padding-right: 50px !important;">
-                        <!-- Bouton Cache-Oeil (Version 1.1) -->
-                        <span id="toggle-mdp" onclick="basculerVisibiliteMdp()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 20px; opacity: 0.7; transition: 0.2s; z-index: 99;">👁️</span>
-                    </div>
-                    <!-- Message d'erreur (masqué par défaut) -->
-                    <p id="mdp-erreur" style="color: #ff4d4d; font-size: 14px; margin-top: 15px; font-weight: bold; display: none;">❌ Mot de passe incorrect</p>
-                    <div class="modal-actions" style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
-                        <button onclick="retourChoixRole()" class="btn-annuler">Retour</button>
-                        <button onclick="validerMotDePasse()" class="btn-statistique" style="margin:0;">Déverrouiller 🔓</button>
-                    </div>
-                </div> <!-- Fin etape-saisie-mdp -->
-
                 <div class="modal-actions" style="margin-top:20px; display:flex; justify-content:center;" id="btn-fermer-modal-mdp">
-                    <button onclick="fermerModalMdp()" class="btn-annuler">Fermer</button>
+                    <button onclick="fermerModalMdp()" class="btn-annuler">Annuler</button>
                 </div>
             </div>
         </div>
@@ -450,6 +435,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     
     <script src="lang_udamg_v1.js?v=20260414_msg7"></script>
-    <script src="app_udamg_v1.js?v=20260415_sort_date"></script>
+    <script src="app_udamg_v1.js?v=20260415_phase1_security"></script>
 </body>
 </html>
