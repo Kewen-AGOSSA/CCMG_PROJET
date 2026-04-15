@@ -1454,7 +1454,14 @@ function choisirVille(villeKey) {
 
     // Cas spécial Bilan Global
     if (villeKey === 'GLOBAL') {
-        // Est-ce que l'utilisateur est pasteur dans AU MOINS une église ?
+        // Le Père Fondateur a toujours accès
+        if (estFondateur) {
+            roleActuel = 'pasteur';
+            validerChoixContexte('ville', 'GLOBAL');
+            return;
+        }
+
+        // Sinon, vérification pour les autres
         var estPasteur = Object.keys(mesPermissions).some(function(cle) {
             return mesPermissions[cle].includes('pasteur');
         });
@@ -1463,7 +1470,7 @@ function choisirVille(villeKey) {
             roleActuel = 'pasteur';
             validerChoixContexte('ville', 'GLOBAL');
         } else {
-            alert("⛔ Seul le Pasteur accède au Bilan Global");
+            afficherAlerte("Accès Réservé", "Seul le Pasteur accède au Bilan Global", "⛔");
         }
         return;
     }
