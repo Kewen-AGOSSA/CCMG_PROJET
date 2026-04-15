@@ -1771,3 +1771,27 @@ styleShake.innerHTML = `
     }
 `;
 document.head.appendChild(styleShake);
+
+/**
+ * Fonction de navigation principale entre les écrans
+ * @param {string} ecranId - L'ID de la section <section> à afficher
+ */
+function naviguerVers(ecranId) {
+    console.log('[UDAMG] Navigation vers :', ecranId);
+    try {
+        var ecrans = document.querySelectorAll('.ecran');
+        ecrans.forEach(function (e) {
+            e.classList.remove('active');
+        });
+
+        var cible = document.getElementById(ecranId);
+        if (cible) {
+            cible.classList.add('active');
+            window.scrollTo(0, 0);
+        } else {
+            console.error("[UDAMG] Écran introuvable :", ecranId);
+        }
+    } catch (err) {
+        console.error("[UDAMG] Erreur lors de la navigation :", err);
+    }
+}
