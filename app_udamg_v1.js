@@ -179,7 +179,7 @@ function verifierAccesVIP(utilisateur) {
         })
         .catch(function(erreur) {
             console.error("[Sécurité] Erreur lors de la vérification VIP :", erreur);
-            alert("Erreur Firebase : " + erreur.message);
+            afficherAlerte("Erreur Firebase", "Impossible de vérifier vos accès : " + erreur.message, "❌");
         });
 }
 
@@ -286,7 +286,11 @@ function initialiserChampsEglises() {
  * Fonction appelée si l'utilisateur n'est pas dans la liste VIP
  */
 function rejeterUtilisateur() {
-    alert("⛔ Accès Refusé\nVotre adresse e-mail n'est pas autorisée par l'administration UDAMG.\nVeuillez contacter le responsable.");
+    afficherAlerte(
+        "Accès Refusé", 
+        "Votre adresse e-mail n'est pas autorisée par l'administration UDAMG. Veuillez contacter le responsable.", 
+        "⛔"
+    );
     firebase.auth().signOut();
 }
 
@@ -1375,7 +1379,7 @@ function choisirVille(villeKey) {
     var rolesPossibles = mesPermissions[villeKey] || [];
 
     if (rolesPossibles.length === 0) {
-        alert("⛔ Accès non autorisé pour cette église.");
+        afficherAlerte("Accès Réservé", "Vous n'avez pas de rôle défini pour cette église. Contactez votre Pasteur.");
     } else if (rolesPossibles.length === 1) {
         // Un seul rôle -> Accès direct
         roleActuel = rolesPossibles[0];
@@ -1571,6 +1575,31 @@ function fermerModalMdp() {
     if (modal) modal.classList.remove('active');
     contextKeyTemporaire = "";
     typeContextTemporaire = "";
+}
+
+/**
+ * Affiche une alerte personnalisée premium
+ */
+function afficherAlerte(titre, message, icone) {
+    var modal = document.getElementById('modal-alerte');
+    var titreEl = document.getElementById('alerte-titre');
+    var messEl = document.getElementById('alerte-message');
+    var iconeEl = document.getElementById('alerte-icone');
+
+    if (modal) {
+        if (titreEl) titreEl.textContent = titre;
+        if (messEl) messEl.textContent = message;
+        if (iconeEl && icone) iconeEl.textContent = icone;
+        modal.classList.add('active');
+    }
+}
+
+/**
+ * Ferme l'alerte personnalisée
+ */
+function fermerAlerte() {
+    var modal = document.getElementById('modal-alerte');
+    if (modal) modal.classList.remove('active');
 }
 
 function validerChoixContexte(type, id) {

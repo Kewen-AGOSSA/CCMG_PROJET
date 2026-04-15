@@ -414,7 +414,21 @@
                 <p id="prog-code-erreur" style="color: #ff4d4d; font-size: 14px; margin-top: 12px; font-weight: bold; display: none;">❌ Code incorrect</p>
                 <div class="modal-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
                     <button onclick="fermerModalCodeProgrammes()" class="btn-annuler">Fermer</button>
-                    <button onclick="validerCodeProgrammes()" class="btn-statistique" style="margin:0;">Déverrouiller 🔓</button>
+                    <button onclick="validerCodeProgrammes()" class="btn-statistique" style="margin: 0;">Entrer 🔓</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nouvelle Modale d'Alerte Premium (Remplace alert()) -->
+        <div id="modal-alerte" class="modal">
+            <div class="modal-content glass-card" style="text-align: center; max-width: 400px; border: 1px solid rgba(255, 77, 77, 0.3);">
+                <div id="alerte-icone" style="font-size: 50px; margin-bottom: 15px;">🛡️</div>
+                <h2 id="alerte-titre" style="margin-bottom: 10px; font-size: 22px; color: var(--ccmg-gold);">Accès Réservé</h2>
+                <p id="alerte-message" style="font-size: 15px; color: var(--text-muted); line-height: 1.5; margin-bottom: 25px;">
+                    Votre adresse e-mail n'a pas les autorisations nécessaires pour accéder à cette section.
+                </p>
+                <div class="modal-actions" style="display: flex; justify-content: center;">
+                    <button onclick="fermerAlerte()" class="btn-statistique" style="margin: 0; min-width: 120px;">Compris</button>
                 </div>
             </div>
         </div>
