@@ -102,13 +102,13 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 function verifierAccesVIP(utilisateur) {
     db.collection('configuration').doc('emails_autorises').get()
-        .then(function(doc) {
+        .then(function (doc) {
             if (!doc.exists) {
                 // Initialisation : première connexion, on crée la liste pour Angers
                 console.log("[Sécurité] Initialisation : ajout du premier VIP sous 'angers'", utilisateur.email);
                 db.collection('configuration').doc('emails_autorises').set({
                     angers: [utilisateur.email]
-                }).then(function() {
+                }).then(function () {
                     accepterUtilisateur(utilisateur);
                 });
             } else {
@@ -126,21 +126,21 @@ function verifierAccesVIP(utilisateur) {
                     }
                 }
 
-                Object.keys(data).forEach(function(cleFirestore) {
+                Object.keys(data).forEach(function (cleFirestore) {
                     var permissionPourCetteEglise = data[cleFirestore];
-                    
+
                     // Trouver la clé correspondante dans CONFIG_EGLISES / CONFIG_PROGRAMMES
                     // (On cherche une correspondance insensible à la casse et aux espaces)
                     var cleNormaliseeDb = cleFirestore.toLowerCase().replace(/[\s\-]/g, '');
-                    
+
                     var cleCorrespondante = "";
                     // Check dans les églises
-                    Object.keys(CONFIG_EGLISES).forEach(function(cke) {
+                    Object.keys(CONFIG_EGLISES).forEach(function (cke) {
                         if (cke.toLowerCase().replace(/[\s\-]/g, '') === cleNormaliseeDb) cleCorrespondante = cke;
                     });
                     // Check dans les programmes si pas trouvé
                     if (!cleCorrespondante) {
-                        Object.keys(CONFIG_PROGRAMMES).forEach(function(ckp) {
+                        Object.keys(CONFIG_PROGRAMMES).forEach(function (ckp) {
                             if (ckp.toLowerCase().replace(/[\s\-]/g, '') === cleNormaliseeDb) cleCorrespondante = ckp;
                         });
                     }
@@ -155,10 +155,10 @@ function verifierAccesVIP(utilisateur) {
                             if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
                             mesPermissions[cleStockage].push("ouvrier");
                         }
-                    } 
+                    }
                     // ── Nouvelle structure (Object par rôle) ──
                     else if (typeof permissionPourCetteEglise === 'object' && permissionPourCetteEglise !== null) {
-                        Object.keys(permissionPourCetteEglise).forEach(function(role) {
+                        Object.keys(permissionPourCetteEglise).forEach(function (role) {
                             var listeEmails = permissionPourCetteEglise[role];
                             if (Array.isArray(listeEmails) && listeEmails.includes(utilisateur.email)) {
                                 emailTrouve = true;
@@ -177,7 +177,7 @@ function verifierAccesVIP(utilisateur) {
                 }
             }
         })
-        .catch(function(erreur) {
+        .catch(function (erreur) {
             console.error("[Sécurité] Erreur lors de la vérification VIP :", erreur);
             afficherAlerte("Erreur Firebase", "Impossible de vérifier vos accès : " + erreur.message, "❌");
         });
@@ -189,7 +189,7 @@ function verifierAccesVIP(utilisateur) {
  */
 function accepterUtilisateur(utilisateur) {
     // ✅ UTILISATEUR AUTORISÉ — on affiche l'app
-    
+
     // Mise à jour de l'interface : affiche l'avatar et le prénom
     var userInfo = document.getElementById('user-info');
     var userAvatar = document.getElementById('user-avatar');
@@ -240,12 +240,12 @@ function lancerMigrationContacts() {
     console.log("[Migration] Démarrage du rangement...");
 
     db.collection('contacts').get()
-        .then(function(snapshot) {
+        .then(function (snapshot) {
             var total = snapshot.size;
             var compte = 0;
             var erreurs = 0;
 
-            snapshot.forEach(function(doc) {
+            snapshot.forEach(function (doc) {
                 var data = doc.data();
                 var id = doc.id;
                 var ville = data.ville || "";
@@ -265,14 +265,14 @@ function lancerMigrationContacts() {
 
                 // Copie le contact vers la nouvelle destination
                 collectionDest.doc(id).set(data)
-                    .then(function() {
+                    .then(function () {
                         compte++;
                         if (compte % 100 === 0) console.log("[Migration] Progress: " + compte + "/" + total);
                         if (compte === total) {
                             alert("✅ Migration terminée ! " + compte + " contacts ont été rangés.");
                         }
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         erreurs++;
                         console.error("[Migration] Erreur sur " + id, err);
                     });
@@ -287,13 +287,13 @@ function lancerMigrationContacts() {
  */
 function initialiserChampsEglises() {
     db.collection('configuration').doc('emails_autorises').get()
-        .then(function(doc) {
+        .then(function (doc) {
             if (!doc.exists) return;
             var data = doc.data();
             var miseAJour = {};
 
             // 1. Détection et migration des anciennes listes (Arrays) vers le format Rôles (Objects)
-            Object.keys(data).forEach(function(key) {
+            Object.keys(data).forEach(function (key) {
                 // Si le champ est un tableau (ancien format) et n'est pas "fondateurs"
                 if (Array.isArray(data[key]) && key !== 'fondateurs') {
                     console.log("[Migration] Transformation de '" + key + "' vers le format Rôles...");
@@ -306,7 +306,7 @@ function initialiserChampsEglises() {
             });
 
             // 2. Création des champs pour les églises manquantes dans la CONFIG
-            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
+            Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
                 var cleNorm = villeKey.toLowerCase().replace(/[\s\-]/g, '');
                 if (!data.hasOwnProperty(cleNorm)) {
                     miseAJour[cleNorm] = {
@@ -322,13 +322,23 @@ function initialiserChampsEglises() {
                 miseAJour['fondateurs'] = [];
             }
 
+            // 4. S'assurer que le champ programmes_speciaux existe (Case pour accès global aux programmes)
+            if (!data.hasOwnProperty('programmes_speciaux')) {
+                console.log("[Init] Création du champ 'programmes_speciaux'...");
+                miseAJour['programmes_speciaux'] = {
+                    pasteur: [],
+                    evangeliste: [],
+                    ouvrier: []
+                };
+            }
+
             // Exécution de la mise à jour si nécessaire
             if (Object.keys(miseAJour).length > 0) {
                 db.collection('configuration').doc('emails_autorises').update(miseAJour)
-                    .then(function() {
+                    .then(function () {
                         console.log('[Init] ✅ Firestore a été mis à jour avec le nouveau format de rôles.');
                     })
-                    .catch(function(err) {
+                    .catch(function (err) {
                         console.error('[Init] Erreur lors de la mise à jour Firestore :', err);
                     });
             } else {
@@ -342,8 +352,8 @@ function initialiserChampsEglises() {
  */
 function rejeterUtilisateur() {
     afficherAlerte(
-        "Accès Refusé", 
-        "Votre adresse e-mail n'est pas autorisée par l'administration UDAMG. Veuillez contacter le responsable.", 
+        "Accès Refusé",
+        "Votre adresse e-mail n'est pas autorisée par l'administration UDAMG. Veuillez contacter le responsable.",
         "⛔"
     );
     firebase.auth().signOut();
@@ -375,7 +385,7 @@ function connexionGoogle() {
 function deconnexion() {
     ouvrirModalConfirmation(
         'Voulez-vous vraiment vous déconnecter de l\'application UDAMG ?',
-        function() {
+        function () {
             familleActuelle = '';
             tousLesContacts = [];
             firebase.auth().signOut()
@@ -405,11 +415,11 @@ function ouvrirModalConfirmation(message, onValider) {
     var modal = document.getElementById('modal-confirmation');
     var msgEl = document.getElementById('confirmation-message');
     var btnValider = document.getElementById('btn-valider-confirmation');
-    
+
     if (modal && msgEl && btnValider) {
         msgEl.textContent = message;
         modal.style.display = 'flex';
-        
+
         // On attache l'action de validation
         btnValider.onclick = onValider;
     }
@@ -465,7 +475,7 @@ function naviguerVers(idEcran) {
     if (ecranCible) {
         ecranCible.classList.add('active');
     }
-    
+
     // Après chaque changement d'écran, on applique les masquages selon le rôle
     if (typeof appliquerDroitsInterface === 'function') {
         appliquerDroitsInterface();
@@ -532,13 +542,13 @@ function enregistrerContact() {
         alert("Action impossible ⛔\nVous ne pouvez pas ajouter ou modifier un contact depuis le Bilan Global.\nVeuillez vous connecter à une église spécifique pour gérer ses contacts.");
         return;
     }
-    
-    var nom        = document.getElementById('input-nom').value.trim();
-    var prenom     = document.getElementById('input-prenom').value.trim();
-    var telBrut    = document.getElementById('input-tel').value.trim();
-    var ref        = document.getElementById('input-evangeliste').value.trim();
-    var notes      = document.getElementById('input-notes').value.trim();
-    var contactId  = document.getElementById('input-contact-id').value;
+
+    var nom = document.getElementById('input-nom').value.trim();
+    var prenom = document.getElementById('input-prenom').value.trim();
+    var telBrut = document.getElementById('input-tel').value.trim();
+    var ref = document.getElementById('input-evangeliste').value.trim();
+    var notes = document.getElementById('input-notes').value.trim();
+    var contactId = document.getElementById('input-contact-id').value;
 
     if (nom !== '' && prenom !== '' && telBrut !== '') {
 
@@ -556,13 +566,13 @@ function enregistrerContact() {
             : null;
 
         var contactData = {
-            nom:       nom,
-            prenom:    prenom,
-            tel:       telNettoye,
-            referent:  ref,
-            notes:     notes,
-            famille:   familleActuelle,
-            ville:     villeActuelle || "", // Si ville, stocke la ville
+            nom: nom,
+            prenom: prenom,
+            tel: telNettoye,
+            referent: ref,
+            notes: notes,
+            famille: familleActuelle,
+            ville: villeActuelle || "", // Si ville, stocke la ville
             programme: programmeActuel || "", // Si programme, stocke le programme
             // La date d'ajout n'est enregistrée qu'à la création, jamais modifiée
             dateAjout: contactId
@@ -676,7 +686,7 @@ function afficherContacts(listeFiltree) {
             // Bouton Modifier : accessible à TOUS les rôles (y compris Ouvrier)
             var modifierHtml = '<button class="action-btn" onclick="modifierContact(\'' + c.id + '\')">' +
                 '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
-            '</button>';
+                '</button>';
 
             // Relance et Suppression : réservés aux rôles Pasteur et Resp. Évangélisation
             if (roleActuel !== 'ouvrier') {
@@ -684,26 +694,26 @@ function afficherContacts(listeFiltree) {
 
                 supprimerHtml = '<button class="action-btn" onclick="supprimerContact(\'' + c.id + '\')">' +
                     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
-                '</button>';
+                    '</button>';
             }
 
 
             var template =
                 '<div class="contact-card">' +
-                    '<div class="contact-info">' +
-                        '<div class="contact-indic" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
-                        '<div class="contact-texte">' +
-                            htmlDate +
-                            '<h4>' + escapeHTML(c.nom).toUpperCase() + ' ' + escapeHTML(c.prenom) + '</h4>' +
-                            '<p>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</p>' +
-                            htmlNotes +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="contact-actions">' +
-                        relanceHtml +
-                        modifierHtml +
-                        supprimerHtml +
-                    '</div>' +
+                '<div class="contact-info">' +
+                '<div class="contact-indic" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
+                '<div class="contact-texte">' +
+                htmlDate +
+                '<h4>' + escapeHTML(c.nom).toUpperCase() + ' ' + escapeHTML(c.prenom) + '</h4>' +
+                '<p>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</p>' +
+                htmlNotes +
+                '</div>' +
+                '</div>' +
+                '<div class="contact-actions">' +
+                relanceHtml +
+                modifierHtml +
+                supprimerHtml +
+                '</div>' +
                 '</div>';
 
             container.innerHTML += template;
@@ -723,8 +733,8 @@ function filtrerContacts() {
 
     var resultats = tousLesContacts.filter(function (c) {
         return c.nom.toLowerCase().includes(terme) ||
-               c.prenom.toLowerCase().includes(terme) ||
-               c.tel.includes(terme);
+            c.prenom.toLowerCase().includes(terme) ||
+            c.tel.includes(terme);
     });
 
     afficherContacts(resultats);
@@ -738,11 +748,11 @@ function filtrerContacts() {
 function escapeHTML(str) {
     if (!str) return '';
     return String(str)
-        .replace(/&/g,  '&amp;')
-        .replace(/</g,  '&lt;')
-        .replace(/>/g,  '&gt;')
-        .replace(/'/g,  '&#39;')
-        .replace(/"/g,  '&quot;');
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/'/g, '&#39;')
+        .replace(/"/g, '&quot;');
 }
 
 
@@ -757,7 +767,7 @@ function escapeHTML(str) {
 function supprimerContact(id) {
     ouvrirModalConfirmation(
         t('remove_confirm'),
-        function() {
+        function () {
             var collectionDest;
             if (villeActuelle && villeActuelle !== 'GLOBAL') {
                 var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
@@ -773,7 +783,7 @@ function supprimerContact(id) {
             }
 
             collectionDest.doc(id).delete()
-                .then(function() {
+                .then(function () {
                     fermerModalConfirmation();
                 })
                 .catch(function (err) {
@@ -792,14 +802,14 @@ function modifierContact(id) {
     var c = tousLesContacts.find(function (contact) { return contact.id === id; });
     if (!c) return;
 
-    document.getElementById('input-nom').value         = c.nom   || '';
-    document.getElementById('input-prenom').value      = c.prenom || '';
-    document.getElementById('input-tel').value         = c.tel   || '';
+    document.getElementById('input-nom').value = c.nom || '';
+    document.getElementById('input-prenom').value = c.prenom || '';
+    document.getElementById('input-tel').value = c.tel || '';
     document.getElementById('input-evangeliste').value = c.referent || '';
-    document.getElementById('input-notes').value       = c.notes || '';
+    document.getElementById('input-notes').value = c.notes || '';
 
     // Stocke l'ID Firebase pour que enregistrerContact() sache qu'on est en mode édition
-    document.getElementById('input-contact-id').value  = id;
+    document.getElementById('input-contact-id').value = id;
 
     ouvrirFormulaire();
 }
@@ -839,9 +849,9 @@ function choisirNiveauRelance(niveau) {
     document.getElementById('input-relance-niveau').value = niveau;
     document.getElementById('relance-step-1').style.display = 'none';
     document.getElementById('relance-step-2').style.display = 'block';
-    
+
     var btnRetour = document.getElementById('btn-retour-relance');
-    if(btnRetour) btnRetour.style.display = 'inline-block';
+    if (btnRetour) btnRetour.style.display = 'inline-block';
 }
 
 /**
@@ -850,9 +860,9 @@ function choisirNiveauRelance(niveau) {
 function retourStep1Relance() {
     document.getElementById('relance-step-2').style.display = 'none';
     document.getElementById('relance-step-1').style.display = 'block';
-    
+
     var btnRetour = document.getElementById('btn-retour-relance');
-    if(btnRetour) btnRetour.style.display = 'none';
+    if (btnRetour) btnRetour.style.display = 'none';
 }
 
 /**
@@ -863,15 +873,15 @@ function envoyerRelance(methode) {
     var id = document.getElementById('input-relance-id').value;
     var niveauSelectionne = parseInt(document.getElementById('input-relance-niveau').value, 10);
     var c = tousLesContacts.find(function (contact) { return contact.id === id; });
-    
+
     if (!c || isNaN(niveauSelectionne)) {
         fermerModalRelance();
         return;
     }
 
-    var configContexte = villeActuelle 
-        ? (CONFIG_EGLISES[villeActuelle] || CONFIG_EGLISES["Angers"]) 
-        : (CONFIG_PROGRAMMES[programmeActuel] || {nom: "UDAMG", adresse: "", lien_wa: ""});
+    var configContexte = villeActuelle
+        ? (CONFIG_EGLISES[villeActuelle] || CONFIG_EGLISES["Angers"])
+        : (CONFIG_PROGRAMMES[programmeActuel] || { nom: "UDAMG", adresse: "", lien_wa: "" });
 
     // Récupère le template de message selon le niveau CHOISI
     var messageTemplate = t('msg_level' + niveauSelectionne);
@@ -892,7 +902,7 @@ function envoyerRelance(methode) {
 
     // Fait progresser le niveau dans Firebase uniquement si on avance dans le processus
     var nouveauNiveau = Math.max(c.niveau || 0, niveauSelectionne);
-    
+
     if (nouveauNiveau > c.niveau) {
         var collectionDest;
         if (villeActuelle && villeActuelle !== 'GLOBAL') {
@@ -954,7 +964,7 @@ function appliquerDroitsInterface() {
  */
 function ouvrirStats() {
     naviguerVers('page-stats');
-    
+
     var h2Stats = document.querySelector('#page-stats h2');
     if (h2Stats) {
         if (villeActuelle === 'GLOBAL') {
@@ -969,7 +979,7 @@ function ouvrirStats() {
             }
         }
     }
-    
+
     actualiserTableauDeBord();
 }
 
@@ -998,8 +1008,8 @@ function actualiserTableauDeBord() {
     document.getElementById('total-general').innerText = total;
 
     var nGedeon = tousLesContacts.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
-    var nJac    = tousLesContacts.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
-    var nMidl   = tousLesContacts.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+    var nJac = tousLesContacts.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+    var nMidl = tousLesContacts.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
 
     animerChiffre('count-gedeon', nGedeon);
     animerChiffre('count-jac', nJac);
@@ -1007,12 +1017,12 @@ function actualiserTableauDeBord() {
 
     setTimeout(function () {
         var pGedeon = total === 0 ? 0 : (nGedeon / total) * 100;
-        var pJac    = total === 0 ? 0 : (nJac / total) * 100;
-        var pMidl   = total === 0 ? 0 : (nMidl / total) * 100;
-        
+        var pJac = total === 0 ? 0 : (nJac / total) * 100;
+        var pMidl = total === 0 ? 0 : (nMidl / total) * 100;
+
         document.getElementById('bar-gedeon').style.height = (pGedeon + 15) + '%';
-        document.getElementById('bar-jac').style.height    = (pJac + 15) + '%';
-        document.getElementById('bar-midl').style.height   = (pMidl + 15) + '%';
+        document.getElementById('bar-jac').style.height = (pJac + 15) + '%';
+        document.getElementById('bar-midl').style.height = (pMidl + 15) + '%';
     }, 100);
 
     remplirBarreFamille('GÉDÉON', 'prog-gedeon');
@@ -1024,10 +1034,10 @@ function actualiserTableauDeBord() {
  * Remplit les 3 segments de jauge (niveaux 1, 2, 3) pour une famille donnée.
  */
 function remplirBarreFamille(nomFamille, prefixeId) {
-    var contactsFamille = tousLesContacts.filter(function (c) { 
-        return c.famille === nomFamille || 
-               (nomFamille === 'Mission JAC' && c.famille === 'JAC') || 
-               (nomFamille === 'CCMG' && c.famille === 'MIDL'); 
+    var contactsFamille = tousLesContacts.filter(function (c) {
+        return c.famille === nomFamille ||
+            (nomFamille === 'Mission JAC' && c.famille === 'JAC') ||
+            (nomFamille === 'CCMG' && c.famille === 'MIDL');
     });
     var totalFam = contactsFamille.length;
 
@@ -1042,14 +1052,14 @@ function remplirBarreFamille(nomFamille, prefixeId) {
     setTimeout(function () {
         if (totalFam > 0) {
             b1.style.width = (n1 / totalFam * 100) + '%';
-            b1.innerText   = n1 > 0 ? n1 : '';
+            b1.innerText = n1 > 0 ? n1 : '';
             b2.style.width = (n2 / totalFam * 100) + '%';
-            b2.innerText   = n2 > 0 ? n2 : '';
+            b2.innerText = n2 > 0 ? n2 : '';
             b3.style.width = (n3 / totalFam * 100) + '%';
-            b3.innerText   = n3 > 0 ? n3 : '';
+            b3.innerText = n3 > 0 ? n3 : '';
         } else {
             b1.style.width = b2.style.width = b3.style.width = '0%';
-            b1.innerText   = b2.innerText   = b3.innerText   = '';
+            b1.innerText = b2.innerText = b3.innerText = '';
         }
     }, 200);
 }
@@ -1129,14 +1139,14 @@ function exporterExcel() {
 
         function contactEnLigne(c) {
             return [
-                c.nom       || '',
-                c.prenom    || '',
+                c.nom || '',
+                c.prenom || '',
                 '\'' + (c.tel || ''), // Préfixe ' pour forcer le format texte dans Excel
-                c.famille   || '',
-                c.referent  || '',
-                c.niveau    || 1,
+                c.famille || '',
+                c.referent || '',
+                c.niveau || 1,
                 niveauEnTexte(c.niveau),
-                c.notes     || '',
+                c.notes || '',
                 c.dateAjout || ''
             ];
         }
@@ -1148,7 +1158,7 @@ function exporterExcel() {
         }
 
         var maintenant = new Date();
-        var dateStr  = maintenant.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        var dateStr = maintenant.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         var heureStr = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
         var donneesSummary = [
@@ -1156,15 +1166,15 @@ function exporterExcel() {
             ['Généré le : ' + dateStr + ' à ' + heureStr],
             [''],
             ['STATISTIQUES GÉNÉRALES'],
-            ['Total des âmes touchées',  tousLesContacts.length],
-            ['Famille GÉDÉON', tousLesContacts.filter(function(c){ return c.famille === 'GÉDÉON'; }).length],
-            ['Famille Mission JAC', tousLesContacts.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length],
-            ['Famille CCMG', tousLesContacts.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length],
+            ['Total des âmes touchées', tousLesContacts.length],
+            ['Famille GÉDÉON', tousLesContacts.filter(function (c) { return c.famille === 'GÉDÉON'; }).length],
+            ['Famille Mission JAC', tousLesContacts.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length],
+            ['Famille CCMG', tousLesContacts.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length],
             [''],
             ['NIVEAU DE SUIVI GLOBAL'],
-            ['Niveau 1 - Relancés',  tousLesContacts.filter(function(c){ return c.niveau === 1; }).length],
-            ['Niveau 2 - Présentés', tousLesContacts.filter(function(c){ return c.niveau === 2; }).length],
-            ['Niveau 3 - Invités',   tousLesContacts.filter(function(c){ return c.niveau === 3; }).length],
+            ['Niveau 1 - Relancés', tousLesContacts.filter(function (c) { return c.niveau === 1; }).length],
+            ['Niveau 2 - Présentés', tousLesContacts.filter(function (c) { return c.niveau === 2; }).length],
+            ['Niveau 3 - Invités', tousLesContacts.filter(function (c) { return c.niveau === 3; }).length],
             [''], ['']
         ];
 
@@ -1172,16 +1182,16 @@ function exporterExcel() {
         if (villeActuelle === 'GLOBAL') {
             donneesSummary.push(['DÉTAIL PAR ÉGLISE']);
             donneesSummary.push(['Église', 'Total Âmes', 'Gédéon', 'Mission JAC', 'CCMG', 'Niv 1', 'Niv 2', 'Niv 3']);
-            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
-                var cVille = tousLesContacts.filter(function(c) { return c.ville === villeKey; });
+            Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
+                var cVille = tousLesContacts.filter(function (c) { return c.ville === villeKey; });
                 if (cVille.length > 0) {
-                    var tg = cVille.filter(function(c){ return c.famille === 'GÉDÉON'; }).length;
-                    var tj = cVille.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
-                    var tm = cVille.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
-                    var n1 = cVille.filter(function(c){ return c.niveau === 1; }).length;
-                    var n2 = cVille.filter(function(c){ return c.niveau === 2; }).length;
-                    var n3 = cVille.filter(function(c){ return c.niveau === 3; }).length;
-                    
+                    var tg = cVille.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
+                    var tj = cVille.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+                    var tm = cVille.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+                    var n1 = cVille.filter(function (c) { return c.niveau === 1; }).length;
+                    var n2 = cVille.filter(function (c) { return c.niveau === 2; }).length;
+                    var n3 = cVille.filter(function (c) { return c.niveau === 3; }).length;
+
                     donneesSummary.push([
                         CONFIG_EGLISES[villeKey].nom.replace("CCMG ", ""),
                         cVille.length, tg, tj, tm, n1, n2, n3
@@ -1201,13 +1211,13 @@ function exporterExcel() {
         var feuilleResume = XLSX.utils.aoa_to_sheet(donneesSummary);
         var classeur = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(classeur, feuilleResume, 'Résumé');
-        XLSX.utils.book_append_sheet(classeur, creerFeuille(tousLesContacts.filter(function(c){ return c.famille === 'GÉDÉON'; })), 'GÉDÉON');
-        XLSX.utils.book_append_sheet(classeur, creerFeuille(tousLesContacts.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; })), 'Mission JAC');
-        XLSX.utils.book_append_sheet(classeur, creerFeuille(tousLesContacts.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; })), 'CCMG');
+        XLSX.utils.book_append_sheet(classeur, creerFeuille(tousLesContacts.filter(function (c) { return c.famille === 'GÉDÉON'; })), 'GÉDÉON');
+        XLSX.utils.book_append_sheet(classeur, creerFeuille(tousLesContacts.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; })), 'Mission JAC');
+        XLSX.utils.book_append_sheet(classeur, creerFeuille(tousLesContacts.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; })), 'CCMG');
 
         var nomFichier = 'CCMG_Rapport_' + maintenant.getFullYear() +
-                         '_' + String(maintenant.getMonth() + 1).padStart(2, '0') +
-                         '_' + String(maintenant.getDate()).padStart(2, '0') + '.xlsx';
+            '_' + String(maintenant.getMonth() + 1).padStart(2, '0') +
+            '_' + String(maintenant.getDate()).padStart(2, '0') + '.xlsx';
 
         // Méthode Blob — fiable sur tous les navigateurs modernes
         var donneesBinaires = XLSX.write(classeur, { bookType: 'xlsx', type: 'array' });
@@ -1245,36 +1255,36 @@ function exporterPDF() {
     var btnExport = document.querySelector('.btn-export-pdf');
     if (btnExport) { btnExport.classList.add('loading'); btnExport.disabled = true; }
 
-    setTimeout(function() {
+    setTimeout(function () {
         var jsPDF = window.jspdf.jsPDF;
         var doc = new jsPDF('portrait', 'pt', 'a4');
-        
+
         var maintenant = new Date();
-        var dateStr  = maintenant.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        var dateStr = maintenant.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         var heureStr = maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        
-        var nomContexte = villeActuelle 
-            ? (CONFIG_EGLISES[villeActuelle] ? CONFIG_EGLISES[villeActuelle].nom : villeActuelle) 
+
+        var nomContexte = villeActuelle
+            ? (CONFIG_EGLISES[villeActuelle] ? CONFIG_EGLISES[villeActuelle].nom : villeActuelle)
             : (programmeActuel ? CONFIG_PROGRAMMES[programmeActuel].nom : "Général");
 
         // Titre
         doc.setFontSize(22);
         doc.setTextColor(44, 62, 80);
         doc.text("Bilan d'Evangelisation UDAMG", 40, 50);
-        
+
         doc.setFontSize(14);
         doc.setTextColor(192, 57, 43);
         doc.text("Lieu / Eglise : " + nomContexte, 40, 75);
-        
+
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         doc.text("Genere le " + dateStr + " a " + heureStr, 40, 95);
 
         // Statistiques Globales (Mini encadré)
         var total = tousLesContacts.length;
-        var nGedeon = tousLesContacts.filter(function(c){ return c.famille === 'GÉDÉON'; }).length;
-        var nJac = tousLesContacts.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
-        var nMidl = tousLesContacts.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+        var nGedeon = tousLesContacts.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
+        var nJac = tousLesContacts.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+        var nMidl = tousLesContacts.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
 
         doc.setDrawColor(200, 200, 200);
         doc.setFillColor(245, 245, 245);
@@ -1286,11 +1296,11 @@ function exporterPDF() {
         doc.text("GEDEON : " + nGedeon, 180, 130);
         doc.text("Mission JAC : " + nJac, 300, 130);
         doc.text("CCMG : " + nMidl, 440, 130);
-        
+
         // Niveau Global
-        var n1 = tousLesContacts.filter(function(c){ return c.niveau === 1; }).length;
-        var n2 = tousLesContacts.filter(function(c){ return c.niveau === 2; }).length;
-        var n3 = tousLesContacts.filter(function(c){ return c.niveau === 3; }).length;
+        var n1 = tousLesContacts.filter(function (c) { return c.niveau === 1; }).length;
+        var n2 = tousLesContacts.filter(function (c) { return c.niveau === 2; }).length;
+        var n3 = tousLesContacts.filter(function (c) { return c.niveau === 3; }).length;
         doc.text("Relances (N1): " + n1 + "   |   Presentes (N2): " + n2 + "   |   Invites (N3): " + n3, 50, 155);
 
         // Tableau des contacts
@@ -1303,12 +1313,12 @@ function exporterPDF() {
 
         var tableData = tousLesContacts
             .slice()
-            .sort(function (a, b) { 
+            .sort(function (a, b) {
                 var nA = a.nom ? a.nom.toLowerCase() : "";
                 var nB = b.nom ? b.nom.toLowerCase() : "";
-                return nA.localeCompare(nB); 
+                return nA.localeCompare(nB);
             })
-            .map(function(c) {
+            .map(function (c) {
                 return [
                     (c.nom || '').toUpperCase() + ' ' + (c.prenom || ''),
                     c.tel || '',
@@ -1324,23 +1334,23 @@ function exporterPDF() {
         // Sous-tableau de résumé par église si GLOBAL
         if (villeActuelle === 'GLOBAL') {
             var statsEgliseData = [];
-            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
-                var cVille = tousLesContacts.filter(function(c) { return c.ville === villeKey; });
+            Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
+                var cVille = tousLesContacts.filter(function (c) { return c.ville === villeKey; });
                 if (cVille.length > 0) {
-                    var tg = cVille.filter(function(c){ return c.famille === 'GÉDÉON'; }).length;
-                    var tj = cVille.filter(function(c){ return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
-                    var tm = cVille.filter(function(c){ return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
-                    var n1 = cVille.filter(function(c){ return c.niveau === 1; }).length;
-                    var n2 = cVille.filter(function(c){ return c.niveau === 2; }).length;
-                    var n3 = cVille.filter(function(c){ return c.niveau === 3; }).length;
-                    
+                    var tg = cVille.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
+                    var tj = cVille.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
+                    var tm = cVille.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
+                    var n1 = cVille.filter(function (c) { return c.niveau === 1; }).length;
+                    var n2 = cVille.filter(function (c) { return c.niveau === 2; }).length;
+                    var n3 = cVille.filter(function (c) { return c.niveau === 3; }).length;
+
                     statsEgliseData.push([
                         CONFIG_EGLISES[villeKey].nom.replace("CCMG ", ""),
                         cVille.length, tg, tj, tm, n1, n2, n3
                     ]);
                 }
             });
-            
+
             doc.autoTable({
                 startY: 190,
                 head: [['Église', 'Total', 'Gédéon', 'JAC', 'CCMG', 'Niv 1', 'Niv 2', 'Niv 3']],
@@ -1350,7 +1360,7 @@ function exporterPDF() {
                 bodyStyles: { fontSize: 9, halign: 'center' },
                 columnStyles: { 0: { halign: 'left', fontStyle: 'bold' } }
             });
-            
+
             startYContacts = doc.lastAutoTable.finalY + 30; // Position dynamique pour la liste qui suit
         }
 
@@ -1392,18 +1402,18 @@ function genererBoutonsVilles() {
     var container = document.getElementById('liste-villes-container');
     if (!container) return;
     container.innerHTML = '';
-    
-    Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
+
+    Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
         var btn = document.createElement('button');
         btn.className = 'bouton-famille'; // On réutilise ce style qui est propre
         btn.style.height = 'auto';
         btn.innerHTML = '<span class="nom-famille" style="margin:0;">' + CONFIG_EGLISES[villeKey].nom + '</span>';
-        btn.onclick = function() {
+        btn.onclick = function () {
             choisirVille(villeKey);
         };
         container.appendChild(btn);
     });
-    
+
     // Bouton Spécial Bilan Global (Toutes les églises)
     var btnGlobal = document.createElement('button');
     btnGlobal.className = 'bouton-famille';
@@ -1411,7 +1421,7 @@ function genererBoutonsVilles() {
     btnGlobal.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05))';
     btnGlobal.style.borderColor = 'var(--ccmg-gold)';
     btnGlobal.innerHTML = '<span class="nom-famille" style="margin:0; color:var(--ccmg-gold);">🌍 Bilan Général (Réservé Pasteur)</span>';
-    btnGlobal.onclick = function() {
+    btnGlobal.onclick = function () {
         choisirVille('GLOBAL');
     };
     container.appendChild(btnGlobal);
@@ -1425,7 +1435,7 @@ function filtrerVilles() {
     var container = document.getElementById('liste-villes-container');
     if (!container) return;
     var boutons = container.getElementsByTagName('button');
-    
+
     for (var i = 0; i < boutons.length; i++) {
         var nom = boutons[i].textContent.toLowerCase();
         if (nom.includes(recherche)) {
@@ -1441,7 +1451,7 @@ function filtrerVilles() {
  */
 function choisirVille(villeKey) {
     console.log('[UDAMG] Exécution de choisirVille pour :', villeKey);
-    
+
     contextKeyTemporaire = villeKey;
     typeContextTemporaire = 'ville';
 
@@ -1462,7 +1472,7 @@ function choisirVille(villeKey) {
         }
 
         // Sinon, vérification pour les autres
-        var estPasteur = Object.keys(mesPermissions).some(function(cle) {
+        var estPasteur = Object.keys(mesPermissions).some(function (cle) {
             return mesPermissions[cle].includes('pasteur');
         });
 
@@ -1498,13 +1508,13 @@ function retourAuMenu() {
     programmeActuel = "";
     roleActuel = "";
     sessionStorage.clear();
-    
+
     if (unsubscribeFirebase) {
         unsubscribeFirebase(); // Arrête d'écouter les données de la ville/programme précédente
     }
     tousLesContacts = []; // Vide la liste de l'écran
     if (familleActuelle) afficherContacts();
-    
+
     naviguerVers('page-accueil-menu');
 }
 
@@ -1523,11 +1533,11 @@ function basculerVisibiliteCodeProg() {
  */
 function initialiserEcouteFirebase() {
     if (!villeActuelle && !programmeActuel) return;
-    
+
     if (unsubscribeFirebase) {
         unsubscribeFirebase(); // Sécurité pour désabonner l'ancienne écoute
     }
-    
+
     var path;
     if (villeActuelle && villeActuelle !== 'GLOBAL') {
         var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
@@ -1541,28 +1551,53 @@ function initialiserEcouteFirebase() {
     } else {
         return; // Pas de contexte sélectionné
     }
-    
+
     unsubscribeFirebase = path.onSnapshot(function (snapshot) {
-          tousLesContacts = [];
-          snapshot.forEach(function (doc) {
-              var data = doc.data();
-              data.id = doc.id;
-              tousLesContacts.push(data);
-          });
+        tousLesContacts = [];
+        snapshot.forEach(function (doc) {
+            var data = doc.data();
+            data.id = doc.id;
+            tousLesContacts.push(data);
+        });
 
-          if (familleActuelle) afficherContacts();
+        if (familleActuelle) afficherContacts();
 
-          var pageStats = document.getElementById('page-stats');
-          if (pageStats && pageStats.classList.contains('active')) {
-              actualiserTableauDeBord();
-          }
+        var pageStats = document.getElementById('page-stats');
+        if (pageStats && pageStats.classList.contains('active')) {
+            actualiserTableauDeBord();
+        }
 
-      }, function (erreur) {
-          console.error('[Firebase] Erreur de synchronisation :', erreur);
-          if (erreur.message.includes('index')) {
-              alert('Firebase requiert un index ! Ouvrez la console Firestore pour le créer.');
-          }
-      });
+    }, function (erreur) {
+        console.error('[Firebase] Erreur de synchronisation :', erreur);
+        if (erreur.message.includes('index')) {
+            alert('Firebase requiert un index ! Ouvrez la console Firestore pour le créer.');
+        }
+    });
+}
+
+/**
+ * Gère l'accès à la page des programmes spéciaux.
+ * L'accès est désormais réservé au Père Fondateur ou aux personnes inscrites 
+ * dans la case "programmes_speciaux" de Firebase.
+ */
+function demanderCodeProgrammes() {
+    if (estFondateur) {
+        console.log("[Sécurité] 👑 Accès Fondateur aux programmes.");
+        genererBoutonsProgrammes();
+        naviguerVers('page-programmes');
+        return;
+    }
+
+    // Vérification de la permission globale programmes_speciaux
+    var roles = mesPermissions['programmes_speciaux'] || [];
+    if (roles.length > 0) {
+        console.log("[Sécurité] Accès autorisé aux programmes. Rôles :", roles);
+        genererBoutonsProgrammes();
+        naviguerVers('page-programmes');
+    } else {
+        console.log("[Sécurité] Accès refusé aux programmes spéciaux.");
+        afficherAlerte("Accès Réservé", "Vous n'avez pas l'autorisation d'accéder aux Programmes Spéciaux. Contactez l'administration.", "⛔");
+    }
 }
 
 /**
@@ -1572,13 +1607,13 @@ function genererBoutonsProgrammes() {
     var container = document.getElementById('liste-programmes-container');
     if (!container) return;
     container.innerHTML = '';
-    
-    Object.keys(CONFIG_PROGRAMMES).forEach(function(progKey) {
+
+    Object.keys(CONFIG_PROGRAMMES).forEach(function (progKey) {
         var btn = document.createElement('button');
         btn.className = 'bouton-famille'; // On réutilise le style
         btn.style.height = 'auto';
         btn.innerHTML = '<span class="nom-famille" style="margin:0;">' + CONFIG_PROGRAMMES[progKey].nom + '</span>';
-        btn.onclick = function() {
+        btn.onclick = function () {
             contextKeyTemporaire = progKey;
             typeContextTemporaire = 'programme';
 
@@ -1589,12 +1624,12 @@ function genererBoutonsProgrammes() {
                 return;
             }
             
-            var rolesPossibles = mesPermissions[progKey] || [];
+            // On utilise les rôles définis dans la case "programmes_speciaux"
+            // Cela centralise la gestion : un ouvrier des programmes speciaux l'est pour TOUS les programmes.
+            var rolesPossibles = mesPermissions['programmes_speciaux'] || [];
+            
             if (rolesPossibles.length === 0) {
-                // Par défaut pour les programmes, si autorisé VIP mais pas de rôle spécifique, on donne ouvrier ?
-                // Ou on vérifie si l'utilisateur est autorisé n'importe où.
-                roleActuel = 'ouvrier';
-                validerChoixContexte('programme', progKey);
+                afficherAlerte("Accès Limité", "Désolé, vous n'êtes pas autorisé pour ce programme.", "❌");
             } else if (rolesPossibles.length === 1) {
                 roleActuel = rolesPossibles[0];
                 validerChoixContexte('programme', progKey);
@@ -1616,7 +1651,7 @@ function genererBoutonsProgrammes() {
  */
 function ouvrirModalRole() {
     console.log('[UDAMG] Sélection du rôle (sans mot de passe)...');
-    
+
     var modal = document.getElementById('modal-mot-de-passe');
     if (!modal) return;
 
@@ -1650,7 +1685,7 @@ function retourChoixRole() {
     document.getElementById('btn-fermer-modal-mdp').style.display = 'flex';
     document.getElementById('mdp-erreur').style.display = 'none';
     document.getElementById('input-mdp').value = '';
-    
+
     // Reset visibilité
     document.getElementById('input-mdp').type = 'password';
     document.getElementById('toggle-mdp').textContent = '👁️';
@@ -1662,7 +1697,7 @@ function retourChoixRole() {
 function basculerVisibiliteMdp() {
     var input = document.getElementById('input-mdp');
     var icone = document.getElementById('toggle-mdp');
-    
+
     if (input.type === 'password') {
         input.type = 'text';
         icone.textContent = '🙈'; // Œil masqué
@@ -1709,7 +1744,7 @@ function fermerAlerte() {
 function validerChoixContexte(type, id) {
     console.log('[UDAMG] Validation du contexte :', type, id);
     var titre = document.getElementById('titre-app');
-    
+
     try {
         if (type === 'ville') {
             villeActuelle = id;
@@ -1722,7 +1757,7 @@ function validerChoixContexte(type, id) {
                     var config = CONFIG_EGLISES[id];
                     if (!config) {
                         // Essayer de trouver la config si l'ID a changé de casse
-                        var realKey = Object.keys(CONFIG_EGLISES).find(function(k) {
+                        var realKey = Object.keys(CONFIG_EGLISES).find(function (k) {
                             return k.toLowerCase() === id.toLowerCase();
                         });
                         config = CONFIG_EGLISES[realKey];
@@ -1735,14 +1770,14 @@ function validerChoixContexte(type, id) {
             villeActuelle = "";
             var configProg = CONFIG_PROGRAMMES[id];
             if (!configProg) {
-                var realKeyProg = Object.keys(CONFIG_PROGRAMMES).find(function(k) {
+                var realKeyProg = Object.keys(CONFIG_PROGRAMMES).find(function (k) {
                     return k.toLowerCase() === id.toLowerCase();
                 });
                 configProg = CONFIG_PROGRAMMES[realKeyProg];
             }
             if (titre) titre.textContent = configProg ? configProg.nom : id;
         }
-        
+
         initialiserEcouteFirebase();
         appliquerDroitsInterface();
 
@@ -1750,7 +1785,7 @@ function validerChoixContexte(type, id) {
             naviguerVers('page-villes');
             return;
         }
-        
+
         if (id === 'GLOBAL') {
             ouvrirStats();
         } else {
