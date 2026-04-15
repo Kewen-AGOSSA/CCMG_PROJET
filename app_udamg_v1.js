@@ -55,6 +55,7 @@ let unsubscribeFirebase = null;
 // Permissions de l'utilisateur (rempli au login)
 // Format : { "Angers": ["pasteur", "ouvrier"], "Brest": ["ouvrier"] }
 let mesPermissions = {};
+let estFondateur = false; // Accès total à toutes les églises
 
 
 /* ===================================================
@@ -114,6 +115,16 @@ function verifierAccesVIP(utilisateur) {
                 var data = doc.data();
                 var emailTrouve = false;
                 mesPermissions = {}; // Reset
+                estFondateur = false;
+
+                // ── Vérification Père Fondateur (Super-Admin) ──
+                if (data.fondateurs && Array.isArray(data.fondateurs)) {
+                    if (data.fondateurs.includes(utilisateur.email)) {
+                        estFondateur = true;
+                        emailTrouve = true;
+                        console.log("[Sécurité] 👑 Accès Père Fondateur détecté !");
+                    }
+                }
 
                 Object.keys(data).forEach(function(cleEglise) {
                     var permissionPourCetteEglise = data[cleEglise];
@@ -169,9 +180,14 @@ function accepterUtilisateur(utilisateur) {
     if (userInfo) userInfo.style.display = 'flex';
     if (btnDeconnexion) btnDeconnexion.style.display = 'block';
     if (userAvatar && utilisateur.photoURL) userAvatar.src = utilisateur.photoURL;
-    if (userPrenom) userPrenom.textContent = utilisateur.displayName
-        ? utilisateur.displayName.split(' ')[0] 
-        : utilisateur.email;
+    if (userPrenom) {
+        var prenom = utilisateur.displayName ? utilisateur.displayName.split(' ')[0] : utilisateur.email;
+        if (estFondateur) {
+            userPrenom.innerHTML = prenom + ' <span style="color:var(--ccmg-gold); font-size:11px; vertical-align:middle;">(👑 Fondateur)</span>';
+        } else {
+            userPrenom.textContent = prenom;
+        }
+    }
 
     // Démarre le splash screen puis navigue vers le MENU PRINCIPAL
     naviguerVers('page-bienvenue');
@@ -211,6 +227,11 @@ function initialiserChampsEglises() {
                     miseAJour[cleNorm] = [];
                 }
             });
+
+            // S'assurer que le champ fondateurs existe
+            if (!data.hasOwnProperty('fondateurs')) {
+                miseAJour['fondateurs'] = [];
+            }
 
             if (Object.keys(miseAJour).length > 0) {
                 db.collection('configuration').doc('emails_autorises').update(miseAJour)
@@ -1293,6 +1314,13 @@ function choisirVille(villeKey) {
     contextKeyTemporaire = villeKey;
     typeContextTemporaire = 'ville';
 
+    // ── ACCÉS SPÉCIAL : Père Fondateur ──
+    if (estFondateur) {
+        roleActuel = 'pasteur';
+        validerChoixContexte('ville', villeKey);
+        return;
+    }
+
     // Cas spécial Bilan Global
     if (villeKey === 'GLOBAL') {
         // Est-ce que l'utilisateur est pasteur dans AU MOINS une église ?
@@ -1410,6 +1438,13 @@ function genererBoutonsProgrammes() {
         btn.onclick = function() {
             contextKeyTemporaire = progKey;
             typeContextTemporaire = 'programme';
+
+            // ── ACCÉS SPÉCIAL : Père Fondateur ──
+            if (estFondateur) {
+                roleActuel = 'pasteur';
+                validerChoixContexte('programme', progKey);
+                return;
+            }
             
             var rolesPossibles = mesPermissions[progKey] || [];
             if (rolesPossibles.length === 0) {
