@@ -174,6 +174,13 @@ function verifierAccesVIP(utilisateur) {
 
                 if (emailTrouve) {
                     console.log("[Sécurité] Accès autorisé. Permissions :", mesPermissions);
+                    
+                    // Si c'est le fondateur, on affiche le bouton de maintenance
+                    if (estFondateur) {
+                        var zoneAdmin = document.getElementById('zone-admin-fondateur');
+                        if (zoneAdmin) zoneAdmin.style.display = 'block';
+                    }
+                    
                     accepterUtilisateur(utilisateur);
                 } else {
                     rejeterUtilisateur();
@@ -339,10 +346,13 @@ function initialiserChampsEglises() {
             if (Object.keys(miseAJour).length > 0) {
                 db.collection('configuration').doc('emails_autorises').update(miseAJour)
                     .then(function () {
-                        console.log('[Init] ✅ Firestore a été mis à jour avec le nouveau format de rôles.');
+                        console.log('[Init] ✅ Firestore a été mis à jour.');
+                        if (data.hasOwnProperty('programmes_speciaux') === false && miseAJour.hasOwnProperty('programmes_speciaux')) {
+                             afficherAlerte("Configuration UDAMG", "La case 'Programmes Spéciaux' a été créée avec succès dans Firebase ! 📂", "✅");
+                        }
                     })
                     .catch(function (err) {
-                        console.error('[Init] Erreur lors de la mise à jour Firestore :', err);
+                        console.error('[Init] Erreur Firestore :', err);
                     });
             } else {
                 console.log('[Init] La structure Firestore est déjà à jour.');
