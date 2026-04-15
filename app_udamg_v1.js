@@ -500,8 +500,16 @@ function afficherContacts(listeFiltree) {
     var container = document.getElementById('liste-des-noms');
     container.innerHTML = '';
 
-    // Tri alphabétique par nom
+    // Tri par date (du plus récent au plus ancien), puis par nom
     tousLesContacts.sort(function (a, b) {
+        // Transformer "DD/MM/YYYY" en "YYYYMMDD" pour une comparaison fiable
+        var dA = a.dateAjout ? a.dateAjout.split('/').reverse().join('') : '';
+        var dB = b.dateAjout ? b.dateAjout.split('/').reverse().join('') : '';
+
+        if (dA !== dB) {
+            return dB.localeCompare(dA); // Plus récent d'abord
+        }
+        // Si même date, tri par nom
         return a.nom.localeCompare(b.nom);
     });
 
