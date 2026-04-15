@@ -1031,6 +1031,37 @@ function actualiserTableauDeBord() {
     remplirBarreFamille('GÉDÉON', 'prog-gedeon');
     remplirBarreFamille('Mission JAC', 'prog-jac');
     remplirBarreFamille('CCMG', 'prog-midl');
+
+    // --- MISE À JOUR DU RÉCAPITULATIF PAR ÉGLISE (GLOBAL) ---
+    var sectionEglises = document.getElementById('section-stats-eglises');
+    var listeEglises = document.getElementById('liste-stats-eglises');
+    
+    if (villeActuelle === 'GLOBAL' && sectionEglises && listeEglises) {
+        sectionEglises.style.display = 'block';
+        listeEglises.innerHTML = '';
+        
+        // On compte par église
+        var statsEglises = {};
+        tousLesContacts.forEach(function(c) {
+            var eglise = c.ville_nom || "Inconnue";
+            statsEglises[eglise] = (statsEglises[eglise] || 0) + 1;
+        });
+
+        // Affichage sous forme de petites cartes
+        Object.keys(statsEglises).sort().forEach(function(nom) {
+            var div = document.createElement('div');
+            div.className = 'famille-stat-block glass-card';
+            div.style.margin = '10px 0';
+            div.style.display = 'flex';
+            div.style.justifyContent = 'space-between';
+            div.style.alignItems = 'center';
+            div.innerHTML = '<span class="label-famille" style="margin:0;">' + nom + '</span>' +
+                            '<span class="badge-count" style="background:var(--ccmg-gold); color:var(--bg-main); padding:2px 10px; border-radius:10px; font-weight:bold;">' + statsEglises[nom] + '</span>';
+            listeEglises.appendChild(div);
+        });
+    } else if (sectionEglises) {
+        sectionEglises.style.display = 'none';
+    }
 }
 
 /**
@@ -1338,7 +1369,9 @@ function exporterPDF() {
         if (villeActuelle === 'GLOBAL') {
             var statsEgliseData = [];
             Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
-                var cVille = tousLesContacts.filter(function (c) { return c.ville === villeKey; });
+                var cVille = tousLesContacts.filter(function (c) { 
+                    return c.ville_id === villeKey || c.ville === villeKey; 
+                });
                 if (cVille.length > 0) {
                     var tg = cVille.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
                     var tj = cVille.filter(function (c) { return c.famille === 'Mission JAC' || c.famille === 'JAC'; }).length;
@@ -1549,8 +1582,42 @@ function initialiserEcouteFirebase() {
         var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
         path = db.collection('programmes').doc(cleNorm).collection('donnees');
     } else if (villeActuelle === 'GLOBAL') {
-        // Le Bilan Global continue de lire la collection à plat (seul le fondateur y a droit en lecture totale)
-        path = db.collection('contacts');
+        // --- PHASE 2 : BILAN GLOBAL INTELLIGENT ---
+        // On va chercher les données de TOUTES les villes configurées
+        console.log("[Bilan Global] Lancement de l'agrégation nationale...");
+        tousLesContacts = []; // Reset
+        
+        var vKeys = Object.keys(CONFIG_EGLISES);
+        var nbChargees = 0;
+
+        vKeys.forEach(function(vKey) {
+            var cleNorm = vKey.toLowerCase().replace(/[\s\-]/g, '');
+            db.collection('villes').doc(cleNorm).collection('donnees').get()
+                .then(function(snapshot) {
+                    snapshot.forEach(function(doc) {
+                        var data = doc.data();
+                        data.id = doc.id;
+                        data.ville_nom = CONFIG_EGLISES[vKey].nom;
+                        data.ville_id = vKey;
+                        tousLesContacts.push(data);
+                    });
+                    
+                    nbChargees++;
+                    // Quand on a fini de charger toutes les villes, on rafraîchit l'affichage
+                    if (nbChargees === vKeys.length) {
+                        console.log("[Bilan Global] ✅ Agrégation terminée : " + tousLesContacts.length + " contacts trouvés.");
+                        if (familleActuelle) afficherContacts();
+                        if (document.getElementById('page-stats').classList.contains('active')) {
+                            actualiserTableauDeBord();
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    console.error("[Bilan Global] Erreur sur " + vKey + ":", err);
+                    nbChargees++;
+                });
+        });
+        return; // Pas d'onSnapshot pour le global pour éviter 50 écouteurs (on rafraîchit à l'ouverture)
     } else {
         return; // Pas de contexte sélectionné
     }
