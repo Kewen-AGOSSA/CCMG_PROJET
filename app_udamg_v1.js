@@ -226,6 +226,61 @@ function accepterUtilisateur(utilisateur) {
 }
 
 /**
+ * SCRIPT DE MIGRATION (Utilisation unique par le Père Fondateur)
+ * Déplace les contacts du vrac (collection 'contacts') vers les dossiers par ville.
+ */
+function lancerMigrationContacts() {
+    if (!estFondateur) {
+        alert("Action réservée au Père Fondateur.");
+        return;
+    }
+
+    if (!confirm("Voulez-vous lancer le rangement des 10 000 contacts dans leurs dossiers respectifs ? Cela peut prendre quelques minutes.")) return;
+
+    console.log("[Migration] Démarrage du rangement...");
+
+    db.collection('contacts').get()
+        .then(function(snapshot) {
+            var total = snapshot.size;
+            var compte = 0;
+            var erreurs = 0;
+
+            snapshot.forEach(function(doc) {
+                var data = doc.data();
+                var id = doc.id;
+                var ville = data.ville || "";
+                var prog = data.programme || "";
+
+                var collectionDest;
+                if (ville) {
+                    var cleNorm = ville.toLowerCase().replace(/[\s\-]/g, '');
+                    collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
+                } else if (prog) {
+                    var cleNorm = prog.toLowerCase().replace(/[\s\-]/g, '');
+                    collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
+                } else {
+                    // Par défaut si pas de ville/prog, on met dans Angers
+                    collectionDest = db.collection('villes').doc('angers').collection('donnees');
+                }
+
+                // Copie le contact vers la nouvelle destination
+                collectionDest.doc(id).set(data)
+                    .then(function() {
+                        compte++;
+                        if (compte % 100 === 0) console.log("[Migration] Progress: " + compte + "/" + total);
+                        if (compte === total) {
+                            alert("✅ Migration terminée ! " + compte + " contacts ont été rangés.");
+                        }
+                    })
+                    .catch(function(err) {
+                        erreurs++;
+                        console.error("[Migration] Erreur sur " + id, err);
+                    });
+            });
+        });
+}
+
+/**
  * Crée les champs vides (tableaux []) pour toutes les églises configurées
  * dans le document emails_autorises de Firestore, si ces champs n'existent pas encore.
  * Permet à l'admin de voir directement dans Firebase tous les champs disponibles.
@@ -519,15 +574,24 @@ function enregistrerContact() {
                 : 0
         };
 
+        // Détermination de la collection de destination selon le contexte
+        var collectionDest;
+        if (villeActuelle && villeActuelle !== 'GLOBAL') {
+            collectionDest = db.collection('villes').doc(villeActuelle).collection('donnees');
+        } else if (programmeActuel) {
+            collectionDest = db.collection('programmes').doc(programmeActuel).collection('donnees');
+        } else {
+            alert("Erreur : Aucun contexte de ville ou programme détecté.");
+            return;
+        }
+
         if (contactId === '') {
-            // MODE AJOUT : Firebase crée automatiquement un identifiant unique
-            db.collection('contacts').add(contactData)
+            collectionDest.add(contactData)
                 .catch(function (err) {
                     console.error('[Firebase] Erreur lors de l\'ajout :', err);
                 });
         } else {
-            // MODE MODIFICATION : mise à jour du document existant
-            db.collection('contacts').doc(contactId).update(contactData)
+            collectionDest.doc(contactId).update(contactData)
                 .catch(function (err) {
                     console.error('[Firebase] Erreur lors de la modification :', err);
                 });
@@ -692,7 +756,19 @@ function supprimerContact(id) {
     ouvrirModalConfirmation(
         t('remove_confirm'),
         function() {
-            db.collection('contacts').doc(id).delete()
+            var collectionDest;
+            if (villeActuelle && villeActuelle !== 'GLOBAL') {
+                collectionDest = db.collection('villes').doc(villeActuelle).collection('donnees');
+            } else if (programmeActuel) {
+                collectionDest = db.collection('programmes').doc(programmeActuel).collection('donnees');
+            }
+
+            if (!collectionDest) {
+                alert("Erreur : Impossible de supprimer ce contact (contexte introuvable).");
+                return;
+            }
+
+            collectionDest.doc(id).delete()
                 .then(function() {
                     fermerModalConfirmation();
                 })
@@ -814,10 +890,19 @@ function envoyerRelance(methode) {
     var nouveauNiveau = Math.max(c.niveau || 0, niveauSelectionne);
     
     if (nouveauNiveau > c.niveau) {
-        db.collection('contacts').doc(id).update({ niveau: nouveauNiveau })
-            .catch(function (err) {
-                console.error('[Firebase] Erreur mise à jour niveau :', err);
-            });
+        var collectionDest;
+        if (villeActuelle && villeActuelle !== 'GLOBAL') {
+            collectionDest = db.collection('villes').doc(villeActuelle).collection('donnees');
+        } else if (programmeActuel) {
+            collectionDest = db.collection('programmes').doc(programmeActuel).collection('donnees');
+        }
+
+        if (collectionDest) {
+            collectionDest.doc(id).update({ niveau: nouveauNiveau })
+                .catch(function (err) {
+                    console.error('[Firebase] Erreur mise à jour niveau :', err);
+                });
+        }
     }
 
     fermerModalRelance();
@@ -1429,16 +1514,19 @@ function initialiserEcouteFirebase() {
         unsubscribeFirebase(); // Sécurité pour désabonner l'ancienne écoute
     }
     
-    var requete = db.collection('contacts');
-    
-    // Si nous ne sommes pas sur le Bilan Global, on filtre les résultats
+    var path;
     if (villeActuelle && villeActuelle !== 'GLOBAL') {
-        requete = requete.where('ville', '==', villeActuelle);
+        path = db.collection('villes').doc(villeActuelle).collection('donnees');
     } else if (programmeActuel) {
-        requete = requete.where('programme', '==', programmeActuel);
+        path = db.collection('programmes').doc(programmeActuel).collection('donnees');
+    } else if (villeActuelle === 'GLOBAL') {
+        // Le Bilan Global continue de lire la collection à plat (seul le fondateur y a droit en lecture totale)
+        path = db.collection('contacts');
+    } else {
+        return; // Pas de contexte sélectionné
     }
     
-    unsubscribeFirebase = requete.onSnapshot(function (snapshot) {
+    unsubscribeFirebase = path.onSnapshot(function (snapshot) {
           tousLesContacts = [];
           snapshot.forEach(function (doc) {
               var data = doc.data();
