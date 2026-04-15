@@ -237,31 +237,47 @@ function initialiserChampsEglises() {
             var data = doc.data();
             var miseAJour = {};
 
-            // Pour chaque église configurée dans l'app
-            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
-                // Normaliser la clé : minuscules, sans espaces ni tirets
-                var cleNorm = villeKey.toLowerCase().replace(/[\s\-]/g, '');
-                // N'ajouter le champ que s'il n'existe pas encore
-                if (!data.hasOwnProperty(cleNorm)) {
-                    miseAJour[cleNorm] = [];
+            // 1. Détection et migration des anciennes listes (Arrays) vers le format Rôles (Objects)
+            Object.keys(data).forEach(function(key) {
+                // Si le champ est un tableau (ancien format) et n'est pas "fondateurs"
+                if (Array.isArray(data[key]) && key !== 'fondateurs') {
+                    console.log("[Migration] Transformation de '" + key + "' vers le format Rôles...");
+                    miseAJour[key] = {
+                        pasteur: [],
+                        evangeliste: [],
+                        ouvrier: data[key] // On met les anciens emails dans "ouvrier" par défaut
+                    };
                 }
             });
 
-            // S'assurer que le champ fondateurs existe
+            // 2. Création des champs pour les églises manquantes dans la CONFIG
+            Object.keys(CONFIG_EGLISES).forEach(function(villeKey) {
+                var cleNorm = villeKey.toLowerCase().replace(/[\s\-]/g, '');
+                if (!data.hasOwnProperty(cleNorm)) {
+                    miseAJour[cleNorm] = {
+                        pasteur: [],
+                        evangeliste: [],
+                        ouvrier: []
+                    };
+                }
+            });
+
+            // 3. S'assurer que le champ fondateurs existe
             if (!data.hasOwnProperty('fondateurs')) {
                 miseAJour['fondateurs'] = [];
             }
 
+            // Exécution de la mise à jour si nécessaire
             if (Object.keys(miseAJour).length > 0) {
                 db.collection('configuration').doc('emails_autorises').update(miseAJour)
                     .then(function() {
-                        console.log('[Init] ✅ Champs églises initialisés dans emails_autorises :', Object.keys(miseAJour));
+                        console.log('[Init] ✅ Firestore a été mis à jour avec le nouveau format de rôles.');
                     })
                     .catch(function(err) {
-                        console.error('[Init] Erreur initialisation champs :', err);
+                        console.error('[Init] Erreur lors de la mise à jour Firestore :', err);
                     });
             } else {
-                console.log('[Init] Tous les champs églises sont déjà présents.');
+                console.log('[Init] La structure Firestore est déjà à jour.');
             }
         });
 }
