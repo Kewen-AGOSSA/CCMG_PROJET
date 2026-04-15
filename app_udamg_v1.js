@@ -1441,8 +1441,8 @@ function filtrerVilles() {
  */
 function choisirVille(villeKey) {
     console.log('[UDAMG] Exécution de choisirVille pour :', villeKey);
-    // DEBUG TEMPORAIRE : On veut savoir si le clic arrive jusqu'ici
-    // alert("Clic détecté sur : " + villeKey); 
+    // TEST DE VIE : Si tu vois cette alerte, c'est que le nouveau code est bien en ligne
+    alert("🔍 Accès en cours pour : " + villeKey); 
     
     contextKeyTemporaire = villeKey;
     typeContextTemporaire = 'ville';
