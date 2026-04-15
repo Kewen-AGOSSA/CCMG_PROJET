@@ -1699,40 +1699,58 @@ function fermerAlerte() {
 }
 
 function validerChoixContexte(type, id) {
+    console.log('[UDAMG] Validation du contexte :', type, id);
     var titre = document.getElementById('titre-app');
     
-    if (type === 'ville') {
-        villeActuelle = id;
-        programmeActuel = "";
-        if (titre) {
-            if (id === 'GLOBAL') {
-                titre.textContent = 'UDAMG - BILAN FRANCE ENTIÈRE';
-            } else {
-                titre.textContent = 'UDAMG Évangélisation - ' + CONFIG_EGLISES[id].nom.replace('CCMG ', '');
+    try {
+        if (type === 'ville') {
+            villeActuelle = id;
+            programmeActuel = "";
+            if (titre) {
+                if (id === 'GLOBAL') {
+                    titre.textContent = 'UDAMG - BILAN FRANCE ENTIÈRE';
+                } else {
+                    // Recherche sécurisée de la config (sans tenir compte de la casse)
+                    var config = CONFIG_EGLISES[id];
+                    if (!config) {
+                        // Essayer de trouver la config si l'ID a changé de casse
+                        var realKey = Object.keys(CONFIG_EGLISES).find(function(k) {
+                            return k.toLowerCase() === id.toLowerCase();
+                        });
+                        config = CONFIG_EGLISES[realKey];
+                    }
+                    titre.textContent = 'UDAMG Évangélisation - ' + (config ? config.nom.replace('CCMG ', '') : id);
+                }
             }
+        } else {
+            programmeActuel = id;
+            villeActuelle = "";
+            var configProg = CONFIG_PROGRAMMES[id];
+            if (!configProg) {
+                var realKeyProg = Object.keys(CONFIG_PROGRAMMES).find(function(k) {
+                    return k.toLowerCase() === id.toLowerCase();
+                });
+                configProg = CONFIG_PROGRAMMES[realKeyProg];
+            }
+            if (titre) titre.textContent = configProg ? configProg.nom : id;
         }
-    } else {
-        programmeActuel = id;
-        villeActuelle = "";
-        if (titre) titre.textContent = CONFIG_PROGRAMMES[id].nom;
-    }
-    
-    initialiserEcouteFirebase();
-    
-    // On applique les droits tout de suite après le déverrouillage
-    appliquerDroitsInterface();
+        
+        initialiserEcouteFirebase();
+        appliquerDroitsInterface();
 
-    // Protection supplémentaire : Si GLOBAL, on force le rôle Pasteur
-    if (id === 'GLOBAL' && roleActuel !== 'pasteur') {
-        naviguerVers('page-villes');
-        return;
-    }
-    
-    // Si c'est le Bilan Global, on va directement sur la page des Stats en appelant ouvrirStats
-    if (id === 'GLOBAL') {
-        ouvrirStats();
-    } else {
-        naviguerVers('page-familles');
+        if (id === 'GLOBAL' && roleActuel !== 'pasteur') {
+            naviguerVers('page-villes');
+            return;
+        }
+        
+        if (id === 'GLOBAL') {
+            ouvrirStats();
+        } else {
+            naviguerVers('page-familles');
+        }
+    } catch (e) {
+        console.error("[UDAMG] Erreur critique lors de la validation du contexte :", e);
+        afficherAlerte("Erreur", "Une erreur est survenue lors de l'accès. Vérifiez la console F12.");
     }
 }
 
