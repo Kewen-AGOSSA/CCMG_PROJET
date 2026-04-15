@@ -1440,7 +1440,10 @@ function filtrerVilles() {
  * Enregistre la ville choisie (après vérification du mot de passe si nécessaire)
  */
 function choisirVille(villeKey) {
-    console.log('[UDAMG] Ville choisie :', villeKey);
+    console.log('[UDAMG] Exécution de choisirVille pour :', villeKey);
+    // DEBUG TEMPORAIRE : On veut savoir si le clic arrive jusqu'ici
+    // alert("Clic détecté sur : " + villeKey); 
+    
     contextKeyTemporaire = villeKey;
     typeContextTemporaire = 'ville';
 
