@@ -126,15 +126,34 @@ function verifierAccesVIP(utilisateur) {
                     }
                 }
 
-                Object.keys(data).forEach(function(cleEglise) {
-                    var permissionPourCetteEglise = data[cleEglise];
+                Object.keys(data).forEach(function(cleFirestore) {
+                    var permissionPourCetteEglise = data[cleFirestore];
+                    
+                    // Trouver la clé correspondante dans CONFIG_EGLISES / CONFIG_PROGRAMMES
+                    // (On cherche une correspondance insensible à la casse et aux espaces)
+                    var cleNormaliseeDb = cleFirestore.toLowerCase().replace(/[\s\-]/g, '');
+                    
+                    var cleCorrespondante = "";
+                    // Check dans les églises
+                    Object.keys(CONFIG_EGLISES).forEach(function(cke) {
+                        if (cke.toLowerCase().replace(/[\s\-]/g, '') === cleNormaliseeDb) cleCorrespondante = cke;
+                    });
+                    // Check dans les programmes si pas trouvé
+                    if (!cleCorrespondante) {
+                        Object.keys(CONFIG_PROGRAMMES).forEach(function(ckp) {
+                            if (ckp.toLowerCase().replace(/[\s\-]/g, '') === cleNormaliseeDb) cleCorrespondante = ckp;
+                        });
+                    }
+
+                    // Si on a pas de correspondance, on garde la clé brute de Firestore (par sécurité)
+                    var cleStockage = cleCorrespondante || cleFirestore;
 
                     // ── Support de l'ancienne structure (Array simple) ──
                     if (Array.isArray(permissionPourCetteEglise)) {
                         if (permissionPourCetteEglise.includes(utilisateur.email)) {
                             emailTrouve = true;
-                            if (!mesPermissions[cleEglise]) mesPermissions[cleEglise] = [];
-                            mesPermissions[cleEglise].push("ouvrier"); // Rôle par défaut pour les anciennes listes
+                            if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
+                            mesPermissions[cleStockage].push("ouvrier");
                         }
                     } 
                     // ── Nouvelle structure (Object par rôle) ──
@@ -143,8 +162,8 @@ function verifierAccesVIP(utilisateur) {
                             var listeEmails = permissionPourCetteEglise[role];
                             if (Array.isArray(listeEmails) && listeEmails.includes(utilisateur.email)) {
                                 emailTrouve = true;
-                                if (!mesPermissions[cleEglise]) mesPermissions[cleEglise] = [];
-                                mesPermissions[cleEglise].push(role);
+                                if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
+                                mesPermissions[cleStockage].push(role);
                             }
                         });
                     }
