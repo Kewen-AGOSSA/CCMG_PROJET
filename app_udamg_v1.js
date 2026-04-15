@@ -577,9 +577,11 @@ function enregistrerContact() {
         // Détermination de la collection de destination selon le contexte
         var collectionDest;
         if (villeActuelle && villeActuelle !== 'GLOBAL') {
-            collectionDest = db.collection('villes').doc(villeActuelle).collection('donnees');
+            var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+            collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
         } else if (programmeActuel) {
-            collectionDest = db.collection('programmes').doc(programmeActuel).collection('donnees');
+            var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+            collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
         } else {
             alert("Erreur : Aucun contexte de ville ou programme détecté.");
             return;
@@ -758,9 +760,11 @@ function supprimerContact(id) {
         function() {
             var collectionDest;
             if (villeActuelle && villeActuelle !== 'GLOBAL') {
-                collectionDest = db.collection('villes').doc(villeActuelle).collection('donnees');
+                var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+                collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
             } else if (programmeActuel) {
-                collectionDest = db.collection('programmes').doc(programmeActuel).collection('donnees');
+                var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+                collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
             }
 
             if (!collectionDest) {
@@ -892,9 +896,11 @@ function envoyerRelance(methode) {
     if (nouveauNiveau > c.niveau) {
         var collectionDest;
         if (villeActuelle && villeActuelle !== 'GLOBAL') {
-            collectionDest = db.collection('villes').doc(villeActuelle).collection('donnees');
+            var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+            collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
         } else if (programmeActuel) {
-            collectionDest = db.collection('programmes').doc(programmeActuel).collection('donnees');
+            var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+            collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
         }
 
         if (collectionDest) {
@@ -1516,9 +1522,11 @@ function initialiserEcouteFirebase() {
     
     var path;
     if (villeActuelle && villeActuelle !== 'GLOBAL') {
-        path = db.collection('villes').doc(villeActuelle).collection('donnees');
+        var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+        path = db.collection('villes').doc(cleNorm).collection('donnees');
     } else if (programmeActuel) {
-        path = db.collection('programmes').doc(programmeActuel).collection('donnees');
+        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+        path = db.collection('programmes').doc(cleNorm).collection('donnees');
     } else if (villeActuelle === 'GLOBAL') {
         // Le Bilan Global continue de lire la collection à plat (seul le fondateur y a droit en lecture totale)
         path = db.collection('contacts');
