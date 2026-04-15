@@ -123,6 +123,9 @@ function verifierAccesVIP(utilisateur) {
                         estFondateur = true;
                         emailTrouve = true;
                         console.log("[Sécurité] 👑 Accès Père Fondateur détecté !");
+                        
+                        // ON DÉCLENCHE LA MISE À JOUR DES CHAMPS (Case Programmes Spéciaux, etc.)
+                        initialiserChampsEglises();
                     }
                 }
 
