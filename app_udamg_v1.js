@@ -332,10 +332,11 @@ function initialiserChampsEglises() {
                 miseAJour['fondateurs'] = [];
             }
 
-            // 4. S'assurer que le champ programmes_speciaux existe (Case pour accès global aux programmes)
-            if (!data.hasOwnProperty('programmes_speciaux')) {
-                console.log("[Init] Création du champ 'programmes_speciaux'...");
-                miseAJour['programmes_speciaux'] = {
+            // 4. S'assurer que le champ _programmes_speciaux existe (Case pour accès global aux programmes)
+            // On utilise un underscore au début pour qu'il remonte en haut de la liste (ordre alphabétique)
+            if (!data.hasOwnProperty('_programmes_speciaux')) {
+                console.log("[Init] Création du champ '_programmes_speciaux'...");
+                miseAJour['_programmes_speciaux'] = {
                     pasteur: [],
                     evangeliste: [],
                     ouvrier: []
@@ -347,8 +348,8 @@ function initialiserChampsEglises() {
                 db.collection('configuration').doc('emails_autorises').update(miseAJour)
                     .then(function () {
                         console.log('[Init] ✅ Firestore a été mis à jour.');
-                        if (data.hasOwnProperty('programmes_speciaux') === false && miseAJour.hasOwnProperty('programmes_speciaux')) {
-                             afficherAlerte("Configuration UDAMG", "La case 'Programmes Spéciaux' a été créée avec succès dans Firebase ! 📂", "✅");
+                        if (data.hasOwnProperty('_programmes_speciaux') === false && miseAJour.hasOwnProperty('_programmes_speciaux')) {
+                             afficherAlerte("Configuration UDAMG", "La case '_programmes_speciaux' a été créée ! Elle est tout en haut de ta liste Firebase. 📂", "✅");
                         }
                     })
                     .catch(function (err) {
@@ -1668,8 +1669,8 @@ function demanderCodeProgrammes() {
         return;
     }
 
-    // Vérification de la permission globale programmes_speciaux
-    var roles = mesPermissions['programmes_speciaux'] || [];
+    // Vérification de la permission globale _programmes_speciaux
+    var roles = mesPermissions['_programmes_speciaux'] || [];
     if (roles.length > 0) {
         console.log("[Sécurité] Accès autorisé aux programmes. Rôles :", roles);
         genererBoutonsProgrammes();
@@ -1704,9 +1705,9 @@ function genererBoutonsProgrammes() {
                 return;
             }
             
-            // On utilise les rôles définis dans la case "programmes_speciaux"
+            // On utilise les rôles définis dans la case "_programmes_speciaux"
             // Cela centralise la gestion : un ouvrier des programmes speciaux l'est pour TOUS les programmes.
-            var rolesPossibles = mesPermissions['programmes_speciaux'] || [];
+            var rolesPossibles = mesPermissions['_programmes_speciaux'] || [];
             
             if (rolesPossibles.length === 0) {
                 afficherAlerte("Accès Limité", "Désolé, vous n'êtes pas autorisé pour ce programme.", "❌");
