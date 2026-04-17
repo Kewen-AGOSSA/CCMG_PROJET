@@ -125,7 +125,7 @@ function verifierAccesVIP(utilisateur) {
                         estFondateur = true;
                         emailTrouve = true;
                         console.log("[Sécurité] 👑 Accès Père Fondateur reconnu !");
-                        
+
                         // APPEL AUTOMATIQUE AU DÉMARRAGE
                         initialiserChampsEglises();
                     }
@@ -176,10 +176,10 @@ function verifierAccesVIP(utilisateur) {
 
                 if (emailTrouve) {
                     console.log("[Sécurité] Accès autorisé. Rôles :", roleActuel, mesPermissions);
-                    
+
                     // Si c'est le fondateur, on s'assure que le bouton de maintenance est visible
                     if (estFondateur) {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             var zoneAdmin = document.getElementById('zone-admin-fondateur');
                             if (zoneAdmin) {
                                 zoneAdmin.style.display = 'block';
@@ -188,7 +188,7 @@ function verifierAccesVIP(utilisateur) {
                             }
                         }, 1000);
                     }
-                    
+
                     accepterUtilisateur(utilisateur);
                 } else {
                     rejeterUtilisateur();
@@ -357,7 +357,7 @@ function initialiserChampsEglises() {
                     .then(function () {
                         console.log('[Init] ✅ Firestore a été mis à jour.');
                         if (data.hasOwnProperty('_programmes_speciaux') === false && miseAJour.hasOwnProperty('_programmes_speciaux')) {
-                             afficherAlerte("Configuration UDAMG", "La case '_programmes_speciaux' a été créée ! Elle est tout en haut de ta liste Firebase. 📂", "✅");
+                            afficherAlerte("Configuration UDAMG", "La case '_programmes_speciaux' a été créée ! Elle est tout en haut de ta liste Firebase. 📂", "✅");
                         }
                     })
                     .catch(function (err) {
@@ -660,13 +660,13 @@ function afficherContacts(listeFiltree) {
 
     // Tri par date (du plus récent au plus ancien), puis par nom
     tousLesContacts.sort(function (a, b) {
-        var parseDate = function(dStr) {
+        var parseDate = function (dStr) {
             if (!dStr) return 0;
             if (dStr.includes('/')) {
                 var p = dStr.split('/');
                 if (p.length >= 3) {
                     var annee = p[2].substring(0, 4);
-                    return new Date(annee, p[1]-1, p[0]).getTime();
+                    return new Date(annee, p[1] - 1, p[0]).getTime();
                 }
             }
             return new Date(dStr).getTime() || 0;
@@ -790,7 +790,7 @@ function filtrerContacts() {
     if (searchTimeout) clearTimeout(searchTimeout);
 
     if (terme.length >= 3 && villeActuelle !== 'GLOBAL') {
-        searchTimeout = setTimeout(function() {
+        searchTimeout = setTimeout(function () {
             executerRechercheGlobale(terme);
         }, 500); // 500ms d'attente pour éviter de saturer Firebase
     } else if (terme.length === 0) {
@@ -804,7 +804,7 @@ function filtrerContacts() {
  */
 function executerRechercheGlobale(terme) {
     if (!terme || terme.length < 3) return;
-    
+
     var info = document.getElementById('stats-performance-info');
     if (info) info.innerHTML = "🔍 Recherche approfondie de '" + terme + "'...";
 
@@ -821,20 +821,20 @@ function executerRechercheGlobale(terme) {
 
     // Firestore est sensible à la casse. On cherche le nom tel quel OU en majuscules (standard UDAMG).
     // On lance la recherche sur le champ 'nom' (par préfixe).
-    var searchStr = terme.toUpperCase(); 
+    var searchStr = terme.toUpperCase();
 
     path.where("nom", ">=", searchStr)
         .where("nom", "<=", searchStr + "\uf8ff")
         .limit(30) // On limite à 30 résultats de recherche pour rester rapide
         .get()
-        .then(function(snapshot) {
+        .then(function (snapshot) {
             var resultatsGlobaux = [];
-            snapshot.forEach(function(doc) {
+            snapshot.forEach(function (doc) {
                 var d = doc.data();
                 d.id = doc.id;
                 resultatsGlobaux.push(d);
             });
-            
+
             if (info) {
                 if (resultatsGlobaux.length > 0) {
                     info.innerHTML = "✅ " + resultatsGlobaux.length + " résultat(s) trouvé(s) dans toute la base.";
@@ -842,11 +842,11 @@ function executerRechercheGlobale(terme) {
                     info.innerHTML = "❌ Aucun résultat trouvé pour '" + terme + "' dans la base complète.";
                 }
             }
-            
+
             // On affiche les résultats (cela remplace temporairement la liste des 50 récents)
             afficherContacts(resultatsGlobaux);
         })
-        .catch(function(err) {
+        .catch(function (err) {
             console.error("[Super-Search] Erreur :", err);
             if (info) info.innerHTML = "⚠️ Index manquant ? Vérifiez la console (F12) pour le bouton de création.";
         });
@@ -1144,20 +1144,20 @@ function actualiserTableauDeBord() {
     // --- MISE À JOUR DU RÉCAPITULATIF PAR ÉGLISE (GLOBAL) ---
     var sectionEglises = document.getElementById('section-stats-eglises');
     var listeEglises = document.getElementById('liste-stats-eglises');
-    
+
     if (villeActuelle === 'GLOBAL' && sectionEglises && listeEglises) {
         sectionEglises.style.display = 'block';
         listeEglises.innerHTML = '';
-        
+
         // On compte par église
         var statsEglises = {};
-        tousLesContacts.forEach(function(c) {
+        tousLesContacts.forEach(function (c) {
             var eglise = c.ville_nom || "Inconnue";
             statsEglises[eglise] = (statsEglises[eglise] || 0) + 1;
         });
 
         // Affichage sous forme de petites cartes
-        Object.keys(statsEglises).sort().forEach(function(nom) {
+        Object.keys(statsEglises).sort().forEach(function (nom) {
             var div = document.createElement('div');
             div.className = 'famille-stat-block glass-card';
             div.style.margin = '10px 0';
@@ -1165,7 +1165,7 @@ function actualiserTableauDeBord() {
             div.style.justifyContent = 'space-between';
             div.style.alignItems = 'center';
             div.innerHTML = '<span class="label-famille" style="margin:0;">' + nom + '</span>' +
-                            '<span class="badge-count" style="background:var(--ccmg-gold); color:var(--bg-main); padding:2px 10px; border-radius:10px; font-weight:bold;">' + statsEglises[nom] + '</span>';
+                '<span class="badge-count" style="background:var(--ccmg-gold); color:var(--bg-main); padding:2px 10px; border-radius:10px; font-weight:bold;">' + statsEglises[nom] + '</span>';
             listeEglises.appendChild(div);
         });
     } else if (sectionEglises) {
@@ -1478,8 +1478,8 @@ function exporterPDF() {
         if (villeActuelle === 'GLOBAL') {
             var statsEgliseData = [];
             Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
-                var cVille = tousLesContacts.filter(function (c) { 
-                    return c.ville_id === villeKey || c.ville === villeKey; 
+                var cVille = tousLesContacts.filter(function (c) {
+                    return c.ville_id === villeKey || c.ville === villeKey;
                 });
                 if (cVille.length > 0) {
                     var tg = cVille.filter(function (c) { return c.famille === 'GÉDÉON'; }).length;
@@ -1695,22 +1695,22 @@ function initialiserEcouteFirebase() {
         // On va chercher les données de TOUTES les villes configurées
         console.log("[Bilan Global] Lancement de l'agrégation nationale...");
         tousLesContacts = []; // Reset
-        
+
         var vKeys = Object.keys(CONFIG_EGLISES);
         var nbChargees = 0;
 
-        vKeys.forEach(function(vKey) {
+        vKeys.forEach(function (vKey) {
             var cleNorm = vKey.toLowerCase().replace(/[\s\-]/g, '');
             db.collection('villes').doc(cleNorm).collection('donnees').get()
-                .then(function(snapshot) {
-                    snapshot.forEach(function(doc) {
+                .then(function (snapshot) {
+                    snapshot.forEach(function (doc) {
                         var data = doc.data();
                         data.id = doc.id;
                         data.ville_nom = CONFIG_EGLISES[vKey].nom;
                         data.ville_id = vKey;
                         tousLesContacts.push(data);
                     });
-                    
+
                     nbChargees++;
                     // Quand on a fini de charger toutes les villes, on rafraîchit l'affichage
                     if (nbChargees === vKeys.length) {
@@ -1721,7 +1721,7 @@ function initialiserEcouteFirebase() {
                         }
                     }
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.error("[Bilan Global] Erreur sur " + vKey + ":", err);
                     nbChargees++;
                 });
@@ -1747,7 +1747,7 @@ function initialiserEcouteFirebase() {
         });
 
         // Tri local de secours (au cas où l'index n'est pas encore prêt)
-        tousLesContacts.sort(function(a, b) {
+        tousLesContacts.sort(function (a, b) {
             return (b.dateAjout || "").localeCompare(a.dateAjout || "");
         });
 
@@ -1814,11 +1814,11 @@ function genererBoutonsProgrammes() {
                 validerChoixContexte('programme', progKey);
                 return;
             }
-            
+
             // On utilise les rôles définis dans la case "_programmes_speciaux"
             // Cela centralise la gestion : un ouvrier des programmes speciaux l'est pour TOUS les programmes.
             var rolesPossibles = mesPermissions['_programmes_speciaux'] || [];
-            
+
             if (rolesPossibles.length === 0) {
                 afficherAlerte("Accès Limité", "Désolé, vous n'êtes pas autorisé pour ce programme.", "❌");
             } else if (rolesPossibles.length === 1) {
