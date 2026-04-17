@@ -51,6 +51,7 @@ let roleSelectionneTemporaire = "";
 
 // Variable pour stocker la connexion Firebase active afin de pouvoir l'arrêter
 let unsubscribeFirebase = null;
+let searchTimeout = null; // Pour éviter trop de requêtes Firebase lors de la recherche
 
 // Permissions de l'utilisateur (rempli au login)
 // Format : { "Angers": ["pasteur", "ouvrier"], "Brest": ["ouvrier"] }
@@ -749,17 +750,86 @@ function afficherContacts(listeFiltree) {
 
 /**
  * Filtre les contacts en temps réel (Nom, Prénom ou Téléphone).
+ * - Cherche d'abord localement dans les 50 contacts chargés.
+ * - Si 3 lettres ou plus, déclenche une recherche globale dans TOUTE la base (après un court délai).
  */
 function filtrerContacts() {
-    var terme = document.getElementById('recherche').value.toLowerCase();
+    var terme = document.getElementById('recherche').value.toLowerCase().trim();
 
-    var resultats = tousLesContacts.filter(function (c) {
-        return c.nom.toLowerCase().includes(terme) ||
-            c.prenom.toLowerCase().includes(terme) ||
-            c.tel.includes(terme);
+    // 1. Recherche locale instantanée (dans les 50 déjà présents)
+    var resultatsLocaux = tousLesContacts.filter(function (c) {
+        return (c.nom || "").toLowerCase().includes(terme) ||
+            (c.prenom || "").toLowerCase().includes(terme) ||
+            (c.tel || "").includes(terme);
     });
 
-    afficherContacts(resultats);
+    // On affiche immédiatement les résultats locaux
+    afficherContacts(resultatsLocaux);
+
+    // 2. Recherche Globale (si >= 3 lettres)
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    if (terme.length >= 3 && villeActuelle !== 'GLOBAL') {
+        searchTimeout = setTimeout(function() {
+            executerRechercheGlobale(terme);
+        }, 500); // 500ms d'attente pour éviter de saturer Firebase
+    } else if (terme.length === 0) {
+        var info = document.getElementById('stats-performance-info');
+        if (info) info.innerHTML = "⚡ Mode Performance : Affichage des 50 contacts les plus récents.";
+    }
+}
+
+/**
+ * Interroge directement Firebase pour trouver un nom dans TOUTE la base de données (Super-Recherche).
+ */
+function executerRechercheGlobale(terme) {
+    if (!terme || terme.length < 3) return;
+    
+    var info = document.getElementById('stats-performance-info');
+    if (info) info.innerHTML = "🔍 Recherche approfondie de '" + terme + "'...";
+
+    var path;
+    if (villeActuelle && villeActuelle !== 'GLOBAL') {
+        var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+        path = db.collection('villes').doc(cleNorm).collection('donnees');
+    } else if (programmeActuel) {
+        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+        path = db.collection('programmes').doc(cleNorm).collection('donnees');
+    } else {
+        return;
+    }
+
+    // Firestore est sensible à la casse. On cherche le nom tel quel OU en majuscules (standard UDAMG).
+    // On lance la recherche sur le champ 'nom' (par préfixe).
+    var searchStr = terme.toUpperCase(); 
+
+    path.where("nom", ">=", searchStr)
+        .where("nom", "<=", searchStr + "\uf8ff")
+        .limit(30) // On limite à 30 résultats de recherche pour rester rapide
+        .get()
+        .then(function(snapshot) {
+            var resultatsGlobaux = [];
+            snapshot.forEach(function(doc) {
+                var d = doc.data();
+                d.id = doc.id;
+                resultatsGlobaux.push(d);
+            });
+            
+            if (info) {
+                if (resultatsGlobaux.length > 0) {
+                    info.innerHTML = "✅ " + resultatsGlobaux.length + " résultat(s) trouvé(s) dans toute la base.";
+                } else {
+                    info.innerHTML = "❌ Aucun résultat trouvé pour '" + terme + "' dans la base complète.";
+                }
+            }
+            
+            // On affiche les résultats (cela remplace temporairement la liste des 50 récents)
+            afficherContacts(resultatsGlobaux);
+        })
+        .catch(function(err) {
+            console.error("[Super-Search] Erreur :", err);
+            if (info) info.innerHTML = "⚠️ Index manquant ? Vérifiez la console (F12) pour le bouton de création.";
+        });
 }
 
 /**
