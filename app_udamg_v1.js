@@ -119,12 +119,13 @@ function verifierAccesVIP(utilisateur) {
 
                 // ── Vérification Père Fondateur (Super-Admin) ──
                 if (data.fondateurs && Array.isArray(data.fondateurs)) {
-                    if (data.fondateurs.includes(utilisateur.email)) {
+                    var emailUtilisateur = utilisateur.email.toLowerCase();
+                    if (data.fondateurs.some(f => f.toLowerCase() === emailUtilisateur)) {
                         estFondateur = true;
                         emailTrouve = true;
-                        console.log("[Sécurité] 👑 Accès Père Fondateur détecté !");
+                        console.log("[Sécurité] 👑 Accès Père Fondateur reconnu !");
                         
-                        // ON DÉCLENCHE LA MISE À JOUR DES CHAMPS (Case Programmes Spéciaux, etc.)
+                        // APPEL AUTOMATIQUE AU DÉMARRAGE
                         initialiserChampsEglises();
                     }
                 }
@@ -173,12 +174,18 @@ function verifierAccesVIP(utilisateur) {
                 });
 
                 if (emailTrouve) {
-                    console.log("[Sécurité] Accès autorisé. Permissions :", mesPermissions);
+                    console.log("[Sécurité] Accès autorisé. Rôles :", roleActuel, mesPermissions);
                     
-                    // Si c'est le fondateur, on affiche le bouton de maintenance
+                    // Si c'est le fondateur, on s'assure que le bouton de maintenance est visible
                     if (estFondateur) {
-                        var zoneAdmin = document.getElementById('zone-admin-fondateur');
-                        if (zoneAdmin) zoneAdmin.style.display = 'block';
+                        setTimeout(function() {
+                            var zoneAdmin = document.getElementById('zone-admin-fondateur');
+                            if (zoneAdmin) {
+                                zoneAdmin.style.display = 'block';
+                                zoneAdmin.style.background = 'rgba(255,215,0,0.15)';
+                                zoneAdmin.style.border = '1px dashed var(--ccmg-gold)';
+                            }
+                        }, 1000);
                     }
                     
                     accepterUtilisateur(utilisateur);
