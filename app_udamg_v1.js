@@ -596,9 +596,10 @@ function enregistrerContact() {
             ville: villeActuelle || "", // Si ville, stocke la ville
             programme: programmeActuel || "", // Si programme, stocke le programme
             // La date d'ajout n'est enregistrée qu'à la création, jamais modifiée
+            // On utilise un format ISO pour un tri parfait côté serveur
             dateAjout: contactId
-                ? (contactExistant ? contactExistant.dateAjout || '' : '')
-                : new Date().toLocaleDateString(currentLang === 'en' ? 'en-GB' : 'fr-FR'),
+                ? (contactExistant ? contactExistant.dateAjout || new Date().toISOString() : new Date().toISOString())
+                : new Date().toISOString(),
             // Le niveau est conservé lors d'une modification, sinon commence à 0 (jamais relancé)
             niveau: contactId
                 ? (contactExistant ? contactExistant.niveau : 0)
@@ -1640,12 +1641,24 @@ function initialiserEcouteFirebase() {
         return; // Pas de contexte sélectionné
     }
 
-    unsubscribeFirebase = path.onSnapshot(function (snapshot) {
+    // Pour les villes et programmes : on limite aux 50 derniers contacts pour la performance
+    // Pour le GLOBAL : on charge tout l'historique (demande du Père Fondateur)
+    var query = path;
+    if (villeActuelle !== 'GLOBAL') {
+        query = path.orderBy("dateAjout", "desc").limit(50);
+    }
+
+    unsubscribeFirebase = query.onSnapshot(function (snapshot) {
         tousLesContacts = [];
         snapshot.forEach(function (doc) {
             var data = doc.data();
             data.id = doc.id;
             tousLesContacts.push(data);
+        });
+
+        // Tri local de secours (au cas où l'index n'est pas encore prêt)
+        tousLesContacts.sort(function(a, b) {
+            return (b.dateAjout || "").localeCompare(a.dateAjout || "");
         });
 
         if (familleActuelle) afficherContacts();
