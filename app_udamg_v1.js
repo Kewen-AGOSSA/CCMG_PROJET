@@ -660,15 +660,26 @@ function afficherContacts(listeFiltree) {
 
     // Tri par date (du plus récent au plus ancien), puis par nom
     tousLesContacts.sort(function (a, b) {
-        // Transformer "DD/MM/YYYY" en "YYYYMMDD" pour une comparaison fiable
-        var dA = a.dateAjout ? a.dateAjout.split('/').reverse().join('') : '';
-        var dB = b.dateAjout ? b.dateAjout.split('/').reverse().join('') : '';
+        var parseDate = function(dStr) {
+            if (!dStr) return 0;
+            if (dStr.includes('/')) {
+                var p = dStr.split('/');
+                if (p.length >= 3) {
+                    var annee = p[2].substring(0, 4);
+                    return new Date(annee, p[1]-1, p[0]).getTime();
+                }
+            }
+            return new Date(dStr).getTime() || 0;
+        };
 
-        if (dA !== dB) {
-            return dB.localeCompare(dA); // Plus récent d'abord
+        var timeA = parseDate(a.dateAjout);
+        var timeB = parseDate(b.dateAjout);
+
+        if (timeA !== timeB) {
+            return timeB - timeA; // Plus récent d'abord
         }
         // Si même date, tri par nom
-        return a.nom.localeCompare(b.nom);
+        return (a.nom || '').localeCompare(b.nom || '');
     });
 
     var contactsAAfficher = (listeFiltree !== undefined && listeFiltree !== null)
@@ -689,9 +700,18 @@ function afficherContacts(listeFiltree) {
             if (c.niveau === 2) couleurPastille = 'var(--ccmg-gold)';
             if (c.niveau === 3) couleurPastille = 'var(--ccmg-green)';
 
+            // Formatage de la date pour l'affichage (convertit ISO en DD/MM/YYYY)
+            var dateAffichee = c.dateAjout || '';
+            if (dateAffichee.includes('T')) {
+                var d = new Date(dateAffichee);
+                if (!isNaN(d.getTime())) {
+                    dateAffichee = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+                }
+            }
+
             // Ligne "Ajouté le..." (affichée en doré si la date existe)
-            var htmlDate = c.dateAjout
-                ? '<div class="contact-date">' + t('added_on') + ' ' + escapeHTML(c.dateAjout) + '</div>'
+            var htmlDate = dateAffichee
+                ? '<div class="contact-date">' + t('added_on') + ' ' + escapeHTML(dateAffichee) + '</div>'
                 : '';
 
             // Bloc notes (affiché avec bordure or si des notes existent)
