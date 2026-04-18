@@ -698,7 +698,7 @@ function afficherContacts(listeFiltree) {
             var couleurPastille = '#333333'; // Niveau 0 : noir (contact non encore relancé)
             if (c.niveau === 1) couleurPastille = 'var(--ccmg-red)';
             if (c.niveau === 2) couleurPastille = 'var(--ccmg-gold)';
-            if (c.niveau === 3) couleurPastille = 'var(--ccmg-green)';
+            if (c.niveau === 3 || c.niveau === 4) couleurPastille = 'var(--ccmg-green)';
 
             // Formatage de la date pour l'affichage (convertit ISO en DD/MM/YYYY)
             var dateAffichee = c.dateAjout || '';
@@ -1186,7 +1186,7 @@ function remplirBarreFamille(nomFamille, prefixeId) {
 
     var n1 = contactsFamille.filter(function (c) { return c.niveau === 1; }).length;
     var n2 = contactsFamille.filter(function (c) { return c.niveau === 2; }).length;
-    var n3 = contactsFamille.filter(function (c) { return c.niveau === 3; }).length;
+    var n3 = contactsFamille.filter(function (c) { return c.niveau === 3 || c.niveau === 4; }).length;
 
     var b1 = document.getElementById(prefixeId + '-n1');
     var b2 = document.getElementById(prefixeId + '-n2');
@@ -1277,6 +1277,7 @@ function exporterExcel() {
             if (niveau === 1) return 'Relancé (Niv. 1)';
             if (niveau === 2) return 'Présenté (Niv. 2)';
             if (niveau === 3) return 'Invité (Niv. 3)';
+            if (niveau === 4) return 'Invité Dernière Minute (Niv. 4)';
             return 'Inconnu';
         }
 
@@ -1318,6 +1319,7 @@ function exporterExcel() {
             ['Niveau 1 - Relancés', tousLesContacts.filter(function (c) { return c.niveau === 1; }).length],
             ['Niveau 2 - Présentés', tousLesContacts.filter(function (c) { return c.niveau === 2; }).length],
             ['Niveau 3 - Invités', tousLesContacts.filter(function (c) { return c.niveau === 3; }).length],
+            ['Niveau 4 - Dernière Minute', tousLesContacts.filter(function (c) { return c.niveau === 4; }).length],
             [''], ['']
         ];
 
@@ -1333,7 +1335,7 @@ function exporterExcel() {
                     var tm = cVille.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
                     var n1 = cVille.filter(function (c) { return c.niveau === 1; }).length;
                     var n2 = cVille.filter(function (c) { return c.niveau === 2; }).length;
-                    var n3 = cVille.filter(function (c) { return c.niveau === 3; }).length;
+                    var n3 = cVille.filter(function (c) { return c.niveau === 3 || c.niveau === 4; }).length;
 
                     donneesSummary.push([
                         CONFIG_EGLISES[villeKey].nom.replace("CCMG ", ""),
@@ -1443,14 +1445,15 @@ function exporterPDF() {
         // Niveau Global
         var n1 = tousLesContacts.filter(function (c) { return c.niveau === 1; }).length;
         var n2 = tousLesContacts.filter(function (c) { return c.niveau === 2; }).length;
-        var n3 = tousLesContacts.filter(function (c) { return c.niveau === 3; }).length;
-        doc.text("Relances (N1): " + n1 + "   |   Presentes (N2): " + n2 + "   |   Invites (N3): " + n3, 50, 155);
+        var n3 = tousLesContacts.filter(function (c) { return c.niveau === 3 || c.niveau === 4; }).length;
+        doc.text("Relances (N1): " + n1 + "   |   Presentes (N2): " + n2 + "   |   Invites (N3+N4): " + n3, 50, 155);
 
         // Tableau des contacts
         function niveauEnTexte(niveau) {
             if (niveau === 1) return 'Niv 1';
             if (niveau === 2) return 'Niv 2';
             if (niveau === 3) return 'Niv 3';
+            if (niveau === 4) return 'Niv 4';
             return '?';
         }
 
@@ -1487,7 +1490,7 @@ function exporterPDF() {
                     var tm = cVille.filter(function (c) { return c.famille === 'CCMG' || c.famille === 'MIDL'; }).length;
                     var n1 = cVille.filter(function (c) { return c.niveau === 1; }).length;
                     var n2 = cVille.filter(function (c) { return c.niveau === 2; }).length;
-                    var n3 = cVille.filter(function (c) { return c.niveau === 3; }).length;
+                    var n3 = cVille.filter(function (c) { return c.niveau === 3 || c.niveau === 4; }).length;
 
                     statsEgliseData.push([
                         CONFIG_EGLISES[villeKey].nom.replace("CCMG ", ""),

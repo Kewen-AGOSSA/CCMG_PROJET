@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Outil Admin - Création _programmes_speciaux</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f6f9; color: #333; }
+        h1 { color: #2c3e50; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
+        .btn { padding: 12px 24px; font-size: 16px; font-weight: bold; color: white; background: #3498db; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+        .btn:hover { background: #2980b9; }
+        #status { margin-top: 20px; font-size: 18px; font-weight: bold; color: #e67e22; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Initialiseur de Base de Données</h1>
+        <p>Cliquez sur ce bouton pour vous connecter avec votre compte Google et forcer la création de la section <strong>_programmes_speciaux</strong> dans votre Firestore.</p>
+        
+        <button class="btn" id="loginBtn">Se connecter et Créer la section</button>
+        <p id="status"></p>
+    </div>
+
+    <!-- Firebase SDK Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <!-- Config UDAMG -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = "Connexion Google en cours...";
+            
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    statusEl.innerText = "Connecté (" + result.user.email + "). Création en cours dans Firebase...";
+                    
+                    // Forcer la création avec {merge: true} pour ne rien écraser d'autre
+                    return db.collection('configuration').doc('emails_autorises').set({
+                        _programmes_speciaux: {
+                            pasteur: [],
+                            evangeliste: [],
+                            ouvrier: []
+                        }
+                    }, { merge: true });
+                })
+                .then(() => {
+                    statusEl.style.color = "#27ae60";
+                    statusEl.innerText = "✅ SUCCÈS ! La section '_programmes_speciaux' a été créée avec succès dans votre base de données.\n\nVous pouvez maintenant fermer cette page et aller sur la console web de Firebase, vous y verrez la section !";
+                })
+                .catch((error) => {
+                    console.error("Erreur:", error);
+                    statusEl.style.color = "#c0392b";
+                    statusEl.innerText = "❌ Erreur : " + error.message;
+                });
+        });
+    </script>
+</body>
+</html>

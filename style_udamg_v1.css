@@ -668,6 +668,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
 .n1 { background: var(--ccmg-red); }
 .n2 { background: var(--ccmg-gold); color: var(--bg-primary); }
 .n3 { background: var(--ccmg-green); }
+.n4 { background: var(--ccmg-green); }
 
 .jauge-legende {
     display: flex;

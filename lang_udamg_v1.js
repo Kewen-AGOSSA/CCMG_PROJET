@@ -101,7 +101,37 @@ Que Dieu vous bénisse 🙏`,
         relaunch_title: "Quel message envoyer ?",
         level_1_btn: "Niv 1 : Prise de contact",
         level_2_btn: "Niv 2 : Présentation Église",
-        level_3_btn: "Niv 3 : Invitation Culte"
+        level_3_btn: "Niv 3 : Invitation Culte",
+        level_4_btn: "Niv 4 : Invitation Dernière Minute",
+        msg_level4: `Bonjour {prenom} 🙏
+
+Nous espérons que tu vas bien par la grâce de Dieu ✨
+
+👉 Et si tu venais nous rencontrer ce dimanche ?
+Nous serions ravis de t’accueillir à l’église {nom_eglise} à partir de 10h 🙌
+
+📍 ce sera un moment pour te recentrer et te reconnecter à l’essentiel
+💬 Une parole inspirée qui parle à ton cœur
+🤝 Une communauté chaleureuse prête à t’accueillir
+
+Peu importe d’où tu viens ou avec qui tu viens… il y a une place pour toi ❤️
+
+📍 {adresse_eglise}
+🚋 Tram A ou C : Terminus Roseraie (10 min de marche)
+🚌 Bus 3 : arrêt Allard (5 min de marche)
+🚌 Bus 5a / 5b : arrêt Cevert (juste en face)
+
+📞 06 35 38 07 58
+
+Au plaisir de te voir 😊
+Que Dieu te bénisse 🙏
+
+Rappel : 
+📅 Nos programmes de la semaine
+🔵 Mercredi (19h - 21h) : Enseignement biblique + échanges
+🔵 Dimanche (10h - 12h30) : Culte de célébration
+
+Équipe d’évangélisation du {nom_eglise}`
     },
     en: {
         welcome: "Welcome",
@@ -148,7 +178,9 @@ Que Dieu vous bénisse 🙏`,
         relaunch_title: "Which message to send?",
         level_1_btn: "Lvl 1 : Follow-up",
         level_2_btn: "Lvl 2 : Church Presentation",
-        level_3_btn: "Lvl 3 : Service Invitation"
+        level_3_btn: "Lvl 3 : Service Invitation",
+        level_4_btn: "Lvl 4 : Last-minute Invitation",
+        msg_level4: "Hello {prenom}! It's not too late to join us tomorrow at 10am at {nom_eglise}. We would be so happy to welcome you! God bless you."
     }
 };
 
