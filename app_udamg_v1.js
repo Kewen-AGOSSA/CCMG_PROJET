@@ -2226,10 +2226,19 @@ function confirmerAjoutAncien() {
  * Déplace physiquement le contact vers la collection 'anciens'.
  */
 function ajouterAuxAnciens(contact) {
-    if (!villeActuelle) return;
-    var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+    // Si on est en mode GLOBAL, on récupère la ville du contact, sinon la ville actuelle
+    var villeId = (villeActuelle === 'GLOBAL') ? contact.ville_id : villeActuelle;
+    
+    if (!villeId) {
+        afficherAlerte("Erreur", "Impossible de déterminer l'église d'origine de ce contact.", "❌");
+        return;
+    }
+
+    var cleNorm = villeId.toLowerCase().replace(/[\s\-]/g, '');
     var sourcePath = db.collection('villes').doc(cleNorm).collection('donnees');
     var destPath = db.collection('villes').doc(cleNorm).collection('anciens');
+
+    console.log("[Anciens] Déplacement vers :", cleNorm, contact.id);
 
     // 1. Ajouter à la destination
     destPath.doc(contact.id).set(contact)
@@ -2239,11 +2248,16 @@ function ajouterAuxAnciens(contact) {
         })
         .then(function() {
             afficherAlerte("✅ Succès", "Le contact a été déplacé vers les anciens.", "✨");
+            fermerModalConfirmation();
             if (familleActuelle) afficherContacts();
         })
         .catch(function(err) {
-            console.error("[Anciens] Erreur lors du déplacement :", err);
-            afficherAlerte("Erreur", "Impossible de déplacer le contact.", "❌");
+            console.error("[Anciens] Erreur détaillée :", err);
+            var msgErreur = "Détail : " + err.message;
+            if (err.code === 'permission-denied') {
+                msgErreur = "Accès refusé. Veuillez vérifier les règles de sécurité Firebase pour la collection 'anciens'.";
+            }
+            afficherAlerte("Erreur", "Impossible de déplacer le contact.\n" + msgErreur, "❌");
         });
 }
 
