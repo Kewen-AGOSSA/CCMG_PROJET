@@ -720,7 +720,7 @@ function afficherContacts(listeFiltree) {
                 var dR = new Date(c.dateDerniereRelance);
                 if (!isNaN(dR.getTime())) {
                     var dateR = String(dR.getDate()).padStart(2, '0') + '/' + String(dR.getMonth() + 1).padStart(2, '0') + '/' + dR.getFullYear();
-                    htmlRelance = '<div class="contact-date" style="color:#ffa500;">' + t('relaunched_on') + ' ' + escapeHTML(dateR) + '</div>';
+                    htmlRelance = '<div class="contact-date" style="color:var(--ccmg-gold); margin-top:5px;">' + t('relaunched_on') + ' ' + escapeHTML(dateR) + '</div>';
                 }
             }
 
@@ -757,10 +757,10 @@ function afficherContacts(listeFiltree) {
                 '<div class="contact-indic" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
                 '<div class="contact-texte">' +
                 htmlDate +
-                htmlRelance +
                 '<h4>' + escapeHTML(c.nom).toUpperCase() + ' ' + escapeHTML(c.prenom) + '</h4>' +
                 '<p>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</p>' +
                 htmlNotes +
+                htmlRelance +
                 '</div>' +
                 '</div>' +
                 '<div class="contact-actions">' +
