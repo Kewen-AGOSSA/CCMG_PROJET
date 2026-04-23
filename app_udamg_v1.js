@@ -714,6 +714,16 @@ function afficherContacts(listeFiltree) {
                 ? '<div class="contact-date">' + t('added_on') + ' ' + escapeHTML(dateAffichee) + '</div>'
                 : '';
 
+            // Ligne "Relancé le..." (nouvellement ajouté)
+            var htmlRelance = '';
+            if (c.dateDerniereRelance) {
+                var dR = new Date(c.dateDerniereRelance);
+                if (!isNaN(dR.getTime())) {
+                    var dateR = String(dR.getDate()).padStart(2, '0') + '/' + String(dR.getMonth() + 1).padStart(2, '0') + '/' + dR.getFullYear();
+                    htmlRelance = '<div class="contact-date" style="color:#ffa500;">' + t('relaunched_on') + ' ' + escapeHTML(dateR) + '</div>';
+                }
+            }
+
             // Bloc notes (affiché avec bordure or si des notes existent)
             var htmlNotes = c.notes
                 ? '<div class="contact-notes">' + escapeHTML(c.notes) + '</div>'
@@ -747,6 +757,7 @@ function afficherContacts(listeFiltree) {
                 '<div class="contact-indic" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
                 '<div class="contact-texte">' +
                 htmlDate +
+                htmlRelance +
                 '<h4>' + escapeHTML(c.nom).toUpperCase() + ' ' + escapeHTML(c.prenom) + '</h4>' +
                 '<p>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</p>' +
                 htmlNotes +
@@ -1012,25 +1023,26 @@ function envoyerRelance(methode) {
         window.location.href = urlSMS;
     }
 
-    // Fait progresser le niveau dans Firebase uniquement si on avance dans le processus
+    // Mise à jour systématique de la date de relance et du niveau (si progression)
     var nouveauNiveau = Math.max(c.niveau || 0, niveauSelectionne);
+    var collectionDest;
+    if (villeActuelle && villeActuelle !== 'GLOBAL') {
+        var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+        collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
+    } else if (programmeActuel) {
+        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+        collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
+    }
 
-    if (nouveauNiveau > c.niveau) {
-        var collectionDest;
-        if (villeActuelle && villeActuelle !== 'GLOBAL') {
-            var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
-            collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
-        } else if (programmeActuel) {
-            var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
-            collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
-        }
-
-        if (collectionDest) {
-            collectionDest.doc(id).update({ niveau: nouveauNiveau })
-                .catch(function (err) {
-                    console.error('[Firebase] Erreur mise à jour niveau :', err);
-                });
-        }
+    if (collectionDest) {
+        var updateData = {
+            niveau: nouveauNiveau,
+            dateDerniereRelance: new Date().toISOString()
+        };
+        collectionDest.doc(id).update(updateData)
+            .catch(function (err) {
+                console.error('[Firebase] Erreur mise à jour relance :', err);
+            });
     }
 
     fermerModalRelance();
