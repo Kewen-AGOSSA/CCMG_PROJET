@@ -9,22 +9,21 @@ const CONFIG_EGLISES = {
     "Angers": {
         nom: "CCMG Angers",
         adresse: "3 rue Carl Linné, 49000 Angers\nArrêt de tram : Terminus Roseraie",
-        lien_wa: "https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13",
-        email_pasteur: "pasteur.angers@ccmg.fr"
+        lien_wa: "https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13"
     },
-    "Brest": { nom: "CCMG Brest", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.brest@ccmg.fr" },
-    "Châteaubriant": { nom: "CCMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.chateaubriant@ccmg.fr" },
-    "La Roche sur Yon": { nom: "CCMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.laroche@ccmg.fr" },
-    "La Rochelle": { nom: "CCMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.larochelle@ccmg.fr" },
-    "Le Mans": { nom: "CCMG Le Mans", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.lemans@ccmg.fr" },
-    "Morlaix": { nom: "CCMG Morlaix", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.morlaix@ccmg.fr" },
-    "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.nantes@ccmg.fr" },
-    "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.paris@ccmg.fr" },
-    "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.quimper@ccmg.fr" },
-    "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.stnazaire@ccmg.fr" },
-    "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.saumur@ccmg.fr" },
-    "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.tours@ccmg.fr" },
-    "Vannes - Redon": { nom: "CCMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.vannes@ccmg.fr" }
+    "Brest": { nom: "CCMG Brest", adresse: "Adresse à définir...", lien_wa: "" },
+    "Châteaubriant": { nom: "CCMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "" },
+    "La Roche sur Yon": { nom: "CCMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "" },
+    "La Rochelle": { nom: "CCMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "" },
+    "Le Mans": { nom: "CCMG Le Mans", adresse: "Adresse à définir...", lien_wa: "" },
+    "Morlaix": { nom: "CCMG Morlaix", adresse: "Adresse à définir...", lien_wa: "" },
+    "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
+    "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
+    "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
+    "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
+    "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
+    "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
+    "Vannes - Redon": { nom: "CCMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "" }
 };
 
 // Configuration des évènements / programmes
@@ -1144,22 +1143,46 @@ function validerTransfert() {
 }
 
 /**
- * Ouvre le client mail pour informer le pasteur de destination
+ * Ouvre le client mail pour informer le pasteur de destination.
+ * L'email est récupéré dynamiquement depuis Firestore (configuration/emails_autorises).
  */
 function envoyerEmailPasteur(contact, egliseDestKey) {
-    var confDest = CONFIG_EGLISES[egliseDestKey];
-    var email = confDest.email_pasteur || "";
-    if (!email) return;
+    var cleNormDest = egliseDestKey.toLowerCase().replace(/[\s\-]/g, '');
 
-    var sujet = "Transfert de contact - UDAMG";
-    var corps = t('msg_transfer_pastor')
-        .replace(/{nom}/g, (contact.nom || "").toUpperCase())
-        .replace(/{prenom}/g, contact.prenom || "")
-        .replace(/{tel}/g, contact.tel || "")
-        .replace(/{ancienne_eglise}/g, villeActuelle);
+    db.collection('configuration').doc('emails_autorises').get()
+        .then(function (doc) {
+            var emailPasteur = "";
+            if (doc.exists) {
+                var data = doc.data();
+                var egliseData = data[cleNormDest];
+                
+                // On vérifie si on a une liste de pasteurs pour cette église
+                if (egliseData && egliseData.pasteur && egliseData.pasteur.length > 0) {
+                    emailPasteur = egliseData.pasteur[0]; // On prend le premier de la liste
+                }
+            }
 
-    var mailtoLink = "mailto:" + email + "?subject=" + encodeURIComponent(sujet) + "&body=" + encodeURIComponent(corps);
-    window.location.href = mailtoLink;
+            if (!emailPasteur) {
+                console.warn("[Transfert] Aucun email de pasteur trouvé pour :", egliseDestKey);
+                alert("Attention : Aucun email de pasteur n'est configuré pour l'église de destination. Le transfert sera fait mais le mail n'a pas pu être envoyé.");
+                return;
+            }
+
+            var sujet = "Transfert de contact - UDAMG";
+            var corps = t('msg_transfer_pastor')
+                .replace(/{nom}/g, (contact.nom || "").toUpperCase())
+                .replace(/{prenom}/g, contact.prenom || "")
+                .replace(/{tel}/g, contact.tel || "")
+                .replace(/{ancienne_eglise}/g, villeActuelle);
+
+            var mailtoLink = "mailto:" + emailPasteur + "?subject=" + encodeURIComponent(sujet) + "&body=" + encodeURIComponent(corps);
+            
+            // On ouvre le mailto dans une nouvelle fenêtre pour ne pas quitter l'app
+            window.open(mailtoLink, '_blank');
+        })
+        .catch(function (err) {
+            console.error("[Transfert] Erreur lors de la récupération de l'email :", err);
+        });
 }
 
 
