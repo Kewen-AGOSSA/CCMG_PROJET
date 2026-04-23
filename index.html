@@ -448,14 +448,21 @@
                 
                 <div class="input-group">
                     <label class="form-label">Choisissez la destination</label>
-                    <select id="select-eglise-transfert" class="form-input" style="width:100%; padding:12px; border-radius:10px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--glass-border);">
+                    <select id="select-eglise-transfert" class="form-input" style="width:100%; padding:14px; border-radius:15px; background:rgba(0,0,0,0.3); color:white; border:1px solid var(--ccmg-gold); appearance: none; cursor:pointer;">
                         <!-- Options générées par JS -->
                     </select>
+                    <style>
+                        #select-eglise-transfert option {
+                            background-color: #0c2d3a;
+                            color: white;
+                            padding: 10px;
+                        }
+                    </style>
                 </div>
 
-                <div style="margin: 20px 0; display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="document.getElementById('check-informer-pasteur').click()">
-                    <input type="checkbox" id="check-informer-pasteur" checked style="width:20px; height:20px; cursor:pointer;">
-                    <label style="font-size: 14px; cursor:pointer;" data-i18n="inform_pastor">Informer le pasteur par email</label>
+                <div style="margin: 25px 0; display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,215,0,0.1); padding: 12px; border-radius: 12px; border: 1px dashed var(--ccmg-gold);" onclick="document.getElementById('check-informer-pasteur').click()">
+                    <input type="checkbox" id="check-informer-pasteur" checked style="width:22px; height:22px; cursor:pointer; accent-color: var(--ccmg-gold);">
+                    <label style="font-size: 14px; cursor:pointer; color: var(--ccmg-gold); font-weight: 600;" data-i18n="inform_pastor">Informer le pasteur par email</label>
                 </div>
 
                 <div class="modal-actions" style="display: flex; gap: 10px;">
@@ -573,8 +580,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <script src="lang_udamg_v1.js?v=v17_CLEAN_SYNC"></script>
-    <script src="app_udamg_v1.js?v=v17_CLEAN_SYNC"></script>
+    <script src="lang_udamg_v1.js?v=v18_themed_modals"></script>
+    <script src="app_udamg_v1.js?v=v18_themed_modals"></script>
 </body>
 
 </html>
