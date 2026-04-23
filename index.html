@@ -423,48 +423,47 @@
         </div>
         <!-- Fin #modal-relance -->
  
-+        <!-- MODAL : OPTIONS DU CONTACT -->
-+        <div id="modal-options" class="modal">
-+            <div class="modal-content glass-card" style="text-align: center; max-width: 380px;">
-+                <h3 data-i18n="options_title" style="margin-bottom: 25px;">Options du contact</h3>
-+                <div style="display: flex; flex-direction: column; gap: 15px;">
-+                    <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px;" onclick="ouvrirRelanceDepuisOptions()">
-+                        <span class="nom-famille" style="font-size:18px;">💬 Relancer le contact</span>
-+                    </button>
-+                    <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px;" onclick="ouvrirTransfert()">
-+                        <span class="nom-famille" style="font-size:18px;">⛪ Transférer à une église</span>
-+                    </button>
-+                </div>
-+                <div class="modal-actions" style="margin-top: 25px; display: flex; justify-content: center;">
-+                    <button onclick="fermerModalOptions()" class="btn-annuler">Annuler</button>
-+                </div>
-+            </div>
-+        </div>
-+
-+        <!-- MODAL : TRANSFERT D'ÉGLISE -->
-+        <div id="modal-transfert" class="modal">
-+            <div class="modal-content glass-card" style="max-width: 400px;">
-+                <h3 data-i18n="transfer_to_church" style="text-align: center; margin-bottom: 20px;">Transférer à une église</h3>
-+                
-+                <div class="input-group">
-+                    <label class="form-label">Choisissez la destination</label>
-+                    <select id="select-eglise-transfert" class="form-input" style="width:100%; padding:12px; border-radius:10px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--glass-border);">
-+                        <!-- Options générées par JS -->
-+                    </select>
-+                </div>
-+
-+                <div style="margin: 20px 0; display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="document.getElementById('check-informer-pasteur').click()">
-+                    <input type="checkbox" id="check-informer-pasteur" checked style="width:20px; height:20px; cursor:pointer;">
-+                    <label style="font-size: 14px; cursor:pointer;" data-i18n="inform_pastor">Informer le pasteur par email</label>
-+                </div>
-+
-+                <div class="modal-actions" style="display: flex; gap: 10px;">
-+                    <button onclick="fermerModalTransfert()" class="btn-annuler" style="flex:1;">Annuler</button>
-+                    <button onclick="validerTransfert()" class="btn-valider" style="flex:1;" data-i18n="transfer_confirm">Confirmer</button>
-+                </div>
-+            </div>
-+        </div>
-+
+        <!-- MODAL : OPTIONS DU CONTACT -->
+        <div id="modal-options" class="modal">
+            <div class="modal-content glass-card" style="text-align: center; max-width: 380px;">
+                <h3 data-i18n="options_title" style="margin-bottom: 25px;">Options du contact</h3>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px;" onclick="ouvrirRelanceDepuisOptions()">
+                        <span class="nom-famille" style="font-size:18px;">💬 Relancer le contact</span>
+                    </button>
+                    <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px;" onclick="ouvrirTransfert()">
+                        <span class="nom-famille" style="font-size:18px;">⛪ Transférer à une église</span>
+                    </button>
+                </div>
+                <div class="modal-actions" style="margin-top: 25px; display: flex; justify-content: center;">
+                    <button onclick="fermerModalOptions()" class="btn-annuler">Annuler</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL : TRANSFERT D'ÉGLISE -->
+        <div id="modal-transfert" class="modal">
+            <div class="modal-content glass-card" style="max-width: 400px;">
+                <h3 data-i18n="transfer_to_church" style="text-align: center; margin-bottom: 20px;">Transférer à une église</h3>
+                
+                <div class="input-group">
+                    <label class="form-label">Choisissez la destination</label>
+                    <select id="select-eglise-transfert" class="form-input" style="width:100%; padding:12px; border-radius:10px; background:var(--input-bg); color:var(--text-main); border:1px solid var(--glass-border);">
+                        <!-- Options générées par JS -->
+                    </select>
+                </div>
+
+                <div style="margin: 20px 0; display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="document.getElementById('check-informer-pasteur').click()">
+                    <input type="checkbox" id="check-informer-pasteur" checked style="width:20px; height:20px; cursor:pointer;">
+                    <label style="font-size: 14px; cursor:pointer;" data-i18n="inform_pastor">Informer le pasteur par email</label>
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 10px;">
+                    <button onclick="fermerModalTransfert()" class="btn-annuler" style="flex:1;">Annuler</button>
+                    <button onclick="validerTransfert()" class="btn-valider" style="flex:1;" data-i18n="transfer_confirm">Confirmer</button>
+                </div>
+            </div>
+        </div>
 
         <!-- Modale de Confirmation Générique (Déconnexion, etc.) -->
         <div id="modal-confirmation" class="modal">
@@ -574,8 +573,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <script src="lang_udamg_v1.js?v=v14_options_transfer"></script>
-    <script src="app_udamg_v1.js?v=v14_options_transfer"></script>
+    <script src="lang_udamg_v1.js?v=v15_fix_ui"></script>
+    <script src="app_udamg_v1.js?v=v15_fix_ui"></script>
 </body>
 
 </html>
