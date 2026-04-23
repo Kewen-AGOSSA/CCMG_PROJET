@@ -2197,3 +2197,179 @@ function naviguerVers(ecranId) {
         console.error("[UDAMG] Erreur lors de la navigation :", err);
     }
 }
+
+
+/* ===================================================
+   GESTION DES ANCIENS (INVITÉS SPÉCIAUX)
+   =================================================== */
+
+let tousLesAnciens = [];
+
+/**
+ * Ouvre la modale de confirmation pour ajouter un contact aux anciens.
+ */
+function confirmerAjoutAncien() {
+    var contact = tousLesContacts.find(c => c.id === contactIdSelectionne);
+    if (!contact) return;
+
+    fermerModalOptions(); // On ferme les options d'abord
+    
+    ouvrirModalConfirmation(
+        t('confirm_move_senior'),
+        function() {
+            ajouterAuxAnciens(contact);
+        }
+    );
+}
+
+/**
+ * Déplace physiquement le contact vers la collection 'anciens'.
+ */
+function ajouterAuxAnciens(contact) {
+    if (!villeActuelle) return;
+    var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+    var sourcePath = db.collection('villes').doc(cleNorm).collection('donnees');
+    var destPath = db.collection('villes').doc(cleNorm).collection('anciens');
+
+    // 1. Ajouter à la destination
+    destPath.doc(contact.id).set(contact)
+        .then(function() {
+            // 2. Supprimer de la source
+            return sourcePath.doc(contact.id).delete();
+        })
+        .then(function() {
+            afficherAlerte("✅ Succès", "Le contact a été déplacé vers les anciens.", "✨");
+            if (familleActuelle) afficherContacts();
+        })
+        .catch(function(err) {
+            console.error("[Anciens] Erreur lors du déplacement :", err);
+            afficherAlerte("Erreur", "Impossible de déplacer le contact.", "❌");
+        });
+}
+
+/**
+ * Navigue vers l'écran des anciens et charge les données.
+ */
+function ouvrirAnciens() {
+    if (!villeActuelle) {
+        afficherAlerte("Attention", "Veuillez d'abord sélectionner une église.", "⛪");
+        return;
+    }
+    naviguerVers('page-anciens');
+    chargerAnciens();
+}
+
+/**
+ * Charge les anciens depuis Firestore.
+ */
+function chargerAnciens() {
+    var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+    db.collection('villes').doc(cleNorm).collection('anciens').orderBy("dateAjout", "desc").get()
+        .then(function(snapshot) {
+            tousLesAnciens = [];
+            snapshot.forEach(function(doc) {
+                var data = doc.data();
+                data.id = doc.id;
+                tousLesAnciens.push(data);
+            });
+            afficherListeAnciens();
+        })
+        .catch(function(err) {
+            console.error("[Anciens] Erreur de chargement :", err);
+        });
+}
+
+/**
+ * Affiche la liste des anciens dans le container.
+ */
+function afficherListeAnciens() {
+    var container = document.getElementById('liste-anciens');
+    container.innerHTML = '';
+
+    if (tousLesAnciens.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:30px;">Aucun ancien dans cette liste.</p>';
+        return;
+    }
+
+    tousLesAnciens.forEach(function(c) {
+        var card = document.createElement('div');
+        card.className = 'contact-card';
+        card.style.marginBottom = '10px';
+        card.innerHTML = `
+            <div class="contact-info">
+                <div class="contact-indic" style="background:var(--ccmg-gold); color:var(--ccmg-gold)"></div>
+                <div class="contact-texte">
+                    <h4>${(c.nom || "").toUpperCase()} ${c.prenom || ""}</h4>
+                    <p>${c.tel || ""}</p>
+                </div>
+            </div>
+            <div class="contact-actions">
+                <button class="action-btn" onclick="supprimerAncien('${c.id}')" style="background:rgba(255,0,0,0.1); color:var(--ccmg-red);">🗑️</button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+/**
+ * Supprime un ancien de la liste.
+ */
+function supprimerAncien(id) {
+    ouvrirModalConfirmation(
+        "Voulez-vous retirer cette personne de la liste des anciens ?",
+        function() {
+            var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+            db.collection('villes').doc(cleNorm).collection('anciens').doc(id).delete()
+                .then(function() {
+                    chargerAnciens();
+                    fermerModalConfirmation();
+                });
+        }
+    );
+}
+
+/**
+ * Envoie l'invitation groupée à tous les anciens via WhatsApp.
+ */
+function envoyerInvitationGroupee() {
+    var message = document.getElementById('input-message-groupe').value;
+    if (!message) {
+        afficherAlerte("Message vide", "Veuillez écrire un message d'invitation.", "✍️");
+        return;
+    }
+
+    if (tousLesAnciens.length === 0) {
+        afficherAlerte("Liste vide", "Il n'y a aucun ancien à inviter.", "🤷");
+        return;
+    }
+
+    // On ouvre une par une les fenêtres WhatsApp (attention au bloqueur de popups)
+    ouvrirModalConfirmation(
+        "L'application va ouvrir " + tousLesAnciens.length + " fenêtres WhatsApp. Voulez-vous continuer ?",
+        function() {
+            tousLesAnciens.forEach(function(c, index) {
+                setTimeout(function() {
+                    var url = "https://api.whatsapp.com/send?phone=" + c.tel + "&text=" + encodeURIComponent(message);
+                    window.open(url, '_blank');
+                }, index * 1200); // Délai de 1.2s entre chaque pour éviter les blocages navigateurs
+            });
+            fermerModalConfirmation();
+        }
+    );
+}
+
+/**
+ * Copie tous les numéros dans le presse-papier pour liste de diffusion.
+ */
+function copierTousLesNumeros() {
+    if (tousLesAnciens.length === 0) return;
+    
+    var numeros = tousLesAnciens.map(c => c.tel).join('; ');
+    navigator.clipboard.writeText(numeros)
+        .then(function() {
+            afficherAlerte("Copié !", "Les " + tousLesAnciens.length + " numéros sont dans votre presse-papier.", "📋");
+        })
+        .catch(function(err) {
+            console.error("Erreur copie :", err);
+        });
+}

@@ -189,6 +189,11 @@
                     <span class="age" data-i18n="over_30">+ de 30 ans</span>
                 </button>
 
+                <button class="bouton-famille" style="border-color: var(--ccmg-gold); background: rgba(255, 215, 0, 0.05);" onclick="ouvrirAnciens()">
+                    <span class="nom-famille" data-i18n="invite_seniors">Inviter les anciens</span>
+                    <span class="age">✨ Spécial</span>
+                </button>
+
                 <button class="btn-stats" onclick="ouvrirStats()" data-i18n="dashboard_btn">📊 TABLEAU DE BORD</button>
             </div>
         </section>
@@ -332,6 +337,37 @@
             </div>
         </section>
 
+        <!-- ÉCRAN : LISTE DES ANCIENS (INVITÉS) -->
+        <section id="page-anciens" class="ecran">
+            <header class="header-liste glass-header">
+                <button class="btn-retour" aria-label="Retour" onclick="naviguerVers('page-familles')">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <h2 data-i18n="seniors_title">Gestion des Anciens</h2>
+            </header>
+
+            <div class="glass-card" style="margin-bottom: 20px; padding: 20px;">
+                <h4 style="margin-bottom: 10px; color: var(--ccmg-gold);">Message d'invitation groupé</h4>
+                <textarea id="input-message-groupe" class="form-input" data-i18n="bulk_msg_placeholder" 
+                    placeholder="Écrivez ici le message d'invitation..." rows="4" style="margin-bottom: 15px;"></textarea>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-valider" style="flex: 1; padding: 12px; font-size: 14px;" onclick="envoyerInvitationGroupee()">
+                        🚀 <span data-i18n="send_bulk_invite">Envoyer l'invitation groupée</span>
+                    </button>
+                    <button class="btn-annuler" style="padding: 12px; font-size: 14px;" onclick="copierTousLesNumeros()">
+                        📋 <span data-i18n="copy_numbers">Copier numéros</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="liste-anciens" class="container-liste"></div>
+        </section>
+
         <!-- MODAL : FORMULAIRE D'AJOUT/EDITION -->
         <div id="modal-ajout" class="modal">
             <div class="modal-content glass-card">
@@ -433,6 +469,9 @@
                     </button>
                     <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px;" onclick="ouvrirTransfert()">
                         <span class="nom-famille" style="font-size:18px;">⛪ Transférer à une église</span>
+                    </button>
+                    <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px; border-color: var(--ccmg-red);" onclick="confirmerAjoutAncien()">
+                        <span class="nom-famille" style="font-size:18px; color: var(--ccmg-red);">✨ Ajouter à ancien</span>
                     </button>
                 </div>
                 <div class="modal-actions" style="margin-top: 25px; display: flex; justify-content: center;">
