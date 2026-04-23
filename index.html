@@ -189,7 +189,7 @@
                     <span class="age" data-i18n="over_30">+ de 30 ans</span>
                 </button>
 
-                <button class="bouton-famille" style="border-color: var(--ccmg-gold); background: rgba(255, 215, 0, 0.05);" onclick="ouvrirAnciens()">
+                <button id="btn-anciens-home" class="bouton-famille" style="display:none; border-color: var(--ccmg-gold); background: rgba(255, 215, 0, 0.05);" onclick="ouvrirAnciens()">
                     <span class="nom-famille" data-i18n="invite_seniors">Inviter les anciens</span>
                     <span class="age">✨ Spécial</span>
                 </button>
@@ -470,7 +470,7 @@
                     <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px;" onclick="ouvrirTransfert()">
                         <span class="nom-famille" style="font-size:18px;">⛪ Transférer à une église</span>
                     </button>
-                    <button class="bouton-famille" style="height:auto; min-height:60px; padding: 15px; border-color: var(--ccmg-red);" onclick="confirmerAjoutAncien()">
+                    <button id="btn-move-ancien-modal" class="bouton-famille" style="height:auto; min-height:60px; padding: 15px; border-color: var(--ccmg-red);" onclick="confirmerAjoutAncien()">
                         <span class="nom-famille" style="font-size:18px; color: var(--ccmg-red);">✨ Ajouter à ancien</span>
                     </button>
                 </div>

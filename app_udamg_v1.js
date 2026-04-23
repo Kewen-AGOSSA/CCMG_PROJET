@@ -1237,6 +1237,12 @@ function appliquerDroitsInterface() {
     var btnExportPdf = document.querySelector('.btn-export-pdf');
     if (btnExport) btnExport.style.display = estOuvrier ? 'none' : 'flex';
     if (btnExportPdf) btnExportPdf.style.display = estOuvrier ? 'none' : 'flex';
+
+    // 4. Gestion des Anciens : Réservé au Pasteur et Responsable
+    var btnAnciensHome = document.getElementById('btn-anciens-home');
+    var btnAnciensModal = document.getElementById('btn-move-ancien-modal');
+    if (btnAnciensHome) btnAnciensHome.style.display = estOuvrier ? 'none' : 'block';
+    if (btnAnciensModal) btnAnciensModal.style.display = estOuvrier ? 'none' : 'block';
 }
 
 /**
@@ -2209,6 +2215,10 @@ let tousLesAnciens = [];
  * Ouvre la modale de confirmation pour ajouter un contact aux anciens.
  */
 function confirmerAjoutAncien() {
+    if (roleActuel === 'ouvrier') {
+        afficherAlerte("Accès refusé", "Seuls les pasteurs et responsables peuvent déplacer des contacts vers les anciens.", "🔒");
+        return;
+    }
     var contact = tousLesContacts.find(c => c.id === contactIdSelectionne);
     if (!contact) return;
 
@@ -2265,6 +2275,10 @@ function ajouterAuxAnciens(contact) {
  * Navigue vers l'écran des anciens et charge les données.
  */
 function ouvrirAnciens() {
+    if (roleActuel === 'ouvrier') {
+        afficherAlerte("Accès refusé", "Cette section est réservée aux pasteurs et responsables.", "🔒");
+        return;
+    }
     if (!villeActuelle) {
         afficherAlerte("Attention", "Veuillez d'abord sélectionner une église.", "⛪");
         return;
