@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Fonction de vérification des rôles (inchangée)
+    function aRole(idContexte) {
+      let email = request.auth.token.email.lower();
+      let config = get(/databases/$(database)/documents/configuration/emails_autorises).data;
+      
+      return email in config.get('fondateurs', [])
+          || (idContexte in config && (
+               email in config[idContexte].get('pasteur', [])
+            || email in config[idContexte].get('evangeliste', [])
+            || email in config[idContexte].get('ouvrier', [])
+          ));
+    }
+
+    // LISTE DES EMAILS : Lecture seule pour les membres connectés
+    match /configuration/emails_autorises {
+      allow read: if request.auth != null;
+      allow write: if false; 
+    }
+
+    // VILLES : Autorise l'accès aux collections 'donnees' et 'anciens' selon le rôle
+    match /villes/{villeId}/{colId}/{doc=**} {
+      allow read, write: if request.auth != null && 
+                         (colId == 'donnees' || colId == 'anciens') && 
+                         aRole(villeId);
+    }
+    
+    // PROGRAMMES : Autorise l'accès aux collections 'donnees' et 'anciens' selon le rôle
+    match /programmes/{progId}/{colId}/{doc=**} {
+      allow read, write: if request.auth != null && 
+                         (colId == 'donnees' || colId == 'anciens') && 
+                         aRole(progId);
+    }
+
+    // ANCIENNE STRUCTURE (Contacts) : Réservée au Père Fondateur
+    match /contacts/{doc=**} {
+      allow read: if request.auth != null && 
+        (request.auth.token.email.lower() in get(/databases/$(database)/documents/configuration/emails_autorises).data.get('fondateurs', []));
+      allow write: if false;
+    }
+
+    // ✅ EBED 2026 — Pointage Convention (accès libre)
+    match /ebed_participants/{id} {
+      allow read, write: if true;
+    }
+    match /ebed_pointages/{id} {
+      allow read, write: if true;
+    }
+  }
+}

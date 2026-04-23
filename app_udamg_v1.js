@@ -2343,9 +2343,9 @@ function supprimerAncien(id) {
 }
 
 /**
- * Envoie l'invitation groupée à tous les anciens via WhatsApp.
+ * Ouvre le choix du mode d'envoi (WhatsApp ou SMS) pour l'invitation groupée.
  */
-function envoyerInvitationGroupee() {
+function choisirModeInvitationGroupee() {
     var message = document.getElementById('input-message-groupe').value;
     if (!message) {
         afficherAlerte("Message vide", "Veuillez écrire un message d'invitation.", "✍️");
@@ -2357,15 +2357,46 @@ function envoyerInvitationGroupee() {
         return;
     }
 
-    // On ouvre une par une les fenêtres WhatsApp (attention au bloqueur de popups)
+    // On réutilise la structure de la modale de relance pour le choix du mode
+    // mais on adapte les fonctions appelées
+    var modal = document.getElementById('modal-relance');
+    document.getElementById('relance-step-1').style.display = 'none';
+    document.getElementById('relance-step-2').style.display = 'block';
+    document.getElementById('btn-retour-relance').style.display = 'none'; // Pas de retour possible ici
+    
+    // On surcharge temporairement les fonctions des boutons de la modale
+    var btnWa = modal.querySelector('.btn-whatsapp');
+    var btnSms = modal.querySelector('.btn-sms');
+    
+    btnWa.onclick = function() { envoyerInvitationGroupee('whatsapp'); };
+    btnSms.onclick = function() { envoyerInvitationGroupee('sms'); };
+    
+    modal.classList.add('active');
+}
+
+/**
+ * Envoie l'invitation groupée selon le mode choisi.
+ */
+function envoyerInvitationGroupee(mode) {
+    var message = document.getElementById('input-message-groupe').value;
+    fermerModalRelance();
+
+    var labelMode = (mode === 'whatsapp') ? "fenêtres WhatsApp" : "fenêtres SMS";
+    
     ouvrirModalConfirmation(
-        "L'application va ouvrir " + tousLesAnciens.length + " fenêtres WhatsApp. Voulez-vous continuer ?",
+        "L'application va ouvrir " + tousLesAnciens.length + " " + labelMode + ". Voulez-vous continuer ?",
         function() {
             tousLesAnciens.forEach(function(c, index) {
                 setTimeout(function() {
-                    var url = "https://api.whatsapp.com/send?phone=" + c.tel + "&text=" + encodeURIComponent(message);
+                    var url = "";
+                    if (mode === 'whatsapp') {
+                        url = "https://api.whatsapp.com/send?phone=" + c.tel + "&text=" + encodeURIComponent(message);
+                    } else {
+                        // Pour SMS, on utilise le protocole sms:
+                        url = "sms:" + c.tel + (window.navigator.userAgent.match(/iPhone|iPad|iPod/i) ? "&" : "?") + "body=" + encodeURIComponent(message);
+                    }
                     window.open(url, '_blank');
-                }, index * 1200); // Délai de 1.2s entre chaque pour éviter les blocages navigateurs
+                }, index * 1200);
             });
             fermerModalConfirmation();
         }
