@@ -724,10 +724,19 @@ function afficherContacts(listeFiltree) {
                 }
             }
 
-            // Bloc notes (affiché avec bordure or si des notes existent)
-            var htmlNotes = c.notes
-                ? '<div class="contact-notes">' + escapeHTML(c.notes) + '</div>'
-                : '';
+            // Bloc notes (version intelligente "Voir plus")
+            var htmlNotes = '';
+            if (c.notes) {
+                var notesLongues = c.notes.length > 40;
+                var classeNotes = notesLongues ? 'contact-notes notes-collapsed' : 'contact-notes';
+                var idNotes = 'notes-' + c.id;
+                
+                htmlNotes = '<div id="' + idNotes + '" class="' + classeNotes + '">' + escapeHTML(c.notes) + '</div>';
+                
+                if (notesLongues) {
+                    htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotes(\'' + c.id + '\')">voir plus</button>';
+                }
+            }
 
             // IMPORTANT : on utilise c.id (ID Firebase) au lieu d'un index tableau
             // Cela garantit que les opérations (edit, delete, relance) ciblent toujours
@@ -1046,6 +1055,24 @@ function envoyerRelance(methode) {
     }
 
     fermerModalRelance();
+}
+
+
+/**
+ * Bascule l'affichage des notes entre une seule ligne et le texte complet.
+ */
+function basculerNotes(id) {
+    var el = document.getElementById('notes-' + id);
+    var btn = document.getElementById('btn-notes-' + id);
+    if (!el || !btn) return;
+
+    if (el.classList.contains('notes-collapsed')) {
+        el.classList.remove('notes-collapsed');
+        btn.textContent = 'voir moins';
+    } else {
+        el.classList.add('notes-collapsed');
+        btn.textContent = 'voir plus';
+    }
 }
 
 

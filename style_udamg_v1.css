@@ -500,6 +500,33 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
     opacity: 0.85;
     word-break: break-word;
     max-width: 200px;
+    transition: max-height 0.3s ease;
+}
+
+/* Version coupée à une seule ligne */
+.notes-collapsed {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.btn-voir-plus {
+    background: none;
+    border: none;
+    color: var(--ccmg-gold);
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.btn-voir-plus:hover {
+    text-decoration: underline;
 }
 
 .contact-actions {
