@@ -9,21 +9,22 @@ const CONFIG_EGLISES = {
     "Angers": {
         nom: "CCMG Angers",
         adresse: "3 rue Carl Linné, 49000 Angers\nArrêt de tram : Terminus Roseraie",
-        lien_wa: "https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13"
+        lien_wa: "https://whatsapp.com/channel/0029Vb70A780rGiN3kXVCU13",
+        email_pasteur: "pasteur.angers@ccmg.fr"
     },
-    "Brest": { nom: "CCMG Brest", adresse: "Adresse à définir...", lien_wa: "" },
-    "Châteaubriant": { nom: "CCMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "" },
-    "La Roche sur Yon": { nom: "CCMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "" },
-    "La Rochelle": { nom: "CCMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "" },
-    "Le Mans": { nom: "CCMG Le Mans", adresse: "Adresse à définir...", lien_wa: "" },
-    "Morlaix": { nom: "CCMG Morlaix", adresse: "Adresse à définir...", lien_wa: "" },
-    "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
-    "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
-    "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
-    "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
-    "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
-    "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
-    "Vannes - Redon": { nom: "CCMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "" }
+    "Brest": { nom: "CCMG Brest", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.brest@ccmg.fr" },
+    "Châteaubriant": { nom: "CCMG Châteaubriant", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.chateaubriant@ccmg.fr" },
+    "La Roche sur Yon": { nom: "CCMG La Roche sur Yon", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.laroche@ccmg.fr" },
+    "La Rochelle": { nom: "CCMG La Rochelle", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.larochelle@ccmg.fr" },
+    "Le Mans": { nom: "CCMG Le Mans", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.lemans@ccmg.fr" },
+    "Morlaix": { nom: "CCMG Morlaix", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.morlaix@ccmg.fr" },
+    "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.nantes@ccmg.fr" },
+    "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.paris@ccmg.fr" },
+    "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.quimper@ccmg.fr" },
+    "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.stnazaire@ccmg.fr" },
+    "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.saumur@ccmg.fr" },
+    "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.tours@ccmg.fr" },
+    "Vannes - Redon": { nom: "CCMG Vannes - Redon", adresse: "Adresse à définir...", lien_wa: "", email_pasteur: "pasteur.vannes@ccmg.fr" }
 };
 
 // Configuration des évènements / programmes
@@ -57,6 +58,7 @@ let searchTimeout = null; // Pour éviter trop de requêtes Firebase lors de la 
 // Format : { "Angers": ["pasteur", "ouvrier"], "Brest": ["ouvrier"] }
 let mesPermissions = {};
 let estFondateur = false; // Accès total à toutes les églises
+let contactIdSelectionne = ""; // Stocke l'ID du contact pour les options (relance/transfert)
 
 
 /* ===================================================
@@ -752,7 +754,7 @@ function afficherContacts(listeFiltree) {
 
             // Relance et Suppression : réservés aux rôles Pasteur et Resp. Évangélisation
             if (roleActuel !== 'ouvrier') {
-                relanceHtml = '<button class="action-btn btn-relance" onclick="gererRelance(\'' + c.id + '\')">' + t('relaunch') + '</button>';
+                relanceHtml = '<button class="action-btn btn-relance" onclick="ouvrirModalOptions(\'' + c.id + '\')">' + t('relaunch') + '</button>';
 
                 supprimerHtml = '<button class="action-btn" onclick="supprimerContact(\'' + c.id + '\')">' +
                     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
@@ -1056,6 +1058,110 @@ function envoyerRelance(methode) {
 
     fermerModalRelance();
 }
+
+
+/* ===================================================
+   GESTION DES OPTIONS ET TRANSFERTS
+   =================================================== */
+
+function ouvrirModalOptions(id) {
+    contactIdSelectionne = id;
+    document.getElementById('modal-options').classList.add('active');
+}
+
+function fermerModalOptions() {
+    document.getElementById('modal-options').classList.remove('active');
+}
+
+function ouvrirRelanceDepuisOptions() {
+    fermerModalOptions();
+    gererRelance(contactIdSelectionne);
+}
+
+function ouvrirTransfert() {
+    fermerModalOptions();
+    
+    // Remplir le sélecteur d'églises
+    var select = document.getElementById('select-eglise-transfert');
+    select.innerHTML = '';
+    Object.keys(CONFIG_EGLISES).forEach(function(key) {
+        // On ne propose pas l'église actuelle
+        if (key !== villeActuelle) {
+            var opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = CONFIG_EGLISES[key].nom;
+            select.appendChild(opt);
+        }
+    });
+
+    document.getElementById('modal-transfert').classList.add('active');
+}
+
+function fermerModalTransfert() {
+    document.getElementById('modal-transfert').classList.remove('active');
+}
+
+/**
+ * Exécute le transfert du contact vers une autre église
+ */
+function validerTransfert() {
+    var egliseDestKey = document.getElementById('select-eglise-transfert').value;
+    var informer = document.getElementById('check-informer-pasteur').checked;
+
+    if (!egliseDestKey || !contactIdSelectionne) return;
+
+    var contact = tousLesContacts.find(function(c) { return c.id === contactIdSelectionne; });
+    if (!contact) return;
+
+    // 1. Préparer les données pour la destination
+    var pathDest = db.collection('villes').doc(egliseDestKey.toLowerCase().replace(/[\s\-]/g, '')).collection('donnees');
+    var dataDest = Object.assign({}, contact);
+    delete dataDest.id; // Firebase créera un nouvel ID ou on garde le même ? On va laisser Firebase créer un nouvel ID pour éviter les collisions si on change de structure.
+    
+    // Ajout d'une note de transfert
+    dataDest.notes = (dataDest.notes || "") + "\n(Transféré depuis " + villeActuelle + " le " + new Date().toLocaleDateString() + ")";
+
+    // 2. Action de transfert
+    pathDest.add(dataDest)
+        .then(function() {
+            // 3. Informer le pasteur si coché
+            if (informer) {
+                envoyerEmailPasteur(contact, egliseDestKey);
+            }
+
+            // 4. Supprimer de l'origine
+            var cleNormOrigine = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+            db.collection('villes').doc(cleNormOrigine).collection('donnees').doc(contactIdSelectionne).delete()
+                .then(function() {
+                    fermerModalTransfert();
+                    afficherAlerte("Succès", t('transfer_success'), "✅");
+                });
+        })
+        .catch(function(err) {
+            console.error("[Transfert] Erreur :", err);
+            alert("Erreur lors du transfert.");
+        });
+}
+
+/**
+ * Ouvre le client mail pour informer le pasteur de destination
+ */
+function envoyerEmailPasteur(contact, egliseDestKey) {
+    var confDest = CONFIG_EGLISES[egliseDestKey];
+    var email = confDest.email_pasteur || "";
+    if (!email) return;
+
+    var sujet = "Transfert de contact - UDAMG";
+    var corps = t('msg_transfer_pastor')
+        .replace(/{nom}/g, (contact.nom || "").toUpperCase())
+        .replace(/{prenom}/g, contact.prenom || "")
+        .replace(/{tel}/g, contact.tel || "")
+        .replace(/{ancienne_eglise}/g, villeActuelle);
+
+    var mailtoLink = "mailto:" + email + "?subject=" + encodeURIComponent(sujet) + "&body=" + encodeURIComponent(corps);
+    window.location.href = mailtoLink;
+}
+
 
 
 /**
