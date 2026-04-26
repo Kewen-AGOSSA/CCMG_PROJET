@@ -547,7 +547,7 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
     align-items: center;
     gap: 8px;
     flex-shrink: 0;
-    max-width: 90px; /* Limite la largeur pour laisser de la place au texte */
+    max-width: 110px; /* Passage de 90px à 110px pour plus d'aisance */
 }
 
 .contact-icons-row {
