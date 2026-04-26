@@ -729,13 +729,13 @@ function afficherContacts(listeFiltree) {
             var htmlNotes = '';
             if (c.notes) {
                 var notesLongues = c.notes.length > 40;
-                var classeNotes = notesLongues ? 'contact-notes notes-collapsed' : 'contact-notes';
+                var classeNotes = notesLongues ? 'contact-notes-citation notes-collapsed' : 'contact-notes-citation';
                 var idNotes = 'notes-' + c.id;
                 
                 htmlNotes = '<div id="' + idNotes + '" class="' + classeNotes + '">' + escapeHTML(c.notes) + '</div>';
                 
                 if (notesLongues) {
-                    htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotes(\'' + c.id + '\')">voir plus</button>';
+                    htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotes(\'' + c.id + '\')">' + t('see_more') + '</button>';
                 }
             }
 
@@ -766,7 +766,6 @@ function afficherContacts(listeFiltree) {
                 '</button>';
 
             var htmlDateBadge = dateAffichee ? '<span class="date-ajout-badge">' + t('added_on') + ' ' + escapeHTML(dateAffichee) + '</span>' : '';
-            var htmlNoteCitation = c.notes ? '<div class="contact-notes-citation">' + escapeHTML(c.notes) + '</div>' : '';
             
             // Texte simplifié pour la relance en bas
             var texteRelanceSeul = '';
@@ -779,25 +778,21 @@ function afficherContacts(listeFiltree) {
             }
 
             var template =
-                '<div class="contact-card">' +
-                    '<div class="contact-header">' +
-                        '<div class="contact-header-left">' +
-                            htmlDateBadge +
-                            '<h4>' + escapeHTML(c.nom).toUpperCase() + ' <span>' + escapeHTML(c.prenom) + '</span></h4>' +
-                            '<div class="contact-meta-info">' +
-                                '<div class="indic-point" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
-                                '<span>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</span>' +
-                            '</div>' +
+                '<div class="contact-card side-layout">' +
+                    '<div class="contact-info-side">' +
+                        htmlDateBadge +
+                        '<h4>' + escapeHTML(c.nom).toUpperCase() + ' <span>' + escapeHTML(c.prenom) + '</span></h4>' +
+                        '<div class="contact-meta-info">' +
+                            '<div class="indic-point" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
+                            '<span>' + t('level') + ' ' + c.niveau + ' | ' + escapeHTML(c.tel) + '</span>' +
                         '</div>' +
-                    '</div>' +
-                    htmlNoteCitation +
-                    '<div class="contact-card-footer">' +
+                        htmlNotes +
                         '<div class="relance-info-date">' + texteRelanceSeul + '</div>' +
-                        '<div class="contact-btns-group">' +
-                            relanceHtml +
-                            modifierHtml +
-                            supprimerHtml +
-                        '</div>' +
+                    '</div>' +
+                    '<div class="contact-actions-side">' +
+                        relanceHtml +
+                        modifierHtml +
+                        supprimerHtml +
                     '</div>' +
                 '</div>';
 
