@@ -1974,13 +1974,19 @@ function demanderCodeProgrammes() {
         return;
     }
 
-    // Vérification de la permission structurée par rôles
-    var configProgrammes = mesPermissions['_programmes_speciaux'] || {};
+    // Vérification de la permission (compatible Liste simple OU Structure par rôles)
+    var configProgrammes = mesPermissions['_programmes_speciaux'] || [];
     var email = userEmail.toLowerCase();
-    
-    // On autorise si l'email est dans la liste des pasteurs ou évangélistes des programmes spéciaux
-    var estAutorise = (configProgrammes.pasteur && configProgrammes.pasteur.includes(email)) || 
+    var estAutorise = false;
+
+    if (Array.isArray(configProgrammes)) {
+        // Format 1 : Liste simple d'emails
+        estAutorise = configProgrammes.includes(email);
+    } else {
+        // Format 2 : Structure organisée par rôles (Map)
+        estAutorise = (configProgrammes.pasteur && configProgrammes.pasteur.includes(email)) || 
                       (configProgrammes.evangeliste && configProgrammes.evangeliste.includes(email));
+    }
 
     if (estAutorise) {
         console.log("[Sécurité] Accès autorisé aux programmes (Rôle validé).");
