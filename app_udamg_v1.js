@@ -2002,8 +2002,8 @@ function demanderCodeProgrammes() {
         genererBoutonsProgrammes();
         naviguerVers('page-programmes');
     } else {
-        console.log("[Sécurité] Accès refusé aux programmes spéciaux.");
-        afficherAlerte("Accès Réservé", "Vous n'avez pas l'autorisation d'accéder aux Programmes Spéciaux. Contactez l'administration.", "⛔");
+        console.log("[Sécurité] ❌ Accès refusé pour :", email);
+        afficherAlerte("Accès Réservé", "L'email [" + email + "] n'est pas autorisé à accéder aux Programmes Spéciaux. Vérifiez la liste dans Firebase.", "⛔");
     }
 }
 
