@@ -753,31 +753,52 @@ function afficherContacts(listeFiltree) {
 
             // Relance et Suppression : réservés aux rôles Pasteur et Resp. Évangélisation
             if (roleActuel !== 'ouvrier') {
-                relanceHtml = '<button class="action-btn btn-relance" onclick="ouvrirModalOptions(\'' + c.id + '\')">' + t('relaunch') + '</button>';
+                relanceHtml = '<button class="btn-options-main" onclick="ouvrirModalOptions(\'' + c.id + '\')">OPTIONS</button>';
 
-                supprimerHtml = '<button class="action-btn" onclick="supprimerContact(\'' + c.id + '\')">' +
+                supprimerHtml = '<button class="btn-icon-action delete" onclick="supprimerContact(\'' + c.id + '\')">' +
                     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
                     '</button>';
             }
 
+            // Bouton Modifier : accessible à TOUS les rôles
+            modifierHtml = '<button class="btn-icon-action" onclick="modifierContact(\'' + c.id + '\')">' +
+                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>' +
+                '</button>';
+
+            var htmlDateBadge = dateAffichee ? '<span class="date-ajout-badge">' + t('added_on') + ' ' + escapeHTML(dateAffichee) + '</span>' : '';
+            var htmlNoteCitation = c.notes ? '<div class="contact-notes-citation">' + escapeHTML(c.notes) + '</div>' : '';
+            
+            // Texte simplifié pour la relance en bas
+            var texteRelanceSeul = '';
+            if (c.dateDerniereRelance) {
+                var dR = new Date(c.dateDerniereRelance);
+                if (!isNaN(dR.getTime())) {
+                    var dateR = String(dR.getDate()).padStart(2, '0') + '/' + String(dR.getMonth() + 1).padStart(2, '0') + '/' + dR.getFullYear();
+                    texteRelanceSeul = t('relaunched_on') + ' ' + dateR;
+                }
+            }
 
             var template =
                 '<div class="contact-card">' +
-                '<div class="contact-info">' +
-                '<div class="contact-indic" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
-                '<div class="contact-texte">' +
-                htmlDate +
-                '<h4>' + escapeHTML(c.nom).toUpperCase() + ' ' + escapeHTML(c.prenom) + '</h4>' +
-                '<p>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</p>' +
-                htmlNotes +
-                htmlRelance +
-                '</div>' +
-                '</div>' +
-                '<div class="contact-actions">' +
-                relanceHtml +
-                modifierHtml +
-                supprimerHtml +
-                '</div>' +
+                    '<div class="contact-header">' +
+                        '<div class="contact-header-left">' +
+                            htmlDateBadge +
+                            '<h4>' + escapeHTML(c.nom).toUpperCase() + ' <span>' + escapeHTML(c.prenom) + '</span></h4>' +
+                            '<div class="contact-meta-info">' +
+                                '<div class="indic-point" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
+                                '<span>' + t('level') + ' ' + c.niveau + ' | ' + t('phone_abbr') + ': ' + escapeHTML(c.tel) + '</span>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    htmlNoteCitation +
+                    '<div class="contact-card-footer">' +
+                        '<div class="relance-info-date">' + texteRelanceSeul + '</div>' +
+                        '<div class="contact-btns-group">' +
+                            relanceHtml +
+                            modifierHtml +
+                            supprimerHtml +
+                        '</div>' +
+                    '</div>' +
                 '</div>';
 
             container.innerHTML += template;
