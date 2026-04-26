@@ -1974,10 +1974,16 @@ function demanderCodeProgrammes() {
         return;
     }
 
-    // Vérification de la permission globale _programmes_speciaux
-    var roles = mesPermissions['_programmes_speciaux'] || [];
-    if (roles.length > 0) {
-        console.log("[Sécurité] Accès autorisé aux programmes. Rôles :", roles);
+    // Vérification de la permission structurée par rôles
+    var configProgrammes = mesPermissions['_programmes_speciaux'] || {};
+    var email = userEmail.toLowerCase();
+    
+    // On autorise si l'email est dans la liste des pasteurs ou évangélistes des programmes spéciaux
+    var estAutorise = (configProgrammes.pasteur && configProgrammes.pasteur.includes(email)) || 
+                      (configProgrammes.evangeliste && configProgrammes.evangeliste.includes(email));
+
+    if (estAutorise) {
+        console.log("[Sécurité] Accès autorisé aux programmes (Rôle validé).");
         genererBoutonsProgrammes();
         naviguerVers('page-programmes');
     } else {
