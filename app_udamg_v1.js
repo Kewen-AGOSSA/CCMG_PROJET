@@ -2331,7 +2331,8 @@ function afficherListeAnciens() {
                     <p>${c.tel || ""}</p>
                 </div>
             </div>
-            <div class="contact-actions">
+            <div class="contact-actions" style="display: flex; gap: 8px;">
+                <button class="action-btn" onclick="preparerEnvoiIndividuelAncien('${c.id}')" style="background:rgba(0,123,255,0.1); color:var(--ccmg-gold);">🚀</button>
                 <button class="action-btn" onclick="supprimerAncien('${c.id}')" style="background:rgba(255,0,0,0.1); color:var(--ccmg-red);">🗑️</button>
             </div>
         `;
@@ -2354,6 +2355,55 @@ function supprimerAncien(id) {
                 });
         }
     );
+}
+
+/**
+ * Prépare l'envoi pour un seul ancien de la liste.
+ */
+var ancienEnvoiTemporaire = null;
+
+function preparerEnvoiIndividuelAncien(id) {
+    var message = document.getElementById('input-message-groupe').value;
+    if (!message) {
+        afficherAlerte("Message vide", "Veuillez d'abord écrire votre message d'invitation dans la zone de texte en haut.", "✍️");
+        return;
+    }
+
+    ancienEnvoiTemporaire = tousLesAnciens.find(c => c.id === id);
+    if (!ancienEnvoiTemporaire) return;
+
+    // Afficher le choix WhatsApp/SMS
+    var modal = document.getElementById('modal-relance');
+    document.getElementById('relance-step-1').style.display = 'none';
+    document.getElementById('relance-step-2').style.display = 'block';
+    document.getElementById('btn-retour-relance').style.display = 'none';
+    
+    var btnWa = modal.querySelector('.btn-whatsapp');
+    var btnSms = modal.querySelector('.btn-sms');
+    
+    btnWa.onclick = function() { executerEnvoiIndividuelAncien('whatsapp'); };
+    btnSms.onclick = function() { executerEnvoiIndividuelAncien('sms'); };
+    
+    modal.classList.add('active');
+}
+
+/**
+ * Exécute l'envoi pour l'ancien sélectionné.
+ */
+function executerEnvoiIndividuelAncien(mode) {
+    var message = document.getElementById('input-message-groupe').value;
+    var c = ancienEnvoiTemporaire;
+    fermerModalRelance();
+
+    if (!c) return;
+
+    var url = "";
+    if (mode === 'whatsapp') {
+        url = "https://api.whatsapp.com/send?phone=" + c.tel + "&text=" + encodeURIComponent(message);
+    } else {
+        url = "sms:" + c.tel + (window.navigator.userAgent.match(/iPhone|iPad|iPod/i) ? "&" : "?") + "body=" + encodeURIComponent(message);
+    }
+    window.open(url, '_blank');
 }
 
 /**
