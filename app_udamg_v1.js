@@ -1984,8 +1984,10 @@ function demanderCodeProgrammes() {
         estAutorise = configProgrammes.includes(email);
     } else {
         // Format 2 : Structure organisée par rôles (Map)
+        // On autorise si l'email est dans l'une des trois listes : pasteur, evangeliste ou ouvrier
         estAutorise = (configProgrammes.pasteur && configProgrammes.pasteur.includes(email)) || 
-                      (configProgrammes.evangeliste && configProgrammes.evangeliste.includes(email));
+                      (configProgrammes.evangeliste && configProgrammes.evangeliste.includes(email)) ||
+                      (configProgrammes.ouvrier && configProgrammes.ouvrier.includes(email));
     }
 
     if (estAutorise) {
