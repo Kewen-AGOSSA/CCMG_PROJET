@@ -1976,22 +1976,29 @@ function demanderCodeProgrammes() {
 
     // Vérification de la permission (compatible Liste simple OU Structure par rôles)
     var configProgrammes = mesPermissions['_programmes_speciaux'] || [];
-    var email = userEmail.toLowerCase();
+    var email = userEmail ? userEmail.toLowerCase().trim() : "";
     var estAutorise = false;
+
+    console.log("[Sécurité] Tentative d'accès aux programmes pour :", email);
+
+    // Fonction utilitaire pour vérifier l'email dans une liste de manière insensible à la casse
+    function contientEmail(liste, mail) {
+        if (!liste || !Array.isArray(liste)) return false;
+        return liste.some(item => item && item.toLowerCase().trim() === mail);
+    }
 
     if (Array.isArray(configProgrammes)) {
         // Format 1 : Liste simple d'emails
-        estAutorise = configProgrammes.includes(email);
+        estAutorise = contientEmail(configProgrammes, email);
     } else {
         // Format 2 : Structure organisée par rôles (Map)
-        // On autorise si l'email est dans l'une des trois listes : pasteur, evangeliste ou ouvrier
-        estAutorise = (configProgrammes.pasteur && configProgrammes.pasteur.includes(email)) || 
-                      (configProgrammes.evangeliste && configProgrammes.evangeliste.includes(email)) ||
-                      (configProgrammes.ouvrier && configProgrammes.ouvrier.includes(email));
+        estAutorise = contientEmail(configProgrammes.pasteur, email) || 
+                      contientEmail(configProgrammes.evangeliste, email) ||
+                      contientEmail(configProgrammes.ouvrier, email);
     }
 
     if (estAutorise) {
-        console.log("[Sécurité] Accès autorisé aux programmes (Rôle validé).");
+        console.log("[Sécurité] ✅ Accès autorisé aux programmes.");
         genererBoutonsProgrammes();
         naviguerVers('page-programmes');
     } else {
