@@ -791,8 +791,10 @@ function afficherContacts(listeFiltree) {
                     '</div>' +
                     '<div class="contact-actions-side">' +
                         relanceHtml +
-                        modifierHtml +
-                        supprimerHtml +
+                        '<div class="contact-icons-row">' +
+                            modifierHtml +
+                            supprimerHtml +
+                        '</div>' +
                     '</div>' +
                 '</div>';
 
