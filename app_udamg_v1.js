@@ -735,7 +735,7 @@ function afficherContacts(listeFiltree) {
                 htmlNotes = '<div id="' + idNotes + '" class="' + classeNotes + '">' + escapeHTML(c.notes) + '</div>';
                 
                 if (notesLongues) {
-                    htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotes(\'' + c.id + '\')">' + t('see_more') + '</button>';
+                    htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotes(\'' + c.id + '\')">' + t('SEE_MORE') + '</button>';
                 }
             }
 
@@ -1212,13 +1212,13 @@ function basculerNotes(id) {
     var el = document.getElementById('notes-' + id);
     var btn = document.getElementById('btn-notes-' + id);
     if (!el || !btn) return;
-
+ 
     if (el.classList.contains('notes-collapsed')) {
         el.classList.remove('notes-collapsed');
-        btn.textContent = 'voir moins';
+        btn.textContent = t('SEE_LESS');
     } else {
         el.classList.add('notes-collapsed');
-        btn.textContent = 'voir plus';
+        btn.textContent = t('SEE_MORE');
     }
 }
 

@@ -145,7 +145,9 @@ Rappel :
 🔵 Mercredi (19h - 21h) : Enseignement biblique + échanges
 🔵 Dimanche (10h - 12h30) : Culte de célébration
 
-Équipe d’évangélisation du {nom_eglise}`
+Équipe d’évangélisation du {nom_eglise}`,
+        SEE_MORE: "VOIR PLUS",
+        SEE_LESS: "VOIR MOINS"
     },
     en: {
         welcome: "Welcome",
@@ -186,6 +188,7 @@ Rappel :
         invite_seniors: "Invite Seniors",
         add_to_seniors: "Add to Seniors",
         confirm_move_senior: "Do you really want to move this contact to the seniors list?",
+        confirm_move_senior: "Do you really want to move this contact to the seniors list?",
         seniors_title: "Seniors Management",
         send_bulk_invite: "Send Bulk Invitation",
         bulk_msg_placeholder: "Write the invitation message here...",
@@ -209,7 +212,9 @@ Rappel :
         level_2_btn: "Lvl 2 : Church Presentation",
         level_3_btn: "Lvl 3 : Service Invitation",
         level_4_btn: "Lvl 4 : Last-minute Invitation",
-        msg_level4: "Hello {prenom}! It's not too late to join us tomorrow at 10am at {nom_eglise}. We would be so happy to welcome you! God bless you."
+        msg_level4: "Hello {prenom}! It's not too late to join us tomorrow at 10am at {nom_eglise}. We would be so happy to welcome you! God bless you.",
+        SEE_MORE: "SEE MORE",
+        SEE_LESS: "SEE LESS"
     }
 };
 
