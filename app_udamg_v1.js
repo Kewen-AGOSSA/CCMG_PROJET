@@ -2360,19 +2360,21 @@ function afficherListeAnciens() {
 
     tousLesAnciens.forEach(function(c) {
         var card = document.createElement('div');
-        card.className = 'contact-card';
-        card.style.marginBottom = '10px';
+        card.className = "contact-card side-layout";
+        card.style.display = "flex";
+        card.style.justifyContent = "space-between";
+        card.style.alignItems = "center";
+        card.style.padding = "15px";
+        card.style.marginBottom = "10px";
+
         card.innerHTML = `
-            <div class="contact-info">
-                <div class="contact-indic" style="background:var(--ccmg-gold); color:var(--ccmg-gold)"></div>
-                <div class="contact-texte">
-                    <h4>${(c.nom || "").toUpperCase()} ${c.prenom || ""}</h4>
-                    <p>${c.tel || ""}</p>
-                </div>
+            <div class="contact-info" style="flex:1; min-width:0;">
+                <h4 style="margin:0; font-size:16px;">${(c.nom || "").toUpperCase()} ${c.prenom || ""}</h4>
+                <p style="margin:0; opacity:0.8; font-size:14px;">${c.tel || ""}</p>
             </div>
-            <div class="contact-actions" style="display: flex; gap: 8px;">
-                <button class="action-btn" onclick="preparerEnvoiIndividuelAncien('${c.id}')" style="background:rgba(0,123,255,0.1); color:var(--ccmg-gold);">🚀</button>
-                <button class="action-btn" onclick="supprimerAncien('${c.id}')" style="background:rgba(255,0,0,0.1); color:var(--ccmg-red);">🗑️</button>
+            <div class="contact-actions" style="display: flex; gap: 10px; flex-shrink:0;">
+                <button class="action-btn" onclick="preparerEnvoiIndividuelAncien('${c.id}')" style="background:rgba(0,123,255,0.1); color:var(--ccmg-gold); padding:10px; border-radius:8px; border:none; cursor:pointer;">🚀</button>
+                <button class="action-btn" onclick="supprimerAncien('${c.id}')" style="background:rgba(255,0,0,0.1); color:var(--ccmg-red); padding:10px; border-radius:8px; border:none; cursor:pointer;">🗑️</button>
             </div>
         `;
         container.appendChild(card);
