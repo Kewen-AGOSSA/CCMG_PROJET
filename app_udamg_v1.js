@@ -152,7 +152,7 @@ function verifierAccesVIP(utilisateur) {
                     var cleStockage = cleCorrespondante || cleFirestore;
 
                     // Sécurité spécifique pour les programmes spéciaux : on force la clé si elle y ressemble
-                    if (cleNormaliseeDb === "_programmesspeciaux") {
+                    if (cleNormaliseeDb.includes("programme")) {
                         cleStockage = "_programmes_speciaux";
                     }
 
@@ -2070,7 +2070,18 @@ function ouvrirModalRole() {
     var btnResp = document.getElementById('btn-role-resp');
     var btnPast = document.getElementById('btn-role-past');
 
-    var rolesAutorises = mesPermissions[contextKeyTemporaire] || [];
+    // Si on est dans un programme, on regarde les permissions globales des programmes
+    // sinon on regarde les permissions spécifiques de la ville
+    var rolesAutorises = [];
+    if (typeContextTemporaire === 'programme') {
+        Object.keys(mesPermissions).forEach(function(key) {
+            if (key.toLowerCase().includes('programme')) {
+                rolesAutorises = rolesAutorises.concat(mesPermissions[key]);
+            }
+        });
+    } else {
+        rolesAutorises = mesPermissions[contextKeyTemporaire] || [];
+    }
 
     if (btnOuvrier) btnOuvrier.style.display = rolesAutorises.includes('ouvrier') ? 'block' : 'none';
     if (btnResp) btnResp.style.display = rolesAutorises.includes('evangeliste') ? 'block' : 'none';
