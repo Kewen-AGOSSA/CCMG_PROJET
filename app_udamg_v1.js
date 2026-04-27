@@ -151,6 +151,11 @@ function verifierAccesVIP(utilisateur) {
 
                     var cleStockage = cleCorrespondante || cleFirestore;
 
+                    // Sécurité spécifique pour les programmes spéciaux : on force la clé si elle y ressemble
+                    if (cleNormaliseeDb === "_programmesspeciaux") {
+                        cleStockage = "_programmes_speciaux";
+                    }
+
                     // Fonction interne pour vérifier l'email dans un tableau de manière robuste
                     function estDansLaListe(liste) {
                         if (!Array.isArray(liste)) return false;
@@ -1994,8 +1999,7 @@ function demanderCodeProgrammes() {
         naviguerVers('page-programmes');
     } else {
         console.log("[Sécurité] ❌ Accès refusé pour :", email);
-        var debugInfo = "Roles detectés: " + (mesRolesProgs.length > 0 ? mesRolesProgs.join(',') : "AUCUN (0)");
-        afficherAlerte("Accès Réservé", "L'email [" + email + "] n'est pas autorisé.\n" + debugInfo + "\nVérifiez '_programmes_speciaux' dans Firebase.", "⛔");
+        afficherAlerte("Accès Refusé", "Désolé, l'accès aux programmes spéciaux n'est pas autorisé pour [" + email + "].", "⛔");
     }
 }
 
