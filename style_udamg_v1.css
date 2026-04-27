@@ -572,14 +572,14 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     flex-shrink: 0;
-    max-width: 110px; /* Passage de 90px à 110px pour plus d'aisance */
+    width: 130px; /* Largeur augmentée pour aérer */
 }
 
 .contact-icons-row {
     display: flex;
-    gap: 6px;
+    gap: 12px; /* Plus d'espace entre les icônes */
     width: 100%;
     justify-content: center;
 }
@@ -588,26 +588,29 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="tel"]:focus,
     background: var(--ccmg-gold);
     color: #000;
     border: none;
-    padding: 10px 0;
-    width: 100%; /* Prend toute la largeur du petit bloc de droite */
-    border-radius: 12px;
+    padding: 12px 15px; /* Plus d'espace vertical et horizontal */
+    width: 100%;
+    border-radius: 14px;
     font-size: 11px;
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(255, 215, 0, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-icon-action {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border: none;
-    flex: 1; /* Les deux icônes se partagent la largeur */
-    height: 38px;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 46px; /* Plus large pour un meilleur confort de clic */
+    height: 46px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .btn-icon-action.delete {
