@@ -133,31 +133,33 @@ function verifierAccesVIP(utilisateur) {
                     }
                 }
 
+                var emailUserLower = utilisateur.email.toLowerCase().trim();
+
                 Object.keys(data).forEach(function (cleFirestore) {
                     var permissionPourCetteEglise = data[cleFirestore];
-
-                    // Trouver la clé correspondante dans CONFIG_EGLISES / CONFIG_PROGRAMMES
-                    // (On cherche une correspondance insensible à la casse et aux espaces)
                     var cleNormaliseeDb = cleFirestore.toLowerCase().replace(/[\s\-]/g, '');
 
                     var cleCorrespondante = "";
-                    // Check dans les églises
                     Object.keys(CONFIG_EGLISES).forEach(function (cke) {
                         if (cke.toLowerCase().replace(/[\s\-]/g, '') === cleNormaliseeDb) cleCorrespondante = cke;
                     });
-                    // Check dans les programmes si pas trouvé
                     if (!cleCorrespondante) {
                         Object.keys(CONFIG_PROGRAMMES).forEach(function (ckp) {
                             if (ckp.toLowerCase().replace(/[\s\-]/g, '') === cleNormaliseeDb) cleCorrespondante = ckp;
                         });
                     }
 
-                    // Si on a pas de correspondance, on garde la clé brute de Firestore (par sécurité)
                     var cleStockage = cleCorrespondante || cleFirestore;
+
+                    // Fonction interne pour vérifier l'email dans un tableau de manière robuste
+                    function estDansLaListe(liste) {
+                        if (!Array.isArray(liste)) return false;
+                        return liste.some(email => email && email.toLowerCase().trim() === emailUserLower);
+                    }
 
                     // ── Support de l'ancienne structure (Array simple) ──
                     if (Array.isArray(permissionPourCetteEglise)) {
-                        if (permissionPourCetteEglise.includes(utilisateur.email)) {
+                        if (estDansLaListe(permissionPourCetteEglise)) {
                             emailTrouve = true;
                             if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
                             mesPermissions[cleStockage].push("ouvrier");
@@ -167,10 +169,13 @@ function verifierAccesVIP(utilisateur) {
                     else if (typeof permissionPourCetteEglise === 'object' && permissionPourCetteEglise !== null) {
                         Object.keys(permissionPourCetteEglise).forEach(function (role) {
                             var listeEmails = permissionPourCetteEglise[role];
-                            if (Array.isArray(listeEmails) && listeEmails.includes(utilisateur.email)) {
+                            if (estDansLaListe(listeEmails)) {
                                 emailTrouve = true;
                                 if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
-                                mesPermissions[cleStockage].push(role);
+                                // On évite les doublons de rôles
+                                if (!mesPermissions[cleStockage].includes(role)) {
+                                    mesPermissions[cleStockage].push(role);
+                                }
                             }
                         });
                     }
