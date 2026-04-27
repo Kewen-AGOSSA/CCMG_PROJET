@@ -731,9 +731,9 @@ function afficherContacts(listeFiltree) {
                 var notesLongues = c.notes.length > 40;
                 var classeNotes = notesLongues ? 'contact-notes-citation notes-collapsed' : 'contact-notes-citation';
                 var idNotes = 'notes-' + c.id;
-                
+
                 htmlNotes = '<div id="' + idNotes + '" class="' + classeNotes + '">' + escapeHTML(c.notes) + '</div>';
-                
+
                 if (notesLongues) {
                     htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotes(\'' + c.id + '\')">' + t('SEE_MORE') + '</button>';
                 }
@@ -766,7 +766,7 @@ function afficherContacts(listeFiltree) {
                 '</button>';
 
             var htmlDateBadge = dateAffichee ? '<span class="date-ajout-badge">' + t('added_on') + ' ' + escapeHTML(dateAffichee) + '</span>' : '';
-            
+
             // Texte simplifié pour la relance en bas
             var texteRelanceSeul = '';
             if (c.dateDerniereRelance) {
@@ -779,23 +779,23 @@ function afficherContacts(listeFiltree) {
 
             var template =
                 '<div class="contact-card side-layout">' +
-                    '<div class="contact-info-side">' +
-                        htmlDateBadge +
-                        '<h4>' + escapeHTML(c.nom).toUpperCase() + ' <span>' + escapeHTML(c.prenom) + '</span></h4>' +
-                        '<div class="contact-meta-info">' +
-                            '<div class="indic-point" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
-                            '<span>' + t('level') + ' ' + c.niveau + ' | ' + escapeHTML(c.tel) + '</span>' +
-                        '</div>' +
-                        htmlNotes +
-                        '<div class="relance-info-date">' + texteRelanceSeul + '</div>' +
-                    '</div>' +
-                    '<div class="contact-actions-side">' +
-                        relanceHtml +
-                        '<div class="contact-icons-row">' +
-                            modifierHtml +
-                            supprimerHtml +
-                        '</div>' +
-                    '</div>' +
+                '<div class="contact-info-side">' +
+                htmlDateBadge +
+                '<h4>' + escapeHTML(c.nom).toUpperCase() + ' <span>' + escapeHTML(c.prenom) + '</span></h4>' +
+                '<div class="contact-meta-info">' +
+                '<div class="indic-point" style="background:' + couleurPastille + '; color:' + couleurPastille + '"></div>' +
+                '<span>' + t('level') + ' ' + c.niveau + ' | ' + escapeHTML(c.tel) + '</span>' +
+                '</div>' +
+                htmlNotes +
+                '<div class="relance-info-date">' + texteRelanceSeul + '</div>' +
+                '</div>' +
+                '<div class="contact-actions-side">' +
+                relanceHtml +
+                '<div class="contact-icons-row">' +
+                modifierHtml +
+                supprimerHtml +
+                '</div>' +
+                '</div>' +
                 '</div>';
 
             container.innerHTML += template;
@@ -1097,11 +1097,11 @@ function ouvrirRelanceDepuisOptions() {
 
 function ouvrirTransfert() {
     fermerModalOptions();
-    
+
     // Remplir le sélecteur d'églises
     var select = document.getElementById('select-eglise-transfert');
     select.innerHTML = '';
-    Object.keys(CONFIG_EGLISES).forEach(function(key) {
+    Object.keys(CONFIG_EGLISES).forEach(function (key) {
         // On ne propose pas l'église actuelle
         if (key !== villeActuelle) {
             var opt = document.createElement('option');
@@ -1127,20 +1127,20 @@ function validerTransfert() {
 
     if (!egliseDestKey || !contactIdSelectionne) return;
 
-    var contact = tousLesContacts.find(function(c) { return c.id === contactIdSelectionne; });
+    var contact = tousLesContacts.find(function (c) { return c.id === contactIdSelectionne; });
     if (!contact) return;
 
     // 1. Préparer les données pour la destination
     var pathDest = db.collection('villes').doc(egliseDestKey.toLowerCase().replace(/[\s\-]/g, '')).collection('donnees');
     var dataDest = Object.assign({}, contact);
     delete dataDest.id; // Firebase créera un nouvel ID ou on garde le même ? On va laisser Firebase créer un nouvel ID pour éviter les collisions si on change de structure.
-    
+
     // Ajout d'une note de transfert
     dataDest.notes = (dataDest.notes || "") + "\n(Transféré depuis " + villeActuelle + " le " + new Date().toLocaleDateString() + ")";
 
     // 2. Action de transfert
     pathDest.add(dataDest)
-        .then(function() {
+        .then(function () {
             // 3. Informer le pasteur si coché
             if (informer) {
                 envoyerEmailPasteur(contact, egliseDestKey);
@@ -1149,12 +1149,12 @@ function validerTransfert() {
             // 4. Supprimer de l'origine
             var cleNormOrigine = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
             db.collection('villes').doc(cleNormOrigine).collection('donnees').doc(contactIdSelectionne).delete()
-                .then(function() {
+                .then(function () {
                     fermerModalTransfert();
                     afficherAlerte("Succès", t('transfer_success'), "✅");
                 });
         })
-        .catch(function(err) {
+        .catch(function (err) {
             console.error("[Transfert] Erreur :", err);
             alert("Erreur lors du transfert.");
         });
@@ -1173,7 +1173,7 @@ function envoyerEmailPasteur(contact, egliseDestKey) {
             if (doc.exists) {
                 var data = doc.data();
                 var egliseData = data[cleNormDest];
-                
+
                 // On vérifie si on a une liste de pasteurs pour cette église
                 if (egliseData && egliseData.pasteur && egliseData.pasteur.length > 0) {
                     emailPasteur = egliseData.pasteur[0]; // On prend le premier de la liste
@@ -1194,7 +1194,7 @@ function envoyerEmailPasteur(contact, egliseDestKey) {
                 .replace(/{ancienne_eglise}/g, villeActuelle);
 
             var mailtoLink = "mailto:" + emailPasteur + "?subject=" + encodeURIComponent(sujet) + "&body=" + encodeURIComponent(corps);
-            
+
             // On ouvre le mailto dans une nouvelle fenêtre pour ne pas quitter l'app
             window.open(mailtoLink, '_blank');
         })
@@ -1212,7 +1212,7 @@ function basculerNotes(id) {
     var el = document.getElementById('notes-' + id);
     var btn = document.getElementById('btn-notes-' + id);
     if (!el || !btn) return;
- 
+
     if (el.classList.contains('notes-collapsed')) {
         el.classList.remove('notes-collapsed');
         btn.textContent = t('SEE_LESS');
@@ -1992,9 +1992,9 @@ function demanderCodeProgrammes() {
         estAutorise = contientEmail(configProgrammes, email);
     } else {
         // Format 2 : Structure organisée par rôles (Map)
-        estAutorise = contientEmail(configProgrammes.pasteur, email) || 
-                      contientEmail(configProgrammes.evangeliste, email) ||
-                      contientEmail(configProgrammes.ouvrier, email);
+        estAutorise = contientEmail(configProgrammes.pasteur, email) ||
+            contientEmail(configProgrammes.evangeliste, email) ||
+            contientEmail(configProgrammes.ouvrier, email);
     }
 
     if (estAutorise) {
@@ -2262,10 +2262,10 @@ function confirmerAjoutAncien() {
     if (!contact) return;
 
     fermerModalOptions(); // On ferme les options d'abord
-    
+
     ouvrirModalConfirmation(
         t('confirm_move_senior'),
-        function() {
+        function () {
             ajouterAuxAnciens(contact);
         }
     );
@@ -2277,7 +2277,7 @@ function confirmerAjoutAncien() {
 function ajouterAuxAnciens(contact) {
     // Si on est en mode GLOBAL, on récupère la ville du contact, sinon la ville actuelle
     var villeId = (villeActuelle === 'GLOBAL') ? contact.ville_id : villeActuelle;
-    
+
     if (!villeId) {
         afficherAlerte("Erreur", "Impossible de déterminer l'église d'origine de ce contact.", "❌");
         return;
@@ -2291,16 +2291,16 @@ function ajouterAuxAnciens(contact) {
 
     // 1. Ajouter à la destination
     destPath.doc(contact.id).set(contact)
-        .then(function() {
+        .then(function () {
             // 2. Supprimer de la source
             return sourcePath.doc(contact.id).delete();
         })
-        .then(function() {
+        .then(function () {
             afficherAlerte("✅ Succès", "Le contact a été déplacé vers les anciens.", "✨");
             fermerModalConfirmation();
             if (familleActuelle) afficherContacts();
         })
-        .catch(function(err) {
+        .catch(function (err) {
             console.error("[Anciens] Erreur détaillée :", err);
             var msgErreur = "Détail : " + err.message;
             if (err.code === 'permission-denied') {
@@ -2332,16 +2332,16 @@ function ouvrirAnciens() {
 function chargerAnciens() {
     var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
     db.collection('villes').doc(cleNorm).collection('anciens').orderBy("dateAjout", "desc").get()
-        .then(function(snapshot) {
+        .then(function (snapshot) {
             tousLesAnciens = [];
-            snapshot.forEach(function(doc) {
+            snapshot.forEach(function (doc) {
                 var data = doc.data();
                 data.id = doc.id;
                 tousLesAnciens.push(data);
             });
             afficherListeAnciens();
         })
-        .catch(function(err) {
+        .catch(function (err) {
             console.error("[Anciens] Erreur de chargement :", err);
         });
 }
@@ -2358,7 +2358,7 @@ function afficherListeAnciens() {
         return;
     }
 
-    tousLesAnciens.forEach(function(c) {
+    tousLesAnciens.forEach(function (c) {
         var card = document.createElement('div');
         card.className = "contact-card side-layout";
         card.style.display = "flex";
@@ -2387,10 +2387,10 @@ function afficherListeAnciens() {
 function supprimerAncien(id) {
     ouvrirModalConfirmation(
         "Voulez-vous retirer cette personne de la liste des anciens ?",
-        function() {
+        function () {
             var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
             db.collection('villes').doc(cleNorm).collection('anciens').doc(id).delete()
-                .then(function() {
+                .then(function () {
                     chargerAnciens();
                     fermerModalConfirmation();
                 });
@@ -2418,13 +2418,13 @@ function preparerEnvoiIndividuelAncien(id) {
     document.getElementById('relance-step-1').style.display = 'none';
     document.getElementById('relance-step-2').style.display = 'block';
     document.getElementById('btn-retour-relance').style.display = 'none';
-    
+
     var btnWa = modal.querySelector('.btn-whatsapp');
     var btnSms = modal.querySelector('.btn-sms');
-    
-    btnWa.onclick = function() { executerEnvoiIndividuelAncien('whatsapp'); };
-    btnSms.onclick = function() { executerEnvoiIndividuelAncien('sms'); };
-    
+
+    btnWa.onclick = function () { executerEnvoiIndividuelAncien('whatsapp'); };
+    btnSms.onclick = function () { executerEnvoiIndividuelAncien('sms'); };
+
     modal.classList.add('active');
 }
 
@@ -2468,14 +2468,14 @@ function choisirModeInvitationGroupee() {
     document.getElementById('relance-step-1').style.display = 'none';
     document.getElementById('relance-step-2').style.display = 'block';
     document.getElementById('btn-retour-relance').style.display = 'none'; // Pas de retour possible ici
-    
+
     // On surcharge temporairement les fonctions des boutons de la modale
     var btnWa = modal.querySelector('.btn-whatsapp');
     var btnSms = modal.querySelector('.btn-sms');
-    
-    btnWa.onclick = function() { envoyerInvitationGroupee('whatsapp'); };
-    btnSms.onclick = function() { envoyerInvitationGroupee('sms'); };
-    
+
+    btnWa.onclick = function () { envoyerInvitationGroupee('whatsapp'); };
+    btnSms.onclick = function () { envoyerInvitationGroupee('sms'); };
+
     modal.classList.add('active');
 }
 
@@ -2487,12 +2487,12 @@ function envoyerInvitationGroupee(mode) {
     fermerModalRelance();
 
     var labelMode = (mode === 'whatsapp') ? "fenêtres WhatsApp" : "fenêtres SMS";
-    
+
     ouvrirModalConfirmation(
         "L'application va ouvrir " + tousLesAnciens.length + " " + labelMode + ". Voulez-vous continuer ?",
-        function() {
-            tousLesAnciens.forEach(function(c, index) {
-                setTimeout(function() {
+        function () {
+            tousLesAnciens.forEach(function (c, index) {
+                setTimeout(function () {
                     var url = "";
                     if (mode === 'whatsapp') {
                         url = "https://api.whatsapp.com/send?phone=" + c.tel + "&text=" + encodeURIComponent(message);
@@ -2513,13 +2513,13 @@ function envoyerInvitationGroupee(mode) {
  */
 function copierTousLesNumeros() {
     if (tousLesAnciens.length === 0) return;
-    
+
     var numeros = tousLesAnciens.map(c => c.tel).join('; ');
     navigator.clipboard.writeText(numeros)
-        .then(function() {
+        .then(function () {
             afficherAlerte("Copié !", "Les " + tousLesAnciens.length + " numéros sont dans votre presse-papier.", "📋");
         })
-        .catch(function(err) {
+        .catch(function (err) {
             console.error("Erreur copie :", err);
         });
 }
