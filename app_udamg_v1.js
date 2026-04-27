@@ -1986,20 +1986,23 @@ function demanderCodeProgrammes() {
         return;
     }
 
-    // mesPermissions['_programmes_speciaux'] contient déjà la liste des rôles de l'utilisateur (ex: ['pasteur'])
-    var mesRolesProgs = mesPermissions['_programmes_speciaux'] || [];
-    var email = userEmail ? userEmail.toLowerCase().trim() : "non-connecté";
+    // On cherche si l'utilisateur a des droits dans une clé qui contient "programme"
+    var mesRolesProgs = [];
+    Object.keys(mesPermissions).forEach(function(key) {
+        if (key.toLowerCase().includes('programme')) {
+            mesRolesProgs = mesRolesProgs.concat(mesPermissions[key]);
+        }
+    });
 
-    console.log("[Sécurité] Vérification accès programmes pour :", email, "Droits détectés :", mesRolesProgs);
+    console.log("[Sécurité] Vérification accès programmes. Droits trouvés :", mesRolesProgs);
 
-    // Si la liste des rôles n'est pas vide, c'est que l'utilisateur est autorisé
     if (mesRolesProgs.length > 0) {
         console.log("[Sécurité] ✅ Accès autorisé aux programmes.");
         genererBoutonsProgrammes();
         naviguerVers('page-programmes');
     } else {
-        console.log("[Sécurité] ❌ Accès refusé pour :", email);
-        afficherAlerte("Accès Refusé", "Désolé, l'accès aux programmes spéciaux n'est pas autorisé pour [" + email + "].", "⛔");
+        console.log("[Sécurité] ❌ Accès refusé.");
+        afficherAlerte("Accès Refusé", "Désolé, vous n'avez pas l'autorisation d'accéder à cette section.", "⛔");
     }
 }
 
