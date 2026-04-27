@@ -43,6 +43,7 @@ let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en
 let villeActuelle = "";
 let programmeActuel = "";
 let roleActuel = ""; // "pasteur", "ouvrier", "evangeliste"
+let userEmail = ""; // Email de l'utilisateur connecté
 
 // Cadenas Virtuel - Variables temporaires
 let contextKeyTemporaire = "";
@@ -208,6 +209,7 @@ function verifierAccesVIP(utilisateur) {
  */
 function accepterUtilisateur(utilisateur) {
     // ✅ UTILISATEUR AUTORISÉ — on affiche l'app
+    userEmail = utilisateur.email; // On sauvegarde l'email globalement
 
     // Mise à jour de l'interface : affiche l'avatar et le prénom
     var userInfo = document.getElementById('user-info');
