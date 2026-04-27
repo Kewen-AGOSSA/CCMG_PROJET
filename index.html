@@ -355,12 +355,9 @@
                 <textarea id="input-message-groupe" class="form-input" data-i18n="bulk_msg_placeholder" 
                     placeholder="Écrivez ici le message d'invitation..." rows="4" style="margin-bottom: 15px;"></textarea>
                 
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-valider" style="flex: 1; padding: 12px; font-size: 14px;" onclick="choisirModeInvitationGroupee()">
-                        🚀 <span data-i18n="send_bulk_invite">Envoyer l'invitation groupée</span>
-                    </button>
-                    <button class="btn-annuler" style="padding: 12px; font-size: 14px;" onclick="copierTousLesNumeros()">
-                        📋 <span data-i18n="copy_numbers">Copier numéros</span>
+                <div style="display: flex; flex-direction: column;">
+                    <button class="btn-valider" style="width: 100%; padding: 14px; font-size: 15px; background: var(--ccmg-gold); color: black; font-weight: 800;" onclick="copierTousLesNumeros()">
+                        📋 <span data-i18n="copy_numbers">Copier tous les numéros</span>
                     </button>
                 </div>
             </div>
@@ -620,7 +617,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <script src="lang_udamg_v1.js?v=v18_themed_modals"></script>
-    <script src="app_udamg_v1.js?v=v30_access_debug_fix"></script>
+    <script src="app_udamg_v1.js?v=v31_anciens_cleanup"></script>
 </body>
 
 </html>
