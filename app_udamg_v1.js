@@ -1981,36 +1981,21 @@ function demanderCodeProgrammes() {
         return;
     }
 
-    // Vérification de la permission (compatible Liste simple OU Structure par rôles)
-    var configProgrammes = mesPermissions['_programmes_speciaux'] || [];
-    var email = userEmail ? userEmail.toLowerCase().trim() : "";
-    var estAutorise = false;
+    // mesPermissions['_programmes_speciaux'] contient déjà la liste des rôles de l'utilisateur (ex: ['pasteur'])
+    var mesRolesProgs = mesPermissions['_programmes_speciaux'] || [];
+    var email = userEmail ? userEmail.toLowerCase().trim() : "non-connecté";
 
-    console.log("[Sécurité] Tentative d'accès aux programmes pour :", email);
+    console.log("[Sécurité] Vérification accès programmes pour :", email, "Droits détectés :", mesRolesProgs);
 
-    // Fonction utilitaire pour vérifier l'email dans une liste de manière insensible à la casse
-    function contientEmail(liste, mail) {
-        if (!liste || !Array.isArray(liste)) return false;
-        return liste.some(item => item && item.toLowerCase().trim() === mail);
-    }
-
-    if (Array.isArray(configProgrammes)) {
-        // Format 1 : Liste simple d'emails
-        estAutorise = contientEmail(configProgrammes, email);
-    } else {
-        // Format 2 : Structure organisée par rôles (Map)
-        estAutorise = contientEmail(configProgrammes.pasteur, email) ||
-            contientEmail(configProgrammes.evangeliste, email) ||
-            contientEmail(configProgrammes.ouvrier, email);
-    }
-
-    if (estAutorise) {
+    // Si la liste des rôles n'est pas vide, c'est que l'utilisateur est autorisé
+    if (mesRolesProgs.length > 0) {
         console.log("[Sécurité] ✅ Accès autorisé aux programmes.");
         genererBoutonsProgrammes();
         naviguerVers('page-programmes');
     } else {
         console.log("[Sécurité] ❌ Accès refusé pour :", email);
-        afficherAlerte("Accès Réservé", "L'email [" + email + "] n'est pas autorisé à accéder aux Programmes Spéciaux. Vérifiez la liste dans Firebase.", "⛔");
+        var debugInfo = "Roles detectés: " + (mesRolesProgs.length > 0 ? mesRolesProgs.join(',') : "AUCUN (0)");
+        afficherAlerte("Accès Réservé", "L'email [" + email + "] n'est pas autorisé.\n" + debugInfo + "\nVérifiez '_programmes_speciaux' dans Firebase.", "⛔");
     }
 }
 
