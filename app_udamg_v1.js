@@ -1046,8 +1046,13 @@ function envoyerRelance(methode) {
         ? (CONFIG_EGLISES[villeActuelle] || CONFIG_EGLISES["Angers"])
         : (CONFIG_PROGRAMMES[programmeActuel] || { nom: "UDAMG", adresse: "", lien_wa: "" });
 
-    // Récupère le template de message selon le niveau CHOISI
-    var messageTemplate = t('msg_level' + niveauSelectionne);
+    // Récupère le template de message selon le niveau CHOISI et la ville
+    var templateKey = 'msg_level' + niveauSelectionne;
+    // Si ce n'est pas Angers, on utilise le modèle générique
+    if (villeActuelle !== 'Angers' && villeActuelle !== 'GLOBAL') {
+        templateKey += '_generic';
+    }
+    var messageTemplate = t(templateKey);
     var message = messageTemplate
         .replace(/{prenom}/g, c.prenom)
         .replace(/{referent}/g, c.referent || '')
@@ -1382,19 +1387,23 @@ function actualiserTableauDeBord() {
  */
 function remplirBarreFamille(nomFamille, prefixeId) {
     var contactsFamille = tousLesContacts.filter(function (c) {
-        return c.famille === nomFamille ||
-            (nomFamille === 'Mission JAC' && c.famille === 'JAC') ||
-            (nomFamille === 'CCMG' && c.famille === 'MIDL');
+        var f = (c.famille || "").trim().toUpperCase();
+        var target = nomFamille.trim().toUpperCase();
+        return f === target ||
+            (target === 'MISSION JAC' && f === 'JAC') ||
+            (target === 'CCMG' && (f === 'MIDL' || f === 'CCMG'));
     });
     var totalFam = contactsFamille.length;
 
-    var n1 = contactsFamille.filter(function (c) { return c.niveau === 1; }).length;
-    var n2 = contactsFamille.filter(function (c) { return c.niveau === 2; }).length;
-    var n3 = contactsFamille.filter(function (c) { return c.niveau === 3 || c.niveau === 4; }).length;
+    var n1 = contactsFamille.filter(function (c) { return parseInt(c.niveau || 1) === 1; }).length;
+    var n2 = contactsFamille.filter(function (c) { return parseInt(c.niveau) === 2; }).length;
+    var n3 = contactsFamille.filter(function (c) { var nv = parseInt(c.niveau); return nv === 3 || nv === 4; }).length;
 
     var b1 = document.getElementById(prefixeId + '-n1');
     var b2 = document.getElementById(prefixeId + '-n2');
     var b3 = document.getElementById(prefixeId + '-n3');
+
+    if (!b1 || !b2 || !b3) return;
 
     setTimeout(function () {
         if (totalFam > 0) {

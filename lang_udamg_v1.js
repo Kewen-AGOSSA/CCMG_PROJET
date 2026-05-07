@@ -146,6 +146,61 @@ Rappel :
 🔵 Dimanche (10h - 12h30) : Culte de célébration
 
 Équipe d’évangélisation du {nom_eglise}`,
+        msg_level1_generic: `Bonjour {prenom} 🙏
+
+Vous avez été approché(e) par {referent} de l'équipe d’évangélisation. Nous tenions simplement à vous remercier pour cet échange. Nous croyons que chaque rencontre a un but et que Dieu a un plan merveilleux pour votre vie !
+
+N'hésitez pas à enregistrer ce numéro si vous avez besoin de prière, de soutien ou si vous avez des questions. Nous sommes là pour vous.
+
+Que la grâce et la paix du Seigneur vous accompagnent aujourd'hui. Soyez richement béni(e) ✨
+
+L'équipe d’évangélisation – {nom_eglise}`,
+        msg_level2_generic: `Bonsoir {prenom} 🙏
+
+C'est avec une grande joie que nous prenons de vos nouvelles ! Nous espérons que vous allez bien par la grâce de Dieu.
+
+Nous voulions prendre un instant pour vous présenter {nom_eglise}. Nous sommes une famille spirituelle où chacun a sa place pour grandir dans la foi et l'amour de Christ. 
+
+📅 Nos moments de rencontre :
+🔹 En semaine : Réunions d'enseignement et de prière pour grandir spirituellement.
+🔹 Le Dimanche : Notre grand culte de célébration (Louange, adoration et partage de la Parole).
+
+📍 Nous sommes situés au : {adresse_eglise}
+
+Nous serions honorés de vous y accueillir un de ces jours. N'hésitez pas à nous écrire pour connaître nos horaires exacts !
+
+Fraternellement,
+{nom_eglise}`,
+        msg_level3_generic: `Bonjour {prenom} 🙏
+
+La semaine s'achève et nous voulions vous adresser une invitation toute spéciale pour ce dimanche ! 👉 Que diriez-vous de venir vivre un temps de célébration avec nous à {nom_eglise} ? 
+
+« Je suis dans la joie quand on me dit : Allons à la maison de l’Éternel ! » (Psaume 122:1) ✨
+
+Venez tel(le) que vous êtes, ce sera un moment rafraîchissant de paix, de louange et de connexion avec Dieu. Votre présence nous ferait énormément plaisir. 
+
+📍 Adresse : {adresse_eglise}
+
+Si vous prévoyez de venir, faites-le nous savoir, nous nous ferons une joie de vous accueillir personnellement 😊
+
+À très bientôt et que Dieu vous bénisse abondamment ! 🙏`,
+        msg_level4_generic: `Bonjour {prenom} 🙏
+
+Nous espérons que vous allez bien par la grâce de Dieu ✨
+
+👉 Et si vous veniez nous rencontrer ce dimanche ?
+Nous serions ravis de vous accueillir à l’église {nom_eglise} ! 🙌
+
+📍 Ce sera un moment pour vous recentrer et vous reconnecter à l’essentiel
+💬 Une parole inspirée qui parle à votre cœur
+🤝 Une communauté chaleureuse prête à vous accueillir
+
+📍 Adresse : {adresse_eglise}
+
+Au plaisir de vous voir 😊
+Que Dieu vous bénisse 🙏
+
+L'équipe d’évangélisation de {nom_eglise}`,
         SEE_MORE: "VOIR PLUS",
         SEE_LESS: "VOIR MOINS"
     },
@@ -213,6 +268,10 @@ Rappel :
         level_3_btn: "Lvl 3 : Service Invitation",
         level_4_btn: "Lvl 4 : Last-minute Invitation",
         msg_level4: "Hello {prenom}! It's not too late to join us tomorrow at 10am at {nom_eglise}. We would be so happy to welcome you! God bless you.",
+        msg_level1_generic: "Hello {prenom}, this is {referent} from {nom_eglise}. It was a blessing to meet you! Let's stay in touch. See you soon!",
+        msg_level2_generic: "Hi {prenom}! We'd love to introduce you to {nom_eglise}. We are a spiritual family where everyone belongs. You can find us at: {adresse_eglise}. Hope to see you soon!",
+        msg_level3_generic: "Hello {prenom}! We have a great celebration service this Sunday at {nom_eglise}. We would love to see you there. Are you available?",
+        msg_level4_generic: "Hello {prenom}! It's not too late to join us this weekend at {nom_eglise}. We would be so happy to welcome you! Address: {adresse_eglise}. God bless you.",
         SEE_MORE: "SEE MORE",
         SEE_LESS: "SEE LESS"
     }
