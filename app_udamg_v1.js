@@ -20,6 +20,7 @@ const CONFIG_EGLISES = {
     "Nantes": { nom: "CCMG Nantes", adresse: "Adresse à définir...", lien_wa: "" },
     "Paris": { nom: "CCMG Paris", adresse: "Adresse à définir...", lien_wa: "" },
     "Quimper": { nom: "CCMG Quimper", adresse: "Adresse à définir...", lien_wa: "" },
+    "Rennes": { nom: "CCMG Rennes", adresse: "Adresse à définir...", lien_wa: "" },
     "Saint-Nazaire": { nom: "CCMG Saint-Nazaire", adresse: "Adresse à définir...", lien_wa: "" },
     "Saumur": { nom: "CCMG Saumur", adresse: "Adresse à définir...", lien_wa: "" },
     "Tours": { nom: "CCMG Tours", adresse: "Adresse à définir...", lien_wa: "" },
