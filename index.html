@@ -215,6 +215,13 @@
                 ⚡ Mode Performance : Affichage des 50 contacts les plus récents.
             </div>
 
+            <!-- ZONE DE TEXTE GLOBALE (Affichée uniquement pour les programmes spéciaux via JS) -->
+            <div id="bloc-message-global" class="glass-card" style="display: none; margin: 15px; padding: 20px;">
+                <h4 style="margin-bottom: 10px; color: var(--ccmg-gold);">📝 Rédiger le message</h4>
+                <textarea id="input-message-global" class="form-input" 
+                    placeholder="Écrivez votre message d'invitation sur mesure ici..." rows="4" style="margin-bottom: 5px; width: 100%; resize: vertical;"></textarea>
+            </div>
+
             <div class="search-container">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
@@ -434,10 +441,7 @@
 
                 <!-- ETAPE SPECIALE : Message libre pour Programmes -->
                 <div id="relance-step-special" style="display: none;">
-                    <h3 style="margin-bottom: 20px; color: var(--ccmg-gold);">📝 Rédiger le message</h3>
-                    <textarea id="input-message-special" class="form-input" 
-                        placeholder="Écrivez votre message d'invitation sur mesure ici..." rows="5" style="margin-bottom: 15px; width: 100%; resize: vertical;"></textarea>
-                    
+                    <h3 style="margin-bottom: 20px; color: var(--ccmg-gold);">📲 Moyen d'envoi</h3>
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         <button class="btn-choix-relance btn-whatsapp" onclick="envoyerRelanceSpeciale('whatsapp')">
                             <span class="emoji">🟢</span>

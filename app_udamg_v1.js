@@ -526,6 +526,16 @@ function selectionnerFamille(nom) {
     document.getElementById('titre-liste-famille').innerText = t('family') + ' ' + nom;
     naviguerVers('page-liste');
     document.getElementById('recherche').value = '';
+    
+    var blocMessage = document.getElementById('bloc-message-global');
+    if (blocMessage) {
+        if (programmeActuel && programmeActuel !== "") {
+            blocMessage.style.display = 'block';
+        } else {
+            blocMessage.style.display = 'none';
+        }
+    }
+    
     afficherContacts();
 }
 
@@ -1000,8 +1010,6 @@ function gererRelance(id) {
         document.getElementById('relance-step-2').style.display = 'none';
         var stepSpecial = document.getElementById('relance-step-special');
         if (stepSpecial) stepSpecial.style.display = 'block';
-        var inputMessage = document.getElementById('input-message-special');
-        if (inputMessage) inputMessage.value = "";
     } else {
         document.getElementById('relance-step-1').style.display = 'block';
         document.getElementById('relance-step-2').style.display = 'none';
@@ -1125,7 +1133,7 @@ function envoyerRelance(methode) {
  */
 function envoyerRelanceSpeciale(methode) {
     var id = document.getElementById('input-relance-id').value;
-    var message = document.getElementById('input-message-special').value.trim();
+    var message = document.getElementById('input-message-global').value.trim();
     var c = tousLesContacts.find(function (contact) { return contact.id === id; });
 
     if (!c || !message) {
