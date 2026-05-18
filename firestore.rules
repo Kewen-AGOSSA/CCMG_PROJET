@@ -2,8 +2,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Fonction de vérification des rôles (inchangée)
-    function aRole(idContexte) {
+    // 1. Fonction qui vérifie si l'utilisateur a N'IMPORTE QUEL rôle (Ouvrier, Evangeliste, Pasteur, Fondateur)
+    function aNimporteQuelRole(idContexte) {
       let email = request.auth.token.email.lower();
       let config = get(/databases/$(database)/documents/configuration/emails_autorises).data;
       
@@ -15,24 +15,59 @@ service cloud.firestore {
           ));
     }
 
+    // 2. Fonction qui vérifie si l'utilisateur est un RESPONSABLE (Evangeliste, Pasteur ou Fondateur)
+    // C'est ce qui bloquera la suppression pour les Ouvriers.
+    function aRoleResponsable(idContexte) {
+      let email = request.auth.token.email.lower();
+      let config = get(/databases/$(database)/documents/configuration/emails_autorises).data;
+      
+      return email in config.get('fondateurs', [])
+          || (idContexte in config && (
+               email in config[idContexte].get('pasteur', [])
+            || email in config[idContexte].get('evangeliste', [])
+          ));
+    }
+
     // LISTE DES EMAILS : Lecture seule pour les membres connectés
     match /configuration/emails_autorises {
       allow read: if request.auth != null;
       allow write: if false; 
     }
 
-    // VILLES : Autorise l'accès aux collections 'donnees' et 'anciens' selon le rôle
-    match /villes/{villeId}/{colId}/{doc=**} {
-      allow read, write: if request.auth != null && 
-                         (colId == 'donnees' || colId == 'anciens') && 
-                         aRole(villeId);
+    // VILLES : Séparation stricte des droits
+    match /villes/{villeId} {
+      
+      // La liste des contacts normaux
+      match /donnees/{doc=**} {
+        // Un ouvrier peut lire, créer et modifier
+        allow read, create, update: if request.auth != null && aNimporteQuelRole(villeId);
+        
+        // MAIS SEUL un responsable (Evangeliste/Pasteur) peut supprimer
+        allow delete: if request.auth != null && aRoleResponsable(villeId);
+      }
+      
+      // La liste des Anciens
+      match /anciens/{doc=**} {
+        // Totalement réservé aux responsables (Les ouvriers n'y ont même pas accès en lecture)
+        allow read, write: if request.auth != null && aRoleResponsable(villeId);
+      }
     }
     
-    // PROGRAMMES : Autorise l'accès aux collections 'donnees' et 'anciens' selon le rôle
-    match /programmes/{progId}/{colId}/{doc=**} {
-      allow read, write: if request.auth != null && 
-                         (colId == 'donnees' || colId == 'anciens') && 
-                         aRole(progId);
+    // PROGRAMMES SPÉCIAUX : Même logique de séparation stricte
+    match /programmes/{progId} {
+      
+      match /donnees/{doc=**} {
+        allow read, create, update: if request.auth != null && 
+                                    (aNimporteQuelRole(progId) || aNimporteQuelRole('_programmes_speciaux'));
+        
+        allow delete: if request.auth != null && 
+                      (aRoleResponsable(progId) || aRoleResponsable('_programmes_speciaux'));
+      }
+      
+      match /anciens/{doc=**} {
+        allow read, write: if request.auth != null && 
+                           (aRoleResponsable(progId) || aRoleResponsable('_programmes_speciaux'));
+      }
     }
 
     // ANCIENNE STRUCTURE (Contacts) : Réservée au Père Fondateur
@@ -42,7 +77,7 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ✅ EBED 2026 — Pointage Convention (accès libre)
+    // EBED 2026 — Pointage Convention (Conservé intact comme demandé)
     match /ebed_participants/{id} {
       allow read, write: if true;
     }

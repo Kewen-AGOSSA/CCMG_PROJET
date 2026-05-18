@@ -432,6 +432,24 @@
                     </div>
                 </div>
 
+                <!-- ETAPE SPECIALE : Message libre pour Programmes -->
+                <div id="relance-step-special" style="display: none;">
+                    <h3 style="margin-bottom: 20px; color: var(--ccmg-gold);">📝 Rédiger le message</h3>
+                    <textarea id="input-message-special" class="form-input" 
+                        placeholder="Écrivez votre message d'invitation sur mesure ici..." rows="5" style="margin-bottom: 15px; width: 100%; resize: vertical;"></textarea>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn-choix-relance btn-whatsapp" onclick="envoyerRelanceSpeciale('whatsapp')">
+                            <span class="emoji">🟢</span>
+                            <span>Envoyer via WhatsApp</span>
+                        </button>
+                        <button class="btn-choix-relance btn-sms" onclick="envoyerRelanceSpeciale('sms')">
+                            <span class="emoji">💬</span>
+                            <span>Envoyer via SMS Classique</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- ETAPE 2 : Choix du moyen d'envoi -->
                 <div id="relance-step-2" style="display: none;">
                     <h3 data-i18n="send_method_title" style="margin-bottom: 20px;">📲 Moyen d'envoi</h3>
@@ -617,7 +635,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <script src="lang_udamg_v1.js?v=v19_translation_fix"></script>
-    <script src="app_udamg_v1.js?v=v41_simple_alert"></script>
+    <script src="app_udamg_v1.js?v=v45"></script>
 </body>
 
 </html>

@@ -707,11 +707,17 @@ function afficherContacts(listeFiltree) {
             compteur++;
 
             // Couleur de la pastille selon le niveau de suivi
-            // Niveau 0 (jamais relancé) → noir | 1 → rouge | 2 → jaune | 3 → vert
             var couleurPastille = '#333333'; // Niveau 0 : noir (contact non encore relancé)
-            if (c.niveau === 1) couleurPastille = 'var(--ccmg-red)';
-            if (c.niveau === 2) couleurPastille = 'var(--ccmg-gold)';
-            if (c.niveau === 3 || c.niveau === 4) couleurPastille = 'var(--ccmg-green)';
+            
+            if (programmeActuel && programmeActuel !== "") {
+                // Logique Programmes Spéciaux : Binaire (Noir ou Vert)
+                if (c.niveau > 0) couleurPastille = 'var(--ccmg-green)';
+            } else {
+                // Logique Églises (Villes) : 4 Niveaux
+                if (c.niveau === 1) couleurPastille = 'var(--ccmg-red)';
+                if (c.niveau === 2) couleurPastille = 'var(--ccmg-gold)';
+                if (c.niveau === 3 || c.niveau === 4) couleurPastille = 'var(--ccmg-green)';
+            }
 
             // Formatage de la date pour l'affichage (convertit ISO en DD/MM/YYYY)
             var dateAffichee = c.dateAjout || '';
@@ -988,6 +994,21 @@ function modifierContact(id) {
  */
 function gererRelance(id) {
     document.getElementById('input-relance-id').value = id;
+
+    if (programmeActuel && programmeActuel !== "") {
+        document.getElementById('relance-step-1').style.display = 'none';
+        document.getElementById('relance-step-2').style.display = 'none';
+        var stepSpecial = document.getElementById('relance-step-special');
+        if (stepSpecial) stepSpecial.style.display = 'block';
+        var inputMessage = document.getElementById('input-message-special');
+        if (inputMessage) inputMessage.value = "";
+    } else {
+        document.getElementById('relance-step-1').style.display = 'block';
+        document.getElementById('relance-step-2').style.display = 'none';
+        var stepSpecial = document.getElementById('relance-step-special');
+        if (stepSpecial) stepSpecial.style.display = 'none';
+    }
+
     document.getElementById('modal-relance').classList.add('active');
 }
 
@@ -1001,7 +1022,12 @@ function fermerModalRelance() {
         document.getElementById('input-relance-niveau').value = '';
         document.getElementById('relance-step-1').style.display = 'block';
         document.getElementById('relance-step-2').style.display = 'none';
-        document.getElementById('btn-retour-relance').style.display = 'none';
+        
+        var stepSpecial = document.getElementById('relance-step-special');
+        if (stepSpecial) stepSpecial.style.display = 'none';
+
+        var btnRetour = document.getElementById('btn-retour-relance');
+        if (btnRetour) btnRetour.style.display = 'none';
     }, 300);
 }
 
@@ -1093,6 +1119,47 @@ function envoyerRelance(methode) {
     fermerModalRelance();
 }
 
+/**
+ * Envoie le message saisi manuellement pour un programme spécial
+ * @param {string} methode - 'whatsapp' ou 'sms'
+ */
+function envoyerRelanceSpeciale(methode) {
+    var id = document.getElementById('input-relance-id').value;
+    var message = document.getElementById('input-message-special').value.trim();
+    var c = tousLesContacts.find(function (contact) { return contact.id === id; });
+
+    if (!c || !message) {
+        alert("Veuillez rédiger un message avant d'envoyer.");
+        return;
+    }
+
+    if (methode === 'whatsapp') {
+        var urlWA = 'https://api.whatsapp.com/send?phone=' + c.tel + '&text=' + encodeURIComponent(message);
+        window.open(urlWA, '_blank');
+    } else {
+        var urlSMS = 'sms:' + c.tel + '?body=' + encodeURIComponent(message);
+        window.location.href = urlSMS;
+    }
+
+    // Mise à jour de la base de données : on force le niveau à 1 s'il est à 0
+    var nouveauNiveau = Math.max(c.niveau || 0, 1);
+    if (programmeActuel) {
+        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+        var collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
+        
+        var updateData = {
+            niveau: nouveauNiveau,
+            dateDerniereRelance: new Date().toISOString()
+        };
+        
+        collectionDest.doc(id).update(updateData)
+            .catch(function (err) {
+                console.error('[Firebase] Erreur mise à jour relance spéciale :', err);
+            });
+    }
+
+    fermerModalRelance();
+}
 
 /* ===================================================
    GESTION DES OPTIONS ET TRANSFERTS
