@@ -615,7 +615,7 @@ function afficherSousFamilles(famillePrincipale) {
 
     var prefixe = (famillePrincipale === 'Mission JAC') ? 'JAC ' : 'CCMG ';
     var estPasteur = (roleActuel === 'pasteur') || estFondateur;
-    var mesSousFamillesNantes = mesSousFamillesAutorisees['nantes'] || [];
+    var mesSousFamillesNantes = mesSousFamillesAutorisees['Nantes'] || mesSousFamillesAutorisees['nantes'] || [];
     var sousFamillesAffichees = [];
 
     sousFamilles.forEach(function(sf) {
