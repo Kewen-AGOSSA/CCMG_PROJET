@@ -59,6 +59,7 @@ let searchTimeout = null; // Pour éviter trop de requêtes Firebase lors de la 
 // Permissions de l'utilisateur (rempli au login)
 // Format : { "Angers": ["pasteur", "ouvrier"], "Brest": ["ouvrier"] }
 let mesPermissions = {};
+let mesSousFamillesAutorisees = {}; // ex: {"nantes": ["JAC Humilité"]}
 let estFondateur = false; // Accès total à toutes les églises
 let contactIdSelectionne = ""; // Stocke l'ID du contact pour les options (relance/transfert)
 
@@ -120,6 +121,7 @@ function verifierAccesVIP(utilisateur) {
                 var data = doc.data();
                 var emailTrouve = false;
                 mesPermissions = {}; // Reset
+                mesSousFamillesAutorisees = {}; // Reset pour les sous-familles
                 estFondateur = false;
 
                 // ── Vérification Père Fondateur (Super-Admin) ──
@@ -175,14 +177,36 @@ function verifierAccesVIP(utilisateur) {
                     // ── Nouvelle structure (Object par rôle) ──
                     else if (typeof permissionPourCetteEglise === 'object' && permissionPourCetteEglise !== null) {
                         Object.keys(permissionPourCetteEglise).forEach(function (role) {
-                            var listeEmails = permissionPourCetteEglise[role];
-                            if (estDansLaListe(listeEmails)) {
-                                emailTrouve = true;
-                                if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
-                                // On évite les doublons de rôles
-                                if (!mesPermissions[cleStockage].includes(role)) {
-                                    mesPermissions[cleStockage].push(role);
+                            var contenuRole = permissionPourCetteEglise[role];
+
+                            // Cas 1 : Le rôle est un tableau simple d'emails (ex: pasteur: ["email@..."])
+                            if (Array.isArray(contenuRole)) {
+                                if (estDansLaListe(contenuRole)) {
+                                    emailTrouve = true;
+                                    if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
+                                    if (!mesPermissions[cleStockage].includes(role)) {
+                                        mesPermissions[cleStockage].push(role);
+                                    }
                                 }
+                            } 
+                            // Cas 2 : Le rôle est un objet contenant des sous-familles (ex: evangeliste: {"JAC Humilité": ["email@..."]})
+                            else if (typeof contenuRole === 'object' && contenuRole !== null) {
+                                Object.keys(contenuRole).forEach(function(sousFamille) {
+                                    var listeEmailsSF = contenuRole[sousFamille];
+                                    if (estDansLaListe(listeEmailsSF)) {
+                                        emailTrouve = true;
+                                        // 1. Ajouter le rôle
+                                        if (!mesPermissions[cleStockage]) mesPermissions[cleStockage] = [];
+                                        if (!mesPermissions[cleStockage].includes(role)) {
+                                            mesPermissions[cleStockage].push(role);
+                                        }
+                                        // 2. Enregistrer la sous-famille autorisée
+                                        if (!mesSousFamillesAutorisees[cleStockage]) mesSousFamillesAutorisees[cleStockage] = [];
+                                        if (!mesSousFamillesAutorisees[cleStockage].includes(sousFamille)) {
+                                            mesSousFamillesAutorisees[cleStockage].push(sousFamille);
+                                        }
+                                    }
+                                });
                             }
                         });
                     }
@@ -342,11 +366,26 @@ function initialiserChampsEglises() {
             Object.keys(CONFIG_EGLISES).forEach(function (villeKey) {
                 var cleNorm = villeKey.toLowerCase().replace(/[\s\-]/g, '');
                 if (!data.hasOwnProperty(cleNorm)) {
-                    miseAJour[cleNorm] = {
-                        pasteur: [],
-                        evangeliste: [],
-                        ouvrier: []
-                    };
+                    if (cleNorm === 'nantes') {
+                        // Structure spéciale pour Nantes (Sous-familles)
+                        miseAJour[cleNorm] = {
+                            pasteur: [],
+                            evangeliste: {
+                                "JAC Anglophone 1": [], "JAC Anglophone 2": [], "JAC Fidélité": [], "JAC Gloire": [], "JAC Honneur": [], "JAC Humilité": [], "JAC Louange": [], "JAC Puissance": [], "JAC Richesse": [], "JAC Sagesse": [],
+                                "CCMG Anglophone 1": [], "CCMG Anglophone 2": [], "CCMG Fidélité": [], "CCMG Gloire": [], "CCMG Honneur": [], "CCMG Humilité": [], "CCMG Louange": [], "CCMG Puissance": [], "CCMG Richesse": [], "CCMG Sagesse": []
+                            },
+                            ouvrier: {
+                                "JAC Anglophone 1": [], "JAC Anglophone 2": [], "JAC Fidélité": [], "JAC Gloire": [], "JAC Honneur": [], "JAC Humilité": [], "JAC Louange": [], "JAC Puissance": [], "JAC Richesse": [], "JAC Sagesse": [],
+                                "CCMG Anglophone 1": [], "CCMG Anglophone 2": [], "CCMG Fidélité": [], "CCMG Gloire": [], "CCMG Honneur": [], "CCMG Humilité": [], "CCMG Louange": [], "CCMG Puissance": [], "CCMG Richesse": [], "CCMG Sagesse": []
+                            }
+                        };
+                    } else {
+                        miseAJour[cleNorm] = {
+                            pasteur: [],
+                            evangeliste: [],
+                            ouvrier: []
+                        };
+                    }
                 }
             });
 
@@ -575,9 +614,20 @@ function afficherSousFamilles(famillePrincipale) {
     ];
 
     var prefixe = (famillePrincipale === 'Mission JAC') ? 'JAC ' : 'CCMG ';
+    var estPasteur = (roleActuel === 'pasteur') || estFondateur;
+    var mesSousFamillesNantes = mesSousFamillesAutorisees['nantes'] || [];
+    var sousFamillesAffichees = [];
 
     sousFamilles.forEach(function(sf) {
         var nomComplet = prefixe + sf;
+        
+        // Si on n'est pas pasteur et que cette sous-famille n'est pas autorisée, on l'ignore
+        if (!estPasteur && !mesSousFamillesNantes.includes(nomComplet)) {
+            return;
+        }
+
+        sousFamillesAffichees.push(nomComplet);
+
         var btn = document.createElement('button');
         btn.className = 'bouton-famille';
         btn.style.height = 'auto';
@@ -587,6 +637,18 @@ function afficherSousFamilles(famillePrincipale) {
         };
         container.appendChild(btn);
     });
+
+    // Auto-redirection si une seule sous-famille est disponible
+    if (!estPasteur && sousFamillesAffichees.length === 1) {
+        selectionnerSousFamille(sousFamillesAffichees[0]);
+        return;
+    }
+    
+    // Alerte si aucune sous-famille n'est accessible
+    if (!estPasteur && sousFamillesAffichees.length === 0) {
+        afficherAlerte("Accès Refusé", "Vous n'avez accès à aucune sous-famille dans ce groupe.", "⛔");
+        return;
+    }
 
     var titreEl = document.getElementById('titre-sous-familles');
     if(titreEl) titreEl.innerText = 'Groupe ' + famillePrincipale;
