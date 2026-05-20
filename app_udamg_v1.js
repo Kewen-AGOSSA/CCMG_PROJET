@@ -36,7 +36,11 @@ const CONFIG_PROGRAMMES = {
 };
 
 /* === DONNÉES GLOBALES === */
+let villeActuelle = ""; // Ex: 'angers', 'paris', 'rennes'
+let programmeActuel = ""; // Ex: 'convention_2026', 'retraite_jeunesse'
 let familleActuelle = "";
+let sousFamilleActuelle = "";
+let roleActuel = ""; // 'ouvrier', 'evangeliste', 'pasteur'
 let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en temps réel
 
 // Contexte actuellement sélectionné (Ville ou Programme)
@@ -524,9 +528,17 @@ function naviguerVers(idEcran) {
  */
 function selectionnerFamille(nom) {
     familleActuelle = nom;
+    sousFamilleActuelle = ""; // Réinitialisation de sécurité
+    document.getElementById('recherche').value = '';
+
+    // LOGIQUE SPÉCIFIQUE NANTES (SOUS-FAMILLES)
+    if (villeActuelle && villeActuelle.toLowerCase() === 'nantes' && (nom === 'Mission JAC' || nom === 'CCMG')) {
+        afficherSousFamilles(nom);
+        return;
+    }
+
     document.getElementById('titre-liste-famille').innerText = t('family') + ' ' + nom;
     naviguerVers('page-liste');
-    document.getElementById('recherche').value = '';
     
     var blocMessage = document.getElementById('bloc-message-global');
     if (blocMessage) {
@@ -544,7 +556,65 @@ function selectionnerFamille(nom) {
  * Retourne à l'écran de sélection des familles.
  */
 function retourFamilles() {
-    naviguerVers('page-familles');
+    if (villeActuelle && villeActuelle.toLowerCase() === 'nantes' && (familleActuelle === 'Mission JAC' || familleActuelle === 'CCMG')) {
+        sousFamilleActuelle = "";
+        naviguerVers('page-sous-familles');
+    } else {
+        naviguerVers('page-familles');
+    }
+}
+
+/**
+ * Affiche la liste des sous-familles pour Nantes
+ */
+function afficherSousFamilles(famillePrincipale) {
+    var container = document.getElementById('liste-sous-familles-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    var sousFamilles = [
+        "Anglophone 1", "Anglophone 2", "Fidélité", "Gloire", "Honneur", 
+        "Humilité", "Louange", "Puissance", "Richesse", "Sagesse"
+    ];
+
+    var prefixe = (famillePrincipale === 'Mission JAC') ? 'JAC ' : 'CCMG ';
+
+    sousFamilles.forEach(function(sf) {
+        var nomComplet = prefixe + sf;
+        var btn = document.createElement('button');
+        btn.className = 'bouton-famille';
+        btn.style.height = 'auto';
+        btn.innerHTML = '<span class="nom-famille" style="margin:0;">' + nomComplet + '</span>';
+        btn.onclick = function() {
+            selectionnerSousFamille(nomComplet);
+        };
+        container.appendChild(btn);
+    });
+
+    var titreEl = document.getElementById('titre-sous-familles');
+    if(titreEl) titreEl.innerText = 'Groupe ' + famillePrincipale;
+    
+    naviguerVers('page-sous-familles');
+}
+
+/**
+ * Sélectionne une sous-famille et navigue vers la liste de contacts
+ */
+function selectionnerSousFamille(nomSousFamille) {
+    sousFamilleActuelle = nomSousFamille;
+    document.getElementById('titre-liste-famille').innerText = nomSousFamille;
+    naviguerVers('page-liste');
+    
+    var blocMessage = document.getElementById('bloc-message-global');
+    if (blocMessage) {
+        if (programmeActuel && programmeActuel !== "") {
+            blocMessage.style.display = 'block';
+        } else {
+            blocMessage.style.display = 'none';
+        }
+    }
+    
+    afficherContacts();
 }
 
 
@@ -620,6 +690,7 @@ function enregistrerContact() {
             famille: familleActuelle,
             ville: villeActuelle || "", // Si ville, stocke la ville
             programme: programmeActuel || "", // Si programme, stocke le programme
+            sousFamille: sousFamilleActuelle || "", // Sous-famille (Nantes)
             // La date d'ajout n'est enregistrée qu'à la création, jamais modifiée
             // On utilise un format ISO pour un tri parfait côté serveur
             dateAjout: contactId
@@ -715,6 +786,10 @@ function afficherContacts(listeFiltree) {
     contactsAAfficher.forEach(function (c) {
 
         if (c.famille === familleActuelle || (familleActuelle === 'Mission JAC' && c.famille === 'JAC') || (familleActuelle === 'CCMG' && c.famille === 'MIDL')) {
+            // Filtrage optionnel par sous-famille (Nantes)
+            if (sousFamilleActuelle !== "" && c.sousFamille !== sousFamilleActuelle) {
+                return; // Ignore ce contact
+            }
             compteur++;
 
             // Couleur de la pastille selon le niveau de suivi
@@ -1944,6 +2019,7 @@ function retourAuMenu() {
     villeActuelle = "";
     programmeActuel = "";
     roleActuel = "";
+    sousFamilleActuelle = "";
     sessionStorage.clear();
 
     if (unsubscribeFirebase) {
