@@ -2054,6 +2054,10 @@ function initialiserEcouteFirebase() {
         console.error('[Firebase] Erreur de synchronisation :', erreur);
         if (erreur.message.includes('index')) {
             alert('Firebase requiert un index ! Ouvrez la console Firestore pour le créer.');
+        } else if (erreur.code === 'permission-denied' || erreur.message.includes('permission')) {
+            afficherAlerte("Données inaccessibles", "Firebase a bloqué le chargement des contacts. Cela arrive souvent si votre adresse email contient des majuscules dans la base de données. Demandez à un responsable de tout mettre en minuscules !", "❌");
+        } else {
+            afficherAlerte("Erreur de chargement", "Une erreur empêche le chargement des données. Veuillez réessayer.", "⚠️");
         }
     });
 }
