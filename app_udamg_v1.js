@@ -45,9 +45,6 @@ let tousLesContacts = []; // Tableau mis à jour automatiquement par Firebase en
 
 // Contexte actuellement sélectionné (Ville ou Programme)
 // Remise à null à chaque relancement pour obliger la sélection
-let villeActuelle = "";
-let programmeActuel = "";
-let roleActuel = ""; // "pasteur", "ouvrier", "evangeliste"
 let userEmail = ""; // Email de l'utilisateur connecté
 
 // Cadenas Virtuel - Variables temporaires
