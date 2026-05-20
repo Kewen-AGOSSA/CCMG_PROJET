@@ -2,6 +2,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    function estDansMapSousFamille(mapObj, email) {
+      return type(mapObj) == 'map' && (
+        email in mapObj.get('JAC Anglophone 1', []) ||
+        email in mapObj.get('JAC Anglophone 2', []) ||
+        email in mapObj.get('JAC Fidélité', []) ||
+        email in mapObj.get('JAC Gloire', []) ||
+        email in mapObj.get('JAC Honneur', []) ||
+        email in mapObj.get('JAC Humilité', []) ||
+        email in mapObj.get('JAC Louange', []) ||
+        email in mapObj.get('JAC Puissance', []) ||
+        email in mapObj.get('JAC Richesse', []) ||
+        email in mapObj.get('JAC Sagesse', []) ||
+        email in mapObj.get('CCMG Anglophone 1', []) ||
+        email in mapObj.get('CCMG Anglophone 2', []) ||
+        email in mapObj.get('CCMG Fidélité', []) ||
+        email in mapObj.get('CCMG Gloire', []) ||
+        email in mapObj.get('CCMG Honneur', []) ||
+        email in mapObj.get('CCMG Humilité', []) ||
+        email in mapObj.get('CCMG Louange', []) ||
+        email in mapObj.get('CCMG Puissance', []) ||
+        email in mapObj.get('CCMG Richesse', []) ||
+        email in mapObj.get('CCMG Sagesse', [])
+      );
+    }
+
     // 1. Fonction qui vérifie si l'utilisateur a N'IMPORTE QUEL rôle (Ouvrier, Evangeliste, Pasteur, Fondateur)
     function aNimporteQuelRole(idContexte) {
       let email = request.auth.token.email.lower();
@@ -9,9 +34,11 @@ service cloud.firestore {
       
       return email in config.get('fondateurs', [])
           || (idContexte in config && (
-               email in config[idContexte].get('pasteur', [])
-            || email in config[idContexte].get('evangeliste', [])
-            || email in config[idContexte].get('ouvrier', [])
+               (type(config[idContexte].get('pasteur', [])) == 'list' && email in config[idContexte].get('pasteur', []))
+            || (type(config[idContexte].get('evangeliste', [])) == 'list' && email in config[idContexte].get('evangeliste', []))
+            || (type(config[idContexte].get('ouvrier', [])) == 'list' && email in config[idContexte].get('ouvrier', []))
+            || estDansMapSousFamille(config[idContexte].get('evangeliste', {}), email)
+            || estDansMapSousFamille(config[idContexte].get('ouvrier', {}), email)
           ));
     }
 
@@ -23,8 +50,9 @@ service cloud.firestore {
       
       return email in config.get('fondateurs', [])
           || (idContexte in config && (
-               email in config[idContexte].get('pasteur', [])
-            || email in config[idContexte].get('evangeliste', [])
+               (type(config[idContexte].get('pasteur', [])) == 'list' && email in config[idContexte].get('pasteur', []))
+            || (type(config[idContexte].get('evangeliste', [])) == 'list' && email in config[idContexte].get('evangeliste', []))
+            || estDansMapSousFamille(config[idContexte].get('evangeliste', {}), email)
           ));
     }
 
