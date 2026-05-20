@@ -20,4 +20,14 @@ firebase.initializeApp(firebaseConfig);
 // Référence à la base de données Firestore (variable globale utilisée dans script.js)
 const db = firebase.firestore();
 
+// Activation du cache hors-ligne (Offline Persistence) pour économiser le quota Firebase
+db.enablePersistence()
+  .catch((err) => {
+      if (err.code == 'failed-precondition') {
+          console.warn('[UDAMG] Cache Firebase désactivé : plusieurs onglets ouverts.');
+      } else if (err.code == 'unimplemented') {
+          console.warn('[UDAMG] Cache Firebase non supporté par ce navigateur.');
+      }
+  });
+
 console.log('[UDAMG] Firebase connecté avec succès ✓');
