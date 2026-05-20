@@ -568,9 +568,20 @@ function selectionnerFamille(nom) {
     document.getElementById('recherche').value = '';
 
     // LOGIQUE SPÉCIFIQUE NANTES (SOUS-FAMILLES)
-    if (villeActuelle && villeActuelle.toLowerCase() === 'nantes' && (nom === 'Mission JAC' || nom === 'CCMG')) {
-        afficherSousFamilles(nom);
-        return;
+    if (villeActuelle && villeActuelle.toLowerCase() === 'nantes') {
+        var estPasteur = (roleActuel === 'pasteur') || estFondateur;
+        var mesSousFamillesNantes = mesSousFamillesAutorisees['Nantes'] || mesSousFamillesAutorisees['nantes'] || [];
+        
+        if (nom === 'Mission JAC' || nom === 'CCMG') {
+            afficherSousFamilles(nom);
+            return;
+        } else if (!estPasteur && (nom === 'GÉDÉON' || nom === 'MIDL')) {
+            // Si c'est un évangéliste avec des tiroirs, il faut que le nom soit dans ses tiroirs
+            if (mesSousFamillesNantes.length > 0 && !mesSousFamillesNantes.includes(nom)) {
+                afficherAlerte("Accès Refusé", "Vous n'êtes pas assigné à ce groupe.", "⛔");
+                return;
+            }
+        }
     }
 
     document.getElementById('titre-liste-famille').innerText = t('family') + ' ' + nom;
