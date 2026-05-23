@@ -1381,7 +1381,7 @@ function validerTransfert() {
         .then(function () {
             // 3. Informer le pasteur si coché
             if (informer) {
-                envoyerEmailPasteur(contact, egliseDestKey);
+                notifierTransfertBackend(contact, egliseDestKey);
             }
 
             // 4. Supprimer de l'origine
@@ -1399,10 +1399,9 @@ function validerTransfert() {
 }
 
 /**
- * Ouvre le client mail pour informer le pasteur de destination.
- * L'email est récupéré dynamiquement depuis Firestore (configuration/emails_autorises).
+ * Crée un document dans la collection "transferts" pour déclencher la Cloud Function.
  */
-function envoyerEmailPasteur(contact, egliseDestKey) {
+function notifierTransfertBackend(contact, egliseDestKey) {
     var cleNormDest = egliseDestKey.toLowerCase().replace(/[\s\-]/g, '');
 
     db.collection('configuration').doc('emails_autorises').get()
@@ -1412,29 +1411,33 @@ function envoyerEmailPasteur(contact, egliseDestKey) {
                 var data = doc.data();
                 var egliseData = data[cleNormDest];
 
-                // On vérifie si on a une liste de pasteurs pour cette église
                 if (egliseData && egliseData.pasteur && egliseData.pasteur.length > 0) {
-                    emailPasteur = egliseData.pasteur[0]; // On prend le premier de la liste
+                    emailPasteur = egliseData.pasteur[0];
                 }
             }
 
             if (!emailPasteur) {
                 console.warn("[Transfert] Aucun email de pasteur trouvé pour :", egliseDestKey);
-                alert("Attention : Aucun email de pasteur n'est configuré pour l'église de destination. Le transfert sera fait mais le mail n'a pas pu être envoyé.");
+                // On n'alerte pas l'utilisateur ici car c'est silencieux en arrière-plan
                 return;
             }
 
-            var sujet = "Transfert de contact - UDAMG";
-            var corps = t('msg_transfer_pastor')
-                .replace(/{nom}/g, (contact.nom || "").toUpperCase())
-                .replace(/{prenom}/g, contact.prenom || "")
-                .replace(/{tel}/g, contact.tel || "")
-                .replace(/{ancienne_eglise}/g, villeActuelle);
-
-            var mailtoLink = "mailto:" + emailPasteur + "?subject=" + encodeURIComponent(sujet) + "&body=" + encodeURIComponent(corps);
-
-            // On ouvre le mailto dans une nouvelle fenêtre pour ne pas quitter l'app
-            window.open(mailtoLink, '_blank');
+            // Écriture du document de transfert pour déclencher le Cloud Function
+            db.collection('transferts').add({
+                contactNom: (contact.nom || "").toUpperCase(),
+                contactPrenom: contact.prenom || "",
+                contactTel: contact.tel || "",
+                villeOrigine: villeActuelle,
+                villeDestination: egliseDestKey,
+                emailDestinataire: emailPasteur,
+                evangeliste: contact.evangeliste || userEmail || "Inconnu",
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                statut: "en_attente"
+            }).then(function() {
+                console.log("[Transfert] Notification envoyée au backend.");
+            }).catch(function(err) {
+                console.error("[Transfert] Erreur lors de l'enregistrement de la notification :", err);
+            });
         })
         .catch(function (err) {
             console.error("[Transfert] Erreur lors de la récupération de l'email :", err);
