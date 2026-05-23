@@ -2609,6 +2609,7 @@ function chargerAnciens() {
         .catch(function (err) {
             console.error("[Anciens] Erreur de chargement :", err);
         });
+    }
 }
 
 /**
