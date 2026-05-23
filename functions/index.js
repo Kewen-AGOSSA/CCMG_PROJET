@@ -5,8 +5,8 @@ const { Resend } = require("resend");
 admin.initializeApp();
 const db = admin.firestore();
 
-// IMPORTANT: Remplacer par la vraie clé API de Resend plus tard
-const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy_key_123");
+// Clé API Resend
+const resend = new Resend(process.env.RESEND_API_KEY || "re_YUGLJcSz_Bw67LzWLgGvHNFvDLvh5L7Cb");
 
 /**
  * Cloud Function déclenchée lors de la création d'un document dans "transferts".
@@ -53,7 +53,7 @@ exports.envoyerEmailTransfert = functions.region('europe-west1').firestore
 
             // Envoi via l'API Resend
             const response = await resend.emails.send({
-                from: 'UDAMG Évangélisation <notifications@udamg.com>', // Nécessite un domaine vérifié sur Resend
+                from: 'onboarding@resend.dev', // Adresse de test. Pour utiliser UDAMG, il faudra vérifier le domaine.
                 to: [data.emailDestinataire],
                 subject: `Nouveau Contact transféré à ${data.villeDestination} : ${data.contactNom}`,
                 html: emailContent
