@@ -2520,17 +2520,28 @@ function confirmerAjoutAncien() {
  * Déplace physiquement le contact vers la collection 'anciens'.
  */
 function ajouterAuxAnciens(contact) {
-    // Si on est en mode GLOBAL, on récupère la ville du contact, sinon la ville actuelle
-    var villeId = (villeActuelle === 'GLOBAL') ? contact.ville_id : villeActuelle;
+    // Si on est en mode GLOBAL, on récupère la ville du contact, sinon le contexte actuel
+    var contexteId = "";
+    var isVille = true;
+    
+    if (villeActuelle === 'GLOBAL') {
+        contexteId = contact.ville_id;
+    } else if (villeActuelle) {
+        contexteId = villeActuelle;
+    } else if (programmeActuel) {
+        contexteId = programmeActuel;
+        isVille = false;
+    }
 
-    if (!villeId) {
-        afficherAlerte("Erreur", "Impossible de déterminer l'église d'origine de ce contact.", "❌");
+    if (!contexteId) {
+        afficherAlerte("Erreur", "Impossible de déterminer l'origine de ce contact.", "❌");
         return;
     }
 
-    var cleNorm = villeId.toLowerCase().replace(/[\s\-]/g, '');
-    var sourcePath = db.collection('villes').doc(cleNorm).collection('donnees');
-    var destPath = db.collection('villes').doc(cleNorm).collection('anciens');
+    var cleNorm = contexteId.toLowerCase().replace(/[\s\-]/g, '');
+    var baseCollection = isVille ? 'villes' : 'programmes';
+    var sourcePath = db.collection(baseCollection).doc(cleNorm).collection('donnees');
+    var destPath = db.collection(baseCollection).doc(cleNorm).collection('anciens');
 
     console.log("[Anciens] Déplacement vers :", cleNorm, contact.id);
 
@@ -2563,8 +2574,8 @@ function ouvrirAnciens() {
         afficherAlerte("Accès refusé", "Cette section est réservée aux pasteurs et responsables.", "🔒");
         return;
     }
-    if (!villeActuelle) {
-        afficherAlerte("Attention", "Veuillez d'abord sélectionner une église.", "⛪");
+    if (!villeActuelle && !programmeActuel) {
+        afficherAlerte("Attention", "Veuillez d'abord sélectionner une église ou un programme.", "⛪");
         return;
     }
     naviguerVers('page-anciens');
@@ -2575,8 +2586,17 @@ function ouvrirAnciens() {
  * Charge les anciens depuis Firestore.
  */
 function chargerAnciens() {
-    var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
-    db.collection('villes').doc(cleNorm).collection('anciens').orderBy("dateAjout", "desc").get()
+    var path;
+    if (villeActuelle) {
+        var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+        path = db.collection('villes').doc(cleNorm).collection('anciens');
+    } else if (programmeActuel) {
+        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+        path = db.collection('programmes').doc(cleNorm).collection('anciens');
+    }
+    
+    if (path) {
+        path.orderBy("dateAjout", "desc").get()
         .then(function (snapshot) {
             tousLesAnciens = [];
             snapshot.forEach(function (doc) {
@@ -2633,12 +2653,21 @@ function supprimerAncien(id) {
     ouvrirModalConfirmation(
         "Voulez-vous retirer cette personne de la liste des anciens ?",
         function () {
-            var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
-            db.collection('villes').doc(cleNorm).collection('anciens').doc(id).delete()
+            var path;
+            if (villeActuelle) {
+                var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
+                path = db.collection('villes').doc(cleNorm).collection('anciens');
+            } else if (programmeActuel) {
+                var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
+                path = db.collection('programmes').doc(cleNorm).collection('anciens');
+            }
+            if (path) {
+                path.doc(id).delete()
                 .then(function () {
                     chargerAnciens();
                     fermerModalConfirmation();
                 });
+            }
         }
     );
 }
