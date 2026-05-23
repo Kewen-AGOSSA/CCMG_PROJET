@@ -11,7 +11,9 @@ const resend = new Resend(process.env.RESEND_API_KEY || "re_YUGLJcSz_Bw67LzWLgGv
 /**
  * Cloud Function déclenchée lors de la création d'un document dans "transferts".
  */
-exports.envoyerEmailTransfert = functions.region('europe-west1').firestore
+exports.envoyerEmailTransfert = functions.region('europe-west1')
+    .runWith({ serviceAccount: "ccmg-evangelisation@appspot.gserviceaccount.com" })
+    .firestore
     .document('transferts/{transfertId}')
     .onCreate(async (snap, context) => {
         const data = snap.data();
