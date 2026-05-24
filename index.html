@@ -393,13 +393,12 @@
             <div id="liste-anciens" class="container-liste"></div>
         </section>
 
-        <!-- MODAL : FORMULAIRE D'AJOUT/EDITION -->
+        <!-- MODAL : FORMULAIRE D'AJOUT / MODIFICATION -->
         <div id="modal-ajout" class="modal">
-            <div class="modal-content glass-card">
-                <h3 data-i18n="new_contact">Nouveau Contact</h3>
-
-                <!-- Stockage de l'ID Firebase du contact en cours d'edtion (vide = nouvel ajout) -->
+            <div class="modal-content glass-card form-container">
+                <h3 data-i18n="form_title" style="margin-bottom: 25px;">Nouveau contact</h3>
                 <input type="hidden" id="input-contact-id" value="">
+                <input type="hidden" id="input-contact-type" value="donnees">
 
                 <div class="input-group">
                     <label class="form-label">👤 Nom de Famille</label>
@@ -566,6 +565,9 @@
                     <button id="btn-ancien-envoyer" class="btn-valider" style="width: 100%; padding: 15px; font-size: 16px; background: rgba(0,123,255,0.1); color: #4da3ff; border: 1px solid #4da3ff;">
                         🚀 Envoyer un message
                     </button>
+                    <button id="btn-ancien-modifier" class="btn-valider" style="width: 100%; padding: 15px; font-size: 16px; background: rgba(255,215,0,0.1); color: var(--ccmg-gold); border: 1px solid var(--ccmg-gold);">
+                        ✏️ Modifier les informations
+                    </button>
                     <button id="btn-ancien-supprimer" class="btn-annuler" style="width: 100%; padding: 15px; font-size: 16px; background: rgba(255,0,0,0.1); color: #ff4d4d; border: 1px solid #ff4d4d;">
                         🗑️ Supprimer l'ancien
                     </button>
@@ -683,8 +685,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <script src="lang_udamg_v1.js?v=v53"></script>
-    <script src="app_udamg_v1.js?v=v53"></script>
+    <script src="lang_udamg_v1.js?v=v54"></script>
+    <script src="app_udamg_v1.js?v=v54"></script>
 </body>
 
 </html>

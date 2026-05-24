@@ -704,6 +704,10 @@ function ouvrirFormulaire() {
         document.getElementById('input-tel').value = '';
         document.getElementById('input-evangeliste').value = '';
         document.getElementById('input-notes').value = '';
+        // Réinitialise explicitement au type normal
+        if (document.getElementById('input-contact-type')) {
+            document.getElementById('input-contact-type').value = 'donnees';
+        }
     }
     document.getElementById('modal-ajout').classList.add('active');
 }
@@ -715,6 +719,9 @@ function fermerFormulaire() {
     document.getElementById('modal-ajout').classList.remove('active');
     setTimeout(function () {
         document.getElementById('input-contact-id').value = '';
+        if (document.getElementById('input-contact-type')) {
+            document.getElementById('input-contact-type').value = 'donnees';
+        }
     }, 300);
 }
 
@@ -746,10 +753,17 @@ function enregistrerContact() {
             telNettoye = '33' + telNettoye.substring(1);
         }
 
+        var typeDest = document.getElementById('input-contact-type') ? document.getElementById('input-contact-type').value : 'donnees';
+        
         // Retrouve le contact existant (pour conserver la date et le niveau)
-        var contactExistant = contactId
-            ? tousLesContacts.find(function (c) { return c.id === contactId; })
-            : null;
+        var contactExistant = null;
+        if (contactId) {
+            if (typeDest === 'anciens') {
+                contactExistant = tousLesAnciens.find(function (c) { return c.id === contactId; });
+            } else {
+                contactExistant = tousLesContacts.find(function (c) { return c.id === contactId; });
+            }
+        }
 
         var contactData = {
             nom: nom,
@@ -757,7 +771,7 @@ function enregistrerContact() {
             tel: telNettoye,
             referent: ref,
             notes: notes,
-            famille: familleActuelle,
+            famille: typeDest === 'anciens' ? (contactExistant ? contactExistant.famille || "" : "") : familleActuelle,
             ville: villeActuelle || "", // Si ville, stocke la ville
             programme: programmeActuel || "", // Si programme, stocke le programme
             sousFamille: sousFamilleActuelle || "", // Sous-famille (Nantes)
@@ -776,10 +790,10 @@ function enregistrerContact() {
         var collectionDest;
         if (villeActuelle && villeActuelle !== 'GLOBAL') {
             var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
-            collectionDest = db.collection('villes').doc(cleNorm).collection('donnees');
+            collectionDest = db.collection('villes').doc(cleNorm).collection(typeDest);
         } else if (programmeActuel) {
             var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
-            collectionDest = db.collection('programmes').doc(cleNorm).collection('donnees');
+            collectionDest = db.collection('programmes').doc(cleNorm).collection(typeDest);
         } else {
             alert("Erreur : Aucun contexte de ville ou programme détecté.");
             return;
@@ -2646,7 +2660,28 @@ function afficherListeAnciens() {
         card.style.padding = "15px";
         card.style.marginBottom = "10px";
 
-        var notesValue = c.notes || "";
+        var htmlAppel = '';
+        if (c.dateDernierAppel) {
+            var dA = new Date(c.dateDernierAppel);
+            if (!isNaN(dA.getTime())) {
+                var dateA = String(dA.getDate()).padStart(2, '0') + '/' + String(dA.getMonth() + 1).padStart(2, '0') + '/' + dA.getFullYear();
+                htmlAppel = '<div class="contact-date" style="color:var(--ccmg-gold); margin-top:5px;">Appelé le ' + escapeHTML(dateA) + '</div>';
+            }
+        }
+
+        var htmlNotes = '';
+        if (c.notes) {
+            var notesLongues = c.notes.length > 40;
+            var classeNotes = notesLongues ? 'contact-notes-citation notes-collapsed' : 'contact-notes-citation';
+            var idNotes = 'notes-ancien-' + c.id;
+
+            htmlNotes = '<div id="' + idNotes + '" class="' + classeNotes + '">' + escapeHTML(c.notes) + '</div>';
+
+            if (notesLongues) {
+                htmlNotes += '<button id="btn-' + idNotes + '" class="btn-voir-plus" onclick="basculerNotesAncien(\'' + c.id + '\')">' + t('SEE_MORE') + '</button>';
+            }
+        }
+
         card.innerHTML = `
             <div style="display:flex; flex-direction:column; width: 100%;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -2661,7 +2696,8 @@ function afficherListeAnciens() {
                     </div>
                 </div>
                 <div style="width: 100%;">
-                    <textarea class="form-input" placeholder="Ajouter un commentaire ou une note..." rows="2" style="width: 100%; font-size:14px; padding:8px; resize:vertical; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1);" onchange="sauvegarderNoteAncien('${c.id}', this.value)">${notesValue}</textarea>
+                    ${htmlNotes}
+                    ${htmlAppel}
                 </div>
             </div>
         `;
@@ -2680,10 +2716,22 @@ function ouvrirOptionsAncien(id) {
 
     var btnAppeler = document.getElementById('btn-ancien-appeler');
     var btnEnvoyer = document.getElementById('btn-ancien-envoyer');
+    var btnModifier = document.getElementById('btn-ancien-modifier');
     var btnSupprimer = document.getElementById('btn-ancien-supprimer');
 
     // Mettre à jour l'action "Appeler"
     btnAppeler.onclick = function() {
+        // Mettre à jour la date d'appel
+        var cleNorm = (villeActuelle) ? villeActuelle.toLowerCase().replace(/[\s\-]/g, '') : (programmeActuel ? programmeActuel.toLowerCase().replace(/[\s\-]/g, '') : "");
+        var path = villeActuelle ? db.collection('villes').doc(cleNorm).collection('anciens') : db.collection('programmes').doc(cleNorm).collection('anciens');
+        
+        path.doc(id).update({
+            dateDernierAppel: new Date().toISOString()
+        }).then(() => {
+            ancienSelectionneOptions.dateDernierAppel = new Date().toISOString();
+            afficherListeAnciens();
+        }).catch(err => console.error("Erreur màj date appel", err));
+
         window.location.href = "tel:" + ancienSelectionneOptions.tel;
         fermerOptionsAncien();
     };
@@ -2692,6 +2740,12 @@ function ouvrirOptionsAncien(id) {
     btnEnvoyer.onclick = function() {
         fermerOptionsAncien();
         preparerEnvoiIndividuelAncien(id);
+    };
+
+    // Mettre à jour l'action "Modifier"
+    btnModifier.onclick = function() {
+        fermerOptionsAncien();
+        modifierAncien(id);
     };
 
     // Mettre à jour l'action "Supprimer"
@@ -2708,32 +2762,34 @@ function fermerOptionsAncien() {
     ancienSelectionneOptions = null;
 }
 
-/**
- * Sauvegarde automatique de la note d'un ancien
- */
-function sauvegarderNoteAncien(id, texte) {
-    var c = tousLesAnciens.find(x => x.id === id);
+function modifierAncien(id) {
+    var c = tousLesAnciens.find(function (contact) { return contact.id === id; });
     if (!c) return;
 
-    var path;
-    if (villeActuelle) {
-        var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
-        path = db.collection('villes').doc(cleNorm).collection('anciens');
-    } else if (programmeActuel) {
-        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
-        path = db.collection('programmes').doc(cleNorm).collection('anciens');
+    document.getElementById('input-nom').value = c.nom || '';
+    document.getElementById('input-prenom').value = c.prenom || '';
+    document.getElementById('input-tel').value = c.tel || '';
+    document.getElementById('input-evangeliste').value = c.referent || '';
+    document.getElementById('input-notes').value = c.notes || '';
+
+    // Stocke l'ID et précise le type
+    document.getElementById('input-contact-id').value = id;
+    document.getElementById('input-contact-type').value = 'anciens';
+
+    document.getElementById('modal-ajout').classList.add('active');
+}
+
+function basculerNotesAncien(id) {
+    var el = document.getElementById('notes-ancien-' + id);
+    var btn = document.getElementById('btn-notes-ancien-' + id);
+    if (!el || !btn) return;
+    if (el.classList.contains('notes-collapsed')) {
+        el.classList.remove('notes-collapsed');
+        btn.innerText = t('SEE_LESS');
+    } else {
+        el.classList.add('notes-collapsed');
+        btn.innerText = t('SEE_MORE');
     }
-
-    if (!path) return;
-
-    path.doc(id).update({
-        notes: texte
-    }).then(function() {
-        c.notes = texte;
-        console.log("[Anciens] Note sauvegardée pour", id);
-    }).catch(function(err) {
-        console.error("[Anciens] Erreur sauvegarde note:", err);
-    });
 }
 
 /**
