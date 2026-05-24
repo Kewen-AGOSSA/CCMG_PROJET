@@ -1333,6 +1333,16 @@ function ouvrirRelanceDepuisOptions() {
     gererRelance(contactIdSelectionne);
 }
 
+function appelerDepuisOptions() {
+    var c = contacts.find(x => x.id === contactIdSelectionne);
+    if (c && c.tel) {
+        fermerModalOptions();
+        window.location.href = "tel:" + c.tel;
+    } else {
+        afficherAlerte("Erreur", "Aucun numéro de téléphone disponible pour ce contact.", "❌");
+    }
+}
+
 function ouvrirTransfert() {
     fermerModalOptions();
 
