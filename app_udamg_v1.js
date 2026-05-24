@@ -1334,7 +1334,7 @@ function ouvrirRelanceDepuisOptions() {
 }
 
 function appelerDepuisOptions() {
-    var c = contacts.find(x => x.id === contactIdSelectionne);
+    var c = tousLesContacts.find(x => x.id === contactIdSelectionne);
     if (c && c.tel) {
         fermerModalOptions();
         window.location.href = "tel:" + c.tel;
