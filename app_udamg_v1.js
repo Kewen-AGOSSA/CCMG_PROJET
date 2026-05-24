@@ -2705,13 +2705,16 @@ function sauvegarderNoteAncien(id, texte) {
     var c = tousLesAnciens.find(x => x.id === id);
     if (!c) return;
 
-    var cleNorm = (familleActuelle !== "") ? familleActuelle.toLowerCase().replace(/[\s\-]/g, '') : "toutes";
     var path;
-    if (vueActuelle === 'villes') {
+    if (villeActuelle) {
+        var cleNorm = villeActuelle.toLowerCase().replace(/[\s\-]/g, '');
         path = db.collection('villes').doc(cleNorm).collection('anciens');
-    } else {
+    } else if (programmeActuel) {
+        var cleNorm = programmeActuel.toLowerCase().replace(/[\s\-]/g, '');
         path = db.collection('programmes').doc(cleNorm).collection('anciens');
     }
+
+    if (!path) return;
 
     path.doc(id).update({
         notes: texte
