@@ -311,8 +311,8 @@ function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         
-        // Pour les inputs, on modifie le placeholder
-        if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'tel')) {
+        // Pour les inputs et textareas, on modifie le placeholder
+        if ((el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'tel')) || el.tagName === 'TEXTAREA') {
             el.placeholder = t(key);
         } else {
             // Pour le reste, on modifie le texte
