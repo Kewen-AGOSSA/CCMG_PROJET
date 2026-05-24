@@ -2636,17 +2636,90 @@ function afficherListeAnciens() {
         card.style.padding = "15px";
         card.style.marginBottom = "10px";
 
+        var notesValue = c.notes || "";
         card.innerHTML = `
-            <div class="contact-info" style="flex:1; min-width:0;">
-                <h4 style="margin:0; font-size:16px;">${(c.nom || "").toUpperCase()} ${c.prenom || ""}</h4>
-                <p style="margin:0; opacity:0.8; font-size:14px;">${c.tel || ""}</p>
-            </div>
-            <div class="contact-actions" style="display: flex; gap: 10px; flex-shrink:0;">
-                <button class="action-btn" onclick="preparerEnvoiIndividuelAncien('${c.id}')" style="background:rgba(0,123,255,0.1); color:var(--ccmg-gold); padding:10px; border-radius:8px; border:none; cursor:pointer;">🚀</button>
-                <button class="action-btn" onclick="supprimerAncien('${c.id}')" style="background:rgba(255,0,0,0.1); color:var(--ccmg-red); padding:10px; border-radius:8px; border:none; cursor:pointer;">🗑️</button>
+            <div style="display:flex; flex-direction:column; width: 100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div class="contact-info" style="flex:1; min-width:0;">
+                        <h4 style="margin:0; font-size:16px;">${(c.nom || "").toUpperCase()} ${c.prenom || ""}</h4>
+                        <p style="margin:0; opacity:0.8; font-size:14px;">${c.tel || ""}</p>
+                    </div>
+                    <div class="contact-actions" style="flex-shrink:0;">
+                        <button class="action-btn" onclick="ouvrirOptionsAncien('${c.id}')" style="background:rgba(255,215,0,0.1); color:var(--ccmg-gold); padding:10px 15px; border-radius:8px; border:1px solid var(--ccmg-gold); cursor:pointer; font-weight:bold;">
+                            ⚙️ Options
+                        </button>
+                    </div>
+                </div>
+                <div style="width: 100%;">
+                    <textarea class="form-input" placeholder="Ajouter un commentaire ou une note..." rows="2" style="width: 100%; font-size:14px; padding:8px; resize:vertical; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1);" onchange="sauvegarderNoteAncien('${c.id}', this.value)">${notesValue}</textarea>
+                </div>
             </div>
         `;
         container.appendChild(card);
+    });
+}
+
+/**
+ * Gestion du menu d'options pour les anciens
+ */
+let ancienSelectionneOptions = null;
+
+function ouvrirOptionsAncien(id) {
+    ancienSelectionneOptions = tousLesAnciens.find(c => c.id === id);
+    if (!ancienSelectionneOptions) return;
+
+    var btnAppeler = document.getElementById('btn-ancien-appeler');
+    var btnEnvoyer = document.getElementById('btn-ancien-envoyer');
+    var btnSupprimer = document.getElementById('btn-ancien-supprimer');
+
+    // Mettre à jour l'action "Appeler"
+    btnAppeler.onclick = function() {
+        window.location.href = "tel:" + ancienSelectionneOptions.tel;
+        fermerOptionsAncien();
+    };
+
+    // Mettre à jour l'action "Envoyer"
+    btnEnvoyer.onclick = function() {
+        fermerOptionsAncien();
+        preparerEnvoiIndividuelAncien(id);
+    };
+
+    // Mettre à jour l'action "Supprimer"
+    btnSupprimer.onclick = function() {
+        fermerOptionsAncien();
+        supprimerAncien(id);
+    };
+
+    document.getElementById('modal-options-ancien').classList.add('active');
+}
+
+function fermerOptionsAncien() {
+    document.getElementById('modal-options-ancien').classList.remove('active');
+    ancienSelectionneOptions = null;
+}
+
+/**
+ * Sauvegarde automatique de la note d'un ancien
+ */
+function sauvegarderNoteAncien(id, texte) {
+    var c = tousLesAnciens.find(x => x.id === id);
+    if (!c) return;
+
+    var cleNorm = (familleActuelle !== "") ? familleActuelle.toLowerCase().replace(/[\s\-]/g, '') : "toutes";
+    var path;
+    if (vueActuelle === 'villes') {
+        path = db.collection('villes').doc(cleNorm).collection('anciens');
+    } else {
+        path = db.collection('programmes').doc(cleNorm).collection('anciens');
+    }
+
+    path.doc(id).update({
+        notes: texte
+    }).then(function() {
+        c.notes = texte;
+        console.log("[Anciens] Note sauvegardée pour", id);
+    }).catch(function(err) {
+        console.error("[Anciens] Erreur sauvegarde note:", err);
     });
 }
 
