@@ -755,6 +755,19 @@ function enregistrerContact() {
 
         var typeDest = document.getElementById('input-contact-type') ? document.getElementById('input-contact-type').value : 'donnees';
         
+        // --- VÉRIFICATION ANTI-DOUBLON ---
+        var listeRecherche = (typeDest === 'anciens') ? tousLesAnciens : tousLesContacts;
+        var doublon = listeRecherche.find(function(c) {
+            return c.tel === telNettoye && c.id !== contactId;
+        });
+
+        if (doublon) {
+            var nomComplet = (doublon.prenom || "") + " " + (doublon.nom || "");
+            alert("⛔ Impossible d'ajouter ce contact.\n\nCe numéro de téléphone existe déjà dans cette liste.\nIl appartient à : " + nomComplet.trim() + ".\n\nVous ne pouvez pas créer de doublon.");
+            return;
+        }
+        // --- FIN VÉRIFICATION ---
+        
         // Retrouve le contact existant (pour conserver la date et le niveau)
         var contactExistant = null;
         if (contactId) {
