@@ -510,7 +510,7 @@ function demanderPermissionNotification() {
                             }
                         }).catch(function(err) {
                             console.error('Erreur lors de la récupération du token:', err);
-                            afficherAlerte("Erreur", "Une erreur est survenue lors de l'activation des notifications.", "❌");
+                            afficherAlerte("Erreur", "Impossible de récupérer le jeton : " + err.message, "❌");
                         });
                 } else {
                     console.log('Permission refusée pour les notifications.');
