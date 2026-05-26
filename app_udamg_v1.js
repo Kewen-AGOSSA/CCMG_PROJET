@@ -490,30 +490,37 @@ function demanderPermissionNotification() {
         return;
     }
 
-    const messaging = firebase.messaging();
-    
-    Notification.requestPermission().then(function(permission) {
-        if (permission === 'granted') {
-            console.log('Permission accordée pour les notifications.');
-            // Clé VAPID générée depuis la console Firebase
-            messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLolWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNROMJxTnz_4eZbK_yl5R8' })
-                .then(function(currentToken) {
-                    if (currentToken) {
-                        console.log('Token FCM récupéré:', currentToken);
-                        sauvegarderTokenFCM(currentToken);
-                    } else {
-                        console.log('Aucun token reçu.');
-                        afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
-                    }
-                }).catch(function(err) {
-                    console.error('Erreur lors de la récupération du token:', err);
-                    afficherAlerte("Erreur", "Une erreur est survenue lors de l'activation des notifications.", "❌");
-                });
-        } else {
-            console.log('Permission refusée pour les notifications.');
-            afficherAlerte("Refusé", "Vous avez refusé les notifications. Vous ne recevrez pas d'alertes.", "⚠️");
+    ouvrirModalConfirmation(
+        "Souhaitez-vous recevoir une notification (vibration et alerte) sur votre appareil à chaque fois qu'une nouvelle âme est gagnée ?",
+        function() {
+            const messaging = firebase.messaging();
+            
+            Notification.requestPermission().then(function(permission) {
+                if (permission === 'granted') {
+                    console.log('Permission accordée pour les notifications.');
+                    // Clé VAPID générée depuis la console Firebase
+                    messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLolWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNROMJxTnz_4eZbK_yl5R8' })
+                        .then(function(currentToken) {
+                            if (currentToken) {
+                                console.log('Token FCM récupéré:', currentToken);
+                                sauvegarderTokenFCM(currentToken);
+                            } else {
+                                console.log('Aucun token reçu.');
+                                afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
+                            }
+                        }).catch(function(err) {
+                            console.error('Erreur lors de la récupération du token:', err);
+                            afficherAlerte("Erreur", "Une erreur est survenue lors de l'activation des notifications.", "❌");
+                        });
+                } else {
+                    console.log('Permission refusée pour les notifications.');
+                    afficherAlerte("Refusé", "Vous avez refusé les notifications. Vous ne recevrez pas d'alertes.", "⚠️");
+                }
+            });
+            
+            fermerModalConfirmation();
         }
-    });
+    );
 }
 
 /**
