@@ -763,7 +763,11 @@ function enregistrerContact() {
 
         if (doublon) {
             var nomComplet = (doublon.prenom || "") + " " + (doublon.nom || "");
-            alert("⛔ Impossible d'ajouter ce contact.\n\nCe numéro de téléphone existe déjà dans cette liste.\nIl appartient à : " + nomComplet.trim() + ".\n\nVous ne pouvez pas créer de doublon.");
+            afficherAlerte(
+                "Doublon Détecté", 
+                "Ce numéro de téléphone existe déjà dans cette liste.<br><br>Il appartient à : <b>" + nomComplet.trim() + "</b>.<br><br>Vous ne pouvez pas créer de doublon.",
+                "⛔"
+            );
             return;
         }
         // --- FIN VÉRIFICATION ---
