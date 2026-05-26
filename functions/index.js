@@ -83,3 +83,102 @@ exports.envoyerEmailTransfert = functions.region('europe-west1')
             return null;
         }
     });
+
+/**
+ * Fonction générique pour envoyer les notifications Push lors d'un ajout de contact.
+ */
+async function sendPushNotificationForNewContact(snap, context, isProgramme) {
+    const data = snap.data();
+    const contactId = context.params.contactId;
+    const villeOuProgId = isProgramme ? context.params.progId : context.params.villeId;
+    const nomLieu = isProgramme ? context.params.progId : context.params.villeId; // Idéalement, il faudrait le nom formaté
+
+    console.log(`Nouvel ajout de contact détecté dans ${isProgramme ? 'Programme' : 'Ville'} ${villeOuProgId} :`, data);
+
+    // Si on n'a pas l'email de l'évangéliste ou le nom du contact, on ne peut pas faire grand chose
+    if (!data.createurEmail || !data.nom) {
+        console.log("Pas d'email créateur ou de nom, annulation de la notification.");
+        return null;
+    }
+
+    try {
+        // 1. Chercher la liste des pasteurs pour cette église/programme
+        const configDoc = await db.collection('configuration').doc('emails_autorises').get();
+        if (!configDoc.exists) return null;
+        const configData = configDoc.data();
+        
+        let pasteursEmails = [];
+        let locationKey = villeOuProgId.toLowerCase().replace(/[\s\-]/g, '');
+        
+        if (isProgramme && configData['_programmes_speciaux'] && configData['_programmes_speciaux'].pasteur) {
+            // Pour les programmes spéciaux, le pasteur est souvent global dans '_programmes_speciaux'
+            pasteursEmails = configData['_programmes_speciaux'].pasteur;
+        } else if (configData[locationKey] && configData[locationKey].pasteur) {
+            pasteursEmails = configData[locationKey].pasteur;
+        }
+
+        // 2. Préparer la liste des destinataires (Pasteurs + l'Évangéliste lui-même)
+        let destinatairesEmails = [...pasteursEmails];
+        // On ajoute l'évangéliste s'il n'est pas déjà dans la liste
+        if (!destinatairesEmails.includes(data.createurEmail)) {
+            destinatairesEmails.push(data.createurEmail);
+        }
+
+        if (destinatairesEmails.length === 0) {
+            console.log("Aucun destinataire à notifier.");
+            return null;
+        }
+
+        // 3. Récupérer les tokens FCM des destinataires
+        const tokensDocs = await db.collection('users_tokens').where('email', 'in', destinatairesEmails).get();
+        if (tokensDocs.empty) {
+            console.log("Aucun token FCM trouvé pour ces e-mails:", destinatairesEmails);
+            return null;
+        }
+
+        const tokens = [];
+        tokensDocs.forEach(doc => {
+            const tokenData = doc.data();
+            if (tokenData.token) tokens.push(tokenData.token);
+        });
+
+        if (tokens.length === 0) return null;
+
+        // 4. Préparer le message
+        const payload = {
+            notification: {
+                title: "Nouveau contact ajouté ! 🎉",
+                body: `Un invité (${data.nom} ${data.prenom || ""}) a été enregistré dans la famille ${data.famille || "?"}.`
+            }
+        };
+
+        // 5. Envoyer la notification via FCM
+        const response = await admin.messaging().sendToDevice(tokens, payload);
+        console.log(`Notification envoyée à ${tokens.length} appareils. Succès: ${response.successCount}, Échecs: ${response.failureCount}`);
+        
+        return response;
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de la notification Push :", error);
+        return null;
+    }
+}
+
+/**
+ * Déclencheur pour les ajouts dans une VILLE
+ */
+exports.onContactAjouteVille = functions.region('europe-west1')
+    .firestore
+    .document('villes/{villeId}/donnees/{contactId}')
+    .onCreate((snap, context) => {
+        return sendPushNotificationForNewContact(snap, context, false);
+    });
+
+/**
+ * Déclencheur pour les ajouts dans un PROGRAMME
+ */
+exports.onContactAjouteProgramme = functions.region('europe-west1')
+    .firestore
+    .document('programmes/{progId}/donnees/{contactId}')
+    .onCreate((snap, context) => {
+        return sendPushNotificationForNewContact(snap, context, true);
+    });

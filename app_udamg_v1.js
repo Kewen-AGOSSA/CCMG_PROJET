@@ -252,9 +252,11 @@ function accepterUtilisateur(utilisateur) {
     var userAvatar = document.getElementById('user-avatar');
     var userPrenom = document.getElementById('user-prenom');
     var btnDeconnexion = document.getElementById('btn-deconnexion');
+    var btnNotification = document.getElementById('btn-notification');
 
     if (userInfo) userInfo.style.display = 'flex';
     if (btnDeconnexion) btnDeconnexion.style.display = 'block';
+    if (btnNotification) btnNotification.style.display = 'block';
     if (userAvatar && utilisateur.photoURL) userAvatar.src = utilisateur.photoURL;
     if (userPrenom) {
         var prenom = utilisateur.displayName ? utilisateur.displayName.split(' ')[0] : utilisateur.email;
@@ -477,6 +479,62 @@ function deconnexion() {
                 });
         }
     );
+}
+
+/**
+ * Demande la permission d'envoyer des notifications et enregistre le Token FCM.
+ */
+function demanderPermissionNotification() {
+    if (!firebase.messaging.isSupported()) {
+        afficherAlerte("Non supporté", "Votre navigateur ne supporte pas les notifications push.", "❌");
+        return;
+    }
+
+    const messaging = firebase.messaging();
+    
+    Notification.requestPermission().then(function(permission) {
+        if (permission === 'granted') {
+            console.log('Permission accordée pour les notifications.');
+            // Clé VAPID générée depuis la console Firebase
+            messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLolWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNROMJxTnz_4eZbK_yl5R8' })
+                .then(function(currentToken) {
+                    if (currentToken) {
+                        console.log('Token FCM récupéré:', currentToken);
+                        sauvegarderTokenFCM(currentToken);
+                    } else {
+                        console.log('Aucun token reçu.');
+                        afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
+                    }
+                }).catch(function(err) {
+                    console.error('Erreur lors de la récupération du token:', err);
+                    afficherAlerte("Erreur", "Une erreur est survenue lors de l'activation des notifications.", "❌");
+                });
+        } else {
+            console.log('Permission refusée pour les notifications.');
+            afficherAlerte("Refusé", "Vous avez refusé les notifications. Vous ne recevrez pas d'alertes.", "⚠️");
+        }
+    });
+}
+
+/**
+ * Sauvegarde le Token FCM de l'utilisateur dans Firestore.
+ */
+function sauvegarderTokenFCM(token) {
+    if (!userEmail) return;
+
+    db.collection('users_tokens').doc(userEmail).set({
+        token: token,
+        email: userEmail,
+        dateMiseAJour: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true })
+    .then(function() {
+        afficherAlerte("Succès", "Notifications activées ! Vous recevrez des alertes pour chaque âme gagnée.", "🔔");
+        var btnNotification = document.getElementById('btn-notification');
+        if (btnNotification) btnNotification.style.display = 'none'; // On le cache une fois activé
+    })
+    .catch(function(error) {
+        console.error("Erreur d'enregistrement du token :", error);
+    });
 }
 
 // Alias pour compatibilité avec d'anciennes versions or typos
@@ -792,6 +850,7 @@ function enregistrerContact() {
             ville: villeActuelle || "", // Si ville, stocke la ville
             programme: programmeActuel || "", // Si programme, stocke le programme
             sousFamille: sousFamilleActuelle || "", // Sous-famille (Nantes)
+            createurEmail: userEmail || "", // Utilisé pour FCM
             // La date d'ajout n'est enregistrée qu'à la création, jamais modifiée
             // On utilise un format ISO pour un tri parfait côté serveur
             dateAjout: contactId

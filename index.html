@@ -30,6 +30,8 @@
         <button class="lang-btn" onclick="setLanguage('en')">EN</button>
         <!-- Bouton bascule thème Clair / Sombre -->
         <button class="theme-btn" id="btn-theme" onclick="basculerTheme()" title="Changer le thème">🌙</button>
+        <!-- Bouton Notifications -->
+        <button class="theme-btn" id="btn-notification" onclick="demanderPermissionNotification()" title="Activer les notifications" style="display:none;">🔔</button>
         <!-- Bouton déconnexion (affiché via JS quand connecté) -->
         <button class="deconnexion-btn" id="btn-deconnexion" onclick="deconnexion()" title="Se déconnecter">🚪</button>
     </div>
@@ -673,10 +675,11 @@
     </main>
 
     <!-- Fichiers Scripts -->
-    <!-- Firebase SDK (Compat mode - fonctionne sans bundler npm) -->
+    <!-- Scripts Firebase (compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
     <!-- Configuration Firebase CCMG -->
     <script src="firebase-config.js?v=20260409"></script>
     <!-- SheetJS : librairie de génération de fichiers Excel (xlsx) - via CDN stable -->
@@ -685,8 +688,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <script src="lang_udamg_v1.js?v=v57"></script>
-    <script src="app_udamg_v1.js?v=v57"></script>
+    <script src="lang_udamg_v1.js?v=v58"></script>
+    <script src="app_udamg_v1.js?v=v58"></script>
 </body>
 
 </html>
