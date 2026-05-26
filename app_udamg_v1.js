@@ -765,7 +765,7 @@ function enregistrerContact() {
             var nomComplet = (doublon.prenom || "") + " " + (doublon.nom || "");
             afficherAlerte(
                 "Doublon Détecté", 
-                "Ce numéro de téléphone existe déjà dans cette liste.<br><br>Il appartient à : <b>" + nomComplet.trim() + "</b>.<br><br>Vous ne pouvez pas créer de doublon.",
+                "Ce numéro existe déjà. Il appartient à " + nomComplet.trim() + ". Vous ne pouvez pas créer de doublon.",
                 "⛔"
             );
             return;
