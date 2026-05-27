@@ -484,46 +484,54 @@ function deconnexion() {
 /**
  * Demande la permission d'envoyer des notifications et enregistre le Token FCM.
  */
-async function demanderPermissionNotification() {
-    try {
-        const supported = await firebase.messaging.isSupported();
-        if (!supported) {
-            afficherAlerte("Non supporté", "Votre navigateur ne supporte pas les notifications push.", "❌");
-            return;
-        }
-    } catch (e) {
-        afficherAlerte("Erreur", "Vérification de support échouée.", "❌");
-        return;
-    }
-
+function demanderPermissionNotification() {
     if (typeof Notification === 'undefined') {
         afficherAlerte("Action requise", "Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.", "ℹ️");
         return;
     }
 
-    // Sur iOS, il est CRUCIAL d'appeler requestPermission directement dans l'événement du clic original.
-    // Ne pas passer par une modale intermédiaire.
+    // CRUCIAL POUR IOS : requestPermission DOIT être appelé de manière 100% synchrone
+    // Aucun 'await' ne doit exister avant cette ligne, sinon iOS détruit le contexte du clic
     try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            console.log('Permission accordée.');
-            const messaging = firebase.messaging();
-            try {
-                const currentToken = await messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' });
-                if (currentToken) {
-                    console.log('Token FCM récupéré:', currentToken);
-                    sauvegarderTokenFCM(currentToken);
+        const permissionPromise = Notification.requestPermission();
+        if (permissionPromise) {
+            permissionPromise.then(function(permission) {
+                if (permission === 'granted') {
+                    // Une fois la permission native accordée, on peut faire nos appels asynchrones Firebase
+                    activerFirebaseMessaging();
                 } else {
-                    afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
+                    afficherAlerte("Refusé", "Vous avez refusé les notifications.", "⚠️");
                 }
-            } catch (err) {
-                afficherAlerte("Erreur", "Jeton impossible : " + err.message, "❌");
-            }
+            }).catch(function(err) {
+                afficherAlerte("Erreur", "Le système a bloqué la demande : " + err, "❌");
+            });
         } else {
-            afficherAlerte("Refusé", "Vous avez refusé les notifications.", "⚠️");
+            afficherAlerte("Erreur", "L'API Notification a échoué silencieusement.", "❌");
         }
     } catch (err) {
         afficherAlerte("Erreur technique", "L'iPhone a bloqué : " + err, "❌");
+    }
+}
+
+async function activerFirebaseMessaging() {
+    try {
+        const supported = await firebase.messaging.isSupported();
+        if (!supported) {
+            afficherAlerte("Non supporté", "Firebase Push n'est pas supporté sur cet appareil.", "❌");
+            return;
+        }
+        
+        const messaging = firebase.messaging();
+        const currentToken = await messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' });
+        
+        if (currentToken) {
+            console.log('Token FCM récupéré:', currentToken);
+            sauvegarderTokenFCM(currentToken);
+        } else {
+            afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
+        }
+    } catch (err) {
+        afficherAlerte("Erreur", "Jeton impossible : " + err.message, "❌");
     }
 }
 
