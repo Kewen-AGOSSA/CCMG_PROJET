@@ -488,7 +488,7 @@ async function demanderPermissionNotification() {
     try {
         const supported = await firebase.messaging.isSupported();
         if (!supported) {
-            afficherAlerte("Non supporté", "Votre navigateur ne supporte pas les notifications push. Sur iPhone, utilisez le bouton Partager puis 'Sur l'écran d'accueil'.", "❌");
+            afficherAlerte("Non supporté", "Votre navigateur ne supporte pas les notifications push.", "❌");
             return;
         }
     } catch (e) {
@@ -497,48 +497,34 @@ async function demanderPermissionNotification() {
     }
 
     if (typeof Notification === 'undefined') {
-        afficherAlerte("Action requise", "Pour recevoir les alertes sur iPhone, appuyez sur Partager (le carré avec flèche) puis sur 'Sur l'écran d'accueil'.", "ℹ️");
+        afficherAlerte("Action requise", "Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.", "ℹ️");
         return;
     }
 
-    ouvrirModalConfirmation(
-        "Souhaitez-vous recevoir une notification (vibration et alerte) sur votre appareil à chaque fois qu'une nouvelle âme est gagnée ?",
-        function() {
+    // Sur iOS, il est CRUCIAL d'appeler requestPermission directement dans l'événement du clic original.
+    // Ne pas passer par une modale intermédiaire.
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            console.log('Permission accordée.');
             const messaging = firebase.messaging();
-            
             try {
-                var handlePermission = function(permission) {
-                    if (permission === 'granted') {
-                        console.log('Permission accordée pour les notifications.');
-                        messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' })
-                            .then(function(currentToken) {
-                                if (currentToken) {
-                                    console.log('Token FCM récupéré:', currentToken);
-                                    sauvegarderTokenFCM(currentToken);
-                                } else {
-                                    afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
-                                }
-                            }).catch(function(err) {
-                                afficherAlerte("Erreur", "Impossible de récupérer le jeton : " + err.message, "❌");
-                            });
-                    } else {
-                        afficherAlerte("Refusé", "Vous avez refusé les notifications. Vous ne recevrez pas d'alertes.", "⚠️");
-                    }
-                };
-
-                var permissionPromise = Notification.requestPermission(handlePermission);
-                if (permissionPromise) {
-                    permissionPromise.then(handlePermission).catch(function(err) {
-                        afficherAlerte("Erreur technique", "L'iPhone a bloqué la demande : " + err, "❌");
-                    });
+                const currentToken = await messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' });
+                if (currentToken) {
+                    console.log('Token FCM récupéré:', currentToken);
+                    sauvegarderTokenFCM(currentToken);
+                } else {
+                    afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
                 }
             } catch (err) {
-                afficherAlerte("Erreur technique", "Impossible d'ouvrir la demande de notification : " + err, "❌");
+                afficherAlerte("Erreur", "Jeton impossible : " + err.message, "❌");
             }
-            
-            fermerModalConfirmation();
+        } else {
+            afficherAlerte("Refusé", "Vous avez refusé les notifications.", "⚠️");
         }
-    );
+    } catch (err) {
+        afficherAlerte("Erreur technique", "L'iPhone a bloqué : " + err, "❌");
+    }
 }
 
 /**
