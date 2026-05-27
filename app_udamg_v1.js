@@ -485,10 +485,8 @@ function deconnexion() {
  * Demande la permission d'envoyer des notifications et enregistre le Token FCM.
  */
 function demanderPermissionNotification() {
-    alert("Diagnostic V66 : La fonction se lance bien sur votre téléphone.");
-
     if (typeof Notification === 'undefined') {
-        afficherAlerte("Action requise", "Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.", "ℹ️");
+        Swal.fire('Action requise', "Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.", 'info');
         return;
     }
 
@@ -502,16 +500,16 @@ function demanderPermissionNotification() {
                     // Une fois la permission native accordée, on peut faire nos appels asynchrones Firebase
                     activerFirebaseMessaging();
                 } else {
-                    afficherAlerte("Refusé", "Vous avez refusé les notifications.", "⚠️");
+                    Swal.fire('Refusé', "Vous avez bloqué les notifications dans votre navigateur.", 'warning');
                 }
             }).catch(function(err) {
-                afficherAlerte("Erreur", "Le système a bloqué la demande : " + err, "❌");
+                Swal.fire('Erreur', "Le système a bloqué la demande : " + err, 'error');
             });
         } else {
-            afficherAlerte("Erreur", "L'API Notification a échoué silencieusement.", "❌");
+            Swal.fire('Erreur', "L'API Notification a échoué silencieusement.", 'error');
         }
     } catch (err) {
-        afficherAlerte("Erreur technique", "L'iPhone a bloqué : " + err, "❌");
+        Swal.fire('Erreur technique', "L'iPhone a bloqué : " + err, 'error');
     }
 }
 
@@ -519,7 +517,7 @@ async function activerFirebaseMessaging() {
     try {
         const supported = await firebase.messaging.isSupported();
         if (!supported) {
-            afficherAlerte("Non supporté", "Firebase Push n'est pas supporté sur cet appareil.", "❌");
+            Swal.fire('Non supporté', "Firebase Push n'est pas supporté sur cet appareil.", 'error');
             return;
         }
         
@@ -530,10 +528,10 @@ async function activerFirebaseMessaging() {
             console.log('Token FCM récupéré:', currentToken);
             sauvegarderTokenFCM(currentToken);
         } else {
-            afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
+            Swal.fire('Erreur', "Impossible de générer la clé de notification.", 'error');
         }
     } catch (err) {
-        afficherAlerte("Erreur", "Jeton impossible : " + err.message, "❌");
+        Swal.fire('Erreur', "Jeton impossible : " + err.message, 'error');
     }
 }
 
