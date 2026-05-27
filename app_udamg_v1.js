@@ -486,7 +486,7 @@ function deconnexion() {
  */
 function demanderPermissionNotification() {
     if (typeof Notification === 'undefined') {
-        Swal.fire('Action requise', "Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.", 'info');
+        alert("ACTION REQUISE : Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.");
         return;
     }
 
@@ -500,16 +500,16 @@ function demanderPermissionNotification() {
                     // Une fois la permission native accordée, on peut faire nos appels asynchrones Firebase
                     activerFirebaseMessaging();
                 } else {
-                    Swal.fire('Refusé', "Vous avez bloqué les notifications dans votre navigateur.", 'warning');
+                    alert("REFUSÉ : Vous avez bloqué les notifications dans votre navigateur.");
                 }
             }).catch(function(err) {
-                Swal.fire('Erreur', "Le système a bloqué la demande : " + err, 'error');
+                alert("ERREUR : Le système a bloqué la demande : " + err);
             });
         } else {
-            Swal.fire('Erreur', "L'API Notification a échoué silencieusement.", 'error');
+            alert("ERREUR : L'API Notification a échoué silencieusement.");
         }
     } catch (err) {
-        Swal.fire('Erreur technique', "L'iPhone a bloqué : " + err, 'error');
+        alert("ERREUR TECHNIQUE : L'iPhone a bloqué : " + err);
     }
 }
 
@@ -517,7 +517,7 @@ async function activerFirebaseMessaging() {
     try {
         const supported = await firebase.messaging.isSupported();
         if (!supported) {
-            Swal.fire('Non supporté', "Firebase Push n'est pas supporté sur cet appareil.", 'error');
+            alert("NON SUPPORTÉ : Firebase Push n'est pas supporté sur cet appareil.");
             return;
         }
         
@@ -528,10 +528,10 @@ async function activerFirebaseMessaging() {
             console.log('Token FCM récupéré:', currentToken);
             sauvegarderTokenFCM(currentToken);
         } else {
-            Swal.fire('Erreur', "Impossible de générer la clé de notification.", 'error');
+            alert("ERREUR : Impossible de générer la clé de notification.");
         }
     } catch (err) {
-        Swal.fire('Erreur', "Jeton impossible : " + err.message, 'error');
+        alert("ERREUR : Jeton impossible : " + err.message);
     }
 }
 
@@ -539,21 +539,24 @@ async function activerFirebaseMessaging() {
  * Sauvegarde le Token FCM de l'utilisateur dans Firestore.
  */
 function sauvegarderTokenFCM(token) {
-    if (!userEmail) return;
-
-    db.collection('users_tokens').doc(userEmail).set({
-        token: token,
-        email: userEmail,
-        dateMiseAJour: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true })
-    .then(function() {
-        afficherAlerte("Succès", "Notifications activées ! Vous recevrez des alertes pour chaque âme gagnée.", "🔔");
-        var btnNotification = document.getElementById('btn-notification');
-        if (btnNotification) btnNotification.style.display = 'none'; // On le cache une fois activé
-    })
-    .catch(function(error) {
-        console.error("Erreur d'enregistrement du token :", error);
-    });
+    const user = firebase.auth().currentUser;
+    if (user && user.email) {
+        db.collection('users_tokens').doc(user.email).set({
+            tokens: firebase.firestore.FieldValue.arrayUnion(token),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).then(() => {
+            console.log("Token FCM sauvegardé pour", user.email);
+            alert("SUCCÈS ! Les notifications sont activées sur cet appareil !");
+            var btnNotification = document.getElementById('btn-notification');
+            if (btnNotification) btnNotification.style.display = 'none'; // On le cache
+        }).catch((error) => {
+            console.error("Erreur sauvegarde token", error);
+            alert("ERREUR : Impossible de sauvegarder le jeton dans la base.");
+        });
+    } else {
+        console.warn("Utilisateur non connecté, token non sauvegardé.");
+        alert("ERREUR : Vous devez être connecté.");
+    }
 }
 
 // Alias pour compatibilité avec d'anciennes versions or typos
