@@ -506,28 +506,35 @@ async function demanderPermissionNotification() {
         function() {
             const messaging = firebase.messaging();
             
-            Notification.requestPermission().then(function(permission) {
-                if (permission === 'granted') {
-                    console.log('Permission accordée pour les notifications.');
-                    // Clé VAPID générée depuis la console Firebase
-                    messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' })
-                        .then(function(currentToken) {
-                            if (currentToken) {
-                                console.log('Token FCM récupéré:', currentToken);
-                                sauvegarderTokenFCM(currentToken);
-                            } else {
-                                console.log('Aucun token reçu.');
-                                afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
-                            }
-                        }).catch(function(err) {
-                            console.error('Erreur lors de la récupération du token:', err);
-                            afficherAlerte("Erreur", "Impossible de récupérer le jeton : " + err.message, "❌");
-                        });
-                } else {
-                    console.log('Permission refusée pour les notifications.');
-                    afficherAlerte("Refusé", "Vous avez refusé les notifications. Vous ne recevrez pas d'alertes.", "⚠️");
+            try {
+                var handlePermission = function(permission) {
+                    if (permission === 'granted') {
+                        console.log('Permission accordée pour les notifications.');
+                        messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' })
+                            .then(function(currentToken) {
+                                if (currentToken) {
+                                    console.log('Token FCM récupéré:', currentToken);
+                                    sauvegarderTokenFCM(currentToken);
+                                } else {
+                                    afficherAlerte("Erreur", "Impossible de générer la clé de notification.", "❌");
+                                }
+                            }).catch(function(err) {
+                                afficherAlerte("Erreur", "Impossible de récupérer le jeton : " + err.message, "❌");
+                            });
+                    } else {
+                        afficherAlerte("Refusé", "Vous avez refusé les notifications. Vous ne recevrez pas d'alertes.", "⚠️");
+                    }
+                };
+
+                var permissionPromise = Notification.requestPermission(handlePermission);
+                if (permissionPromise) {
+                    permissionPromise.then(handlePermission).catch(function(err) {
+                        afficherAlerte("Erreur technique", "L'iPhone a bloqué la demande : " + err, "❌");
+                    });
                 }
-            });
+            } catch (err) {
+                afficherAlerte("Erreur technique", "Impossible d'ouvrir la demande de notification : " + err, "❌");
+            }
             
             fermerModalConfirmation();
         }
