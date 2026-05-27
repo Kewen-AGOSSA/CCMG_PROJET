@@ -499,7 +499,7 @@ function demanderPermissionNotification() {
                 if (permission === 'granted') {
                     console.log('Permission accordée pour les notifications.');
                     // Clé VAPID générée depuis la console Firebase
-                    messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLolWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNROMJxTnz_4eZbK_yl5R8' })
+                    messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' })
                         .then(function(currentToken) {
                             if (currentToken) {
                                 console.log('Token FCM récupéré:', currentToken);
