@@ -485,6 +485,8 @@ function deconnexion() {
  * Demande la permission d'envoyer des notifications et enregistre le Token FCM.
  */
 function demanderPermissionNotification() {
+    alert("Diagnostic V66 : La fonction se lance bien sur votre téléphone.");
+
     if (typeof Notification === 'undefined') {
         afficherAlerte("Action requise", "Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.", "ℹ️");
         return;
