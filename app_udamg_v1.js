@@ -484,9 +484,20 @@ function deconnexion() {
 /**
  * Demande la permission d'envoyer des notifications et enregistre le Token FCM.
  */
-function demanderPermissionNotification() {
-    if (!firebase.messaging.isSupported()) {
-        afficherAlerte("Non supporté", "Votre navigateur ne supporte pas les notifications push.", "❌");
+async function demanderPermissionNotification() {
+    try {
+        const supported = await firebase.messaging.isSupported();
+        if (!supported) {
+            afficherAlerte("Non supporté", "Votre navigateur ne supporte pas les notifications push. Sur iPhone, utilisez le bouton Partager puis 'Sur l'écran d'accueil'.", "❌");
+            return;
+        }
+    } catch (e) {
+        afficherAlerte("Erreur", "Vérification de support échouée.", "❌");
+        return;
+    }
+
+    if (typeof Notification === 'undefined') {
+        afficherAlerte("Action requise", "Pour recevoir les alertes sur iPhone, appuyez sur Partager (le carré avec flèche) puis sur 'Sur l'écran d'accueil'.", "ℹ️");
         return;
     }
 
