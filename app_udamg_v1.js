@@ -527,6 +527,29 @@ async function activerFirebaseMessaging() {
         if (currentToken) {
             console.log('Token FCM récupéré:', currentToken);
             sauvegarderTokenFCM(currentToken);
+
+            // Gérer les notifications reçues quand l'application est OUVERTE
+            messaging.onMessage((payload) => {
+                console.log('Message reçu au premier plan : ', payload);
+                if (payload.notification) {
+                    Swal.fire({
+                        title: payload.notification.title,
+                        text: payload.notification.body,
+                        icon: 'info',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                    // Forcer aussi une notification système
+                    new Notification(payload.notification.title, {
+                        body: payload.notification.body,
+                        icon: '/logo_ccmg.png'
+                    });
+                }
+            });
+
         } else {
             alert("ERREUR : Impossible de générer la clé de notification.");
         }

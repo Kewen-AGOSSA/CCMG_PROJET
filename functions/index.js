@@ -129,8 +129,11 @@ async function sendPushNotificationForNewContact(snap, context, isProgramme) {
             return null;
         }
 
-        // 3. Récupérer les tokens FCM des destinataires
-        const tokensDocs = await db.collection('users_tokens').where('email', 'in', destinatairesEmails).get();
+        // 3. Récupérer les tokens FCM des destinataires (les IDs de doc sont les emails)
+        const tokensDocs = await db.collection('users_tokens')
+            .where(admin.firestore.FieldPath.documentId(), 'in', destinatairesEmails)
+            .get();
+            
         if (tokensDocs.empty) {
             console.log("Aucun token FCM trouvé pour ces e-mails:", destinatairesEmails);
             return null;
@@ -139,21 +142,27 @@ async function sendPushNotificationForNewContact(snap, context, isProgramme) {
         const tokens = [];
         tokensDocs.forEach(doc => {
             const tokenData = doc.data();
+            // Ancien format (string unique)
             if (tokenData.token) tokens.push(tokenData.token);
+            // Nouveau format (tableau de tokens pour PC + Téléphone)
+            if (tokenData.tokens && Array.isArray(tokenData.tokens)) {
+                tokens.push(...tokenData.tokens);
+            }
         });
 
         if (tokens.length === 0) return null;
 
-        // 4. Préparer le message
-        const payload = {
+        // 4. Préparer le message pour v12+ (sendEachForMulticast)
+        const message = {
             notification: {
                 title: "Nouveau contact ajouté ! 🎉",
                 body: `Un invité (${data.nom} ${data.prenom || ""}) a été enregistré dans la famille ${data.famille || "?"}.`
-            }
+            },
+            tokens: tokens
         };
 
         // 5. Envoyer la notification via FCM
-        const response = await admin.messaging().sendToDevice(tokens, payload);
+        const response = await admin.messaging().sendEachForMulticast(message);
         console.log(`Notification envoyée à ${tokens.length} appareils. Succès: ${response.successCount}, Échecs: ${response.failureCount}`);
         
         return response;
