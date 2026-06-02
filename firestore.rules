@@ -122,9 +122,5 @@ service cloud.firestore {
       allow read, update, delete: if false; // Le backend (Admin SDK) a toujours tous les droits
     }
 
-    // TOKENS DE NOTIFICATION
-    match /users_tokens/{email} {
-      allow read, write: if request.auth != null && request.auth.token.email == email;
-    }
   }
 }

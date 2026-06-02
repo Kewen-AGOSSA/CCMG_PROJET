@@ -252,11 +252,9 @@ function accepterUtilisateur(utilisateur) {
     var userAvatar = document.getElementById('user-avatar');
     var userPrenom = document.getElementById('user-prenom');
     var btnDeconnexion = document.getElementById('btn-deconnexion');
-    var btnNotification = document.getElementById('btn-notification');
 
     if (userInfo) userInfo.style.display = 'flex';
     if (btnDeconnexion) btnDeconnexion.style.display = 'block';
-    if (btnNotification) btnNotification.style.display = 'block';
     if (userAvatar && utilisateur.photoURL) userAvatar.src = utilisateur.photoURL;
     if (userPrenom) {
         var prenom = utilisateur.displayName ? utilisateur.displayName.split(' ')[0] : utilisateur.email;
@@ -443,17 +441,11 @@ function rejeterUtilisateur() {
  */
 function connexionGoogle() {
     var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
-        .then(function (result) {
-            console.log('[Auth] Connecté :', result.user.displayName);
-            // onAuthStateChanged se charge automatiquement du reste
-        })
-        .catch(function (erreur) {
-            console.error('[Auth] Erreur de connexion :', erreur);
-            if (erreur.code !== 'auth/popup-closed-by-user') {
-                alert('Impossible de se connecter. Vérifiez votre connexion internet.');
-            }
-        });
+    // Utilisation de signInWithRedirect pour éviter les bloqueurs de pop-up sur mobile
+    firebase.auth().signInWithRedirect(provider).catch(function(erreur) {
+        console.error('[Auth] Erreur de redirection :', erreur);
+        alert('Impossible de lancer la connexion. Vérifiez votre connexion internet.');
+    });
 }
 
 /**
@@ -481,106 +473,6 @@ function deconnexion() {
     );
 }
 
-/**
- * Demande la permission d'envoyer des notifications et enregistre le Token FCM.
- */
-function demanderPermissionNotification() {
-    if (typeof Notification === 'undefined') {
-        alert("ACTION REQUISE : Pour recevoir les alertes sur iPhone, ajoutez l'application sur l'écran d'accueil.");
-        return;
-    }
-
-    // CRUCIAL POUR IOS : requestPermission DOIT être appelé de manière 100% synchrone
-    // Aucun 'await' ne doit exister avant cette ligne, sinon iOS détruit le contexte du clic
-    try {
-        const permissionPromise = Notification.requestPermission();
-        if (permissionPromise) {
-            permissionPromise.then(function(permission) {
-                if (permission === 'granted') {
-                    // Une fois la permission native accordée, on peut faire nos appels asynchrones Firebase
-                    activerFirebaseMessaging();
-                } else {
-                    alert("REFUSÉ : Vous avez bloqué les notifications dans votre navigateur.");
-                }
-            }).catch(function(err) {
-                alert("ERREUR : Le système a bloqué la demande : " + err);
-            });
-        } else {
-            alert("ERREUR : L'API Notification a échoué silencieusement.");
-        }
-    } catch (err) {
-        alert("ERREUR TECHNIQUE : L'iPhone a bloqué : " + err);
-    }
-}
-
-async function activerFirebaseMessaging() {
-    try {
-        const supported = await firebase.messaging.isSupported();
-        if (!supported) {
-            alert("NON SUPPORTÉ : Firebase Push n'est pas supporté sur cet appareil.");
-            return;
-        }
-        
-        const messaging = firebase.messaging();
-        const currentToken = await messaging.getToken({ vapidKey: 'BKnAh3dW8FPtyj-QMfYX1C5-k97ceLoIWWgbRgaOMF2Cc1k3Y_pIffO7CohfqLyi7fNR0MJxTnz_4eZbK_yI5R8' });
-        
-        if (currentToken) {
-            console.log('Token FCM récupéré:', currentToken);
-            sauvegarderTokenFCM(currentToken);
-
-            // Gérer les notifications reçues quand l'application est OUVERTE
-            messaging.onMessage((payload) => {
-                console.log('Message reçu au premier plan : ', payload);
-                if (payload.notification) {
-                    Swal.fire({
-                        title: payload.notification.title,
-                        text: payload.notification.body,
-                        icon: 'info',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 5000,
-                        timerProgressBar: true
-                    });
-                    // Forcer aussi une notification système
-                    new Notification(payload.notification.title, {
-                        body: payload.notification.body,
-                        icon: '/logo_ccmg.png'
-                    });
-                }
-            });
-
-        } else {
-            alert("ERREUR : Impossible de générer la clé de notification.");
-        }
-    } catch (err) {
-        alert("ERREUR : Jeton impossible : " + err.message);
-    }
-}
-
-/**
- * Sauvegarde le Token FCM de l'utilisateur dans Firestore.
- */
-function sauvegarderTokenFCM(token) {
-    const user = firebase.auth().currentUser;
-    if (user && user.email) {
-        db.collection('users_tokens').doc(user.email).set({
-            tokens: firebase.firestore.FieldValue.arrayUnion(token),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).then(() => {
-            console.log("Token FCM sauvegardé pour", user.email);
-            alert("SUCCÈS ! Les notifications sont activées sur cet appareil !");
-            var btnNotification = document.getElementById('btn-notification');
-            if (btnNotification) btnNotification.style.display = 'none'; // On le cache
-        }).catch((error) => {
-            console.error("Erreur sauvegarde token", error);
-            alert("ERREUR : Impossible de sauvegarder le jeton dans la base.");
-        });
-    } else {
-        console.warn("Utilisateur non connecté, token non sauvegardé.");
-        alert("ERREUR : Vous devez être connecté.");
-    }
-}
 
 // Alias pour compatibilité avec d'anciennes versions or typos
 function logoutGoogle() { deconnexion(); }
@@ -2808,7 +2700,10 @@ function afficherListeAnciens() {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div class="contact-info" style="flex:1; min-width:0;">
                         <h4 style="margin:0; font-size:16px;">${(c.nom || "").toUpperCase()} ${c.prenom || ""}</h4>
-                        <p style="margin:0; opacity:0.8; font-size:14px;">${c.tel || ""}</p>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <p style="margin:0; opacity:0.8; font-size:14px;">${c.tel || ""}</p>
+                            ${c.tel ? `<button onclick="copierNumeroIndividuel('${c.tel}')" style="background:none; border:none; padding:4px; cursor:pointer; font-size:18px; filter: grayscale(100%); transition: filter 0.2s;" onmouseover="this.style.filter='grayscale(0%)'" onmouseout="this.style.filter='grayscale(100%)'" title="Copier le numéro">📋</button>` : ''}
+                        </div>
                     </div>
                     <div class="contact-actions" style="flex-shrink:0;">
                         <button class="action-btn" onclick="ouvrirOptionsAncien('${c.id}')" style="background:rgba(255,215,0,0.1); color:var(--ccmg-gold); padding:10px 15px; border-radius:8px; border:1px solid var(--ccmg-gold); cursor:pointer; font-weight:bold;">
@@ -2960,8 +2855,8 @@ function preparerEnvoiIndividuelAncien(id) {
     document.getElementById('relance-step-2').style.display = 'block';
     document.getElementById('btn-retour-relance').style.display = 'none';
 
-    var btnWa = modal.querySelector('.btn-whatsapp');
-    var btnSms = modal.querySelector('.btn-sms');
+    var btnWa = document.querySelector('#relance-step-2 .btn-whatsapp');
+    var btnSms = document.querySelector('#relance-step-2 .btn-sms');
 
     btnWa.onclick = function () { executerEnvoiIndividuelAncien('whatsapp'); };
     btnSms.onclick = function () { executerEnvoiIndividuelAncien('sms'); };
@@ -3011,8 +2906,8 @@ function choisirModeInvitationGroupee() {
     document.getElementById('btn-retour-relance').style.display = 'none'; // Pas de retour possible ici
 
     // On surcharge temporairement les fonctions des boutons de la modale
-    var btnWa = modal.querySelector('.btn-whatsapp');
-    var btnSms = modal.querySelector('.btn-sms');
+    var btnWa = document.querySelector('#relance-step-2 .btn-whatsapp');
+    var btnSms = document.querySelector('#relance-step-2 .btn-sms');
 
     btnWa.onclick = function () { envoyerInvitationGroupee('whatsapp'); };
     btnSms.onclick = function () { envoyerInvitationGroupee('sms'); };
@@ -3050,15 +2945,14 @@ function envoyerInvitationGroupee(mode) {
 }
 
 /**
- * Copie tous les numéros dans le presse-papier pour liste de diffusion.
+ * Copie le numéro d'un ancien dans le presse-papier.
  */
-function copierTousLesNumeros() {
-    if (tousLesAnciens.length === 0) return;
+function copierNumeroIndividuel(numero) {
+    if (!numero) return;
 
-    var numeros = tousLesAnciens.map(c => c.tel).join('; ');
-    navigator.clipboard.writeText(numeros)
+    navigator.clipboard.writeText(numero)
         .then(function () {
-            afficherAlerte("Copié !", "Les " + tousLesAnciens.length + " numéros sont dans votre presse-papier.", "📋");
+            afficherAlerte("Copié !", "Le numéro " + numero + " a été copié dans votre presse-papier.", "📋");
         })
         .catch(function (err) {
             console.error("Erreur copie :", err);

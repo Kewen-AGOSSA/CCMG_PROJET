@@ -31,7 +31,7 @@
         <!-- Bouton bascule thème Clair / Sombre -->
         <button class="theme-btn" id="btn-theme" onclick="basculerTheme()" title="Changer le thème">🌙</button>
         <!-- Bouton Notifications -->
-        <button class="theme-btn" id="btn-notification" onclick="demanderPermissionNotification()" title="Activer les notifications" style="display:none;">🔔</button>
+
         <!-- Bouton déconnexion (affiché via JS quand connecté) -->
         <button class="deconnexion-btn" id="btn-deconnexion" onclick="deconnexion()" title="Se déconnecter">🚪</button>
     </div>
@@ -385,11 +385,7 @@
                 <textarea id="input-message-groupe" class="form-input" data-i18n="bulk_msg_placeholder" 
                     placeholder="Écrivez ici le message d'invitation..." rows="4" style="margin-bottom: 15px;"></textarea>
                 
-                <div style="display: flex; flex-direction: column;">
-                    <button class="btn-valider" style="width: 100%; padding: 14px; font-size: 15px; background: var(--ccmg-gold); color: black; font-weight: 800;" onclick="copierTousLesNumeros()">
-                        📋 <span data-i18n="copy_numbers">Copier tous les numéros</span>
-                    </button>
-                </div>
+
             </div>
 
             <div id="liste-anciens" class="container-liste"></div>
